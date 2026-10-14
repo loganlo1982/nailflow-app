@@ -1,0 +1,29 @@
+{
+  "name": "nailflow-salon-manager",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NailFlow – Salon Manager (iPhone + Android). The app opens https://american-nails-and-spa.com/app/ – every screen comes from the web, so web updates reach the app at once.",
+  "scripts": {
+    "add:android": "npx cap add android && node scripts/patch-native.js android",
+    "add:ios": "npx cap add ios && node scripts/patch-native.js ios",
+    "assets": "npx capacitor-assets generate --assetPath resources --iconBackgroundColor '#1E3A8A' --splashBackgroundColor '#0F1420' --splashBackgroundColorDark '#0F1420'",
+    "sync": "npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.0",
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.4.0",
+    "@capacitor/haptics": "^7.0.0",
+    "@capacitor/ios": "^7.4.0",
+    "@capacitor/preferences": "^7.0.0",
+    "@capacitor/splash-screen": "^7.0.0",
+    "@capacitor-firebase/messaging": "^7.0.0",
+    "@capacitor-mlkit/barcode-scanning": "^7.0.0",
+    "@capgo/capacitor-native-biometric": "^7.0.0",
+    "firebase": "^11.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.0"
+  }
+}
