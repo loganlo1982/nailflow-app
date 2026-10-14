@@ -38,7 +38,7 @@ workflows:
     instance_type: linux_x2
     max_build_duration: 40
     environment:
-      groups: [firebase]            # variable GOOGLE_SERVICES_JSON = the text of google-services.json
+      # groups: [firebase]        # add later: variable GOOGLE_SERVICES_JSON = the text of google-services.json
       node: 22
       java: 21
     scripts:
