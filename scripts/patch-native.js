@@ -3,6 +3,9 @@ const fs = require('fs'); const path = require('path'); const which = process.ar
 const NAME = 'NailFlow'; // the name under the icon (iPhone shows ~12 letters); the store name is "NailFlow – Salon Manager"
 const edit = (f, fn) => { const s = fs.readFileSync(f, 'utf8'); const t = fn(s); if (t !== s) fs.writeFileSync(f, t); console.log('patched', f); };
 if (which === 'ios') {
+  // GoogleMLKit (gift card scanner) needs iOS 15.5+ – raise the minimum before CocoaPods runs
+  edit('ios/App/Podfile', (s) => s.replace(/platform :ios, '[0-9.]+'/, "platform :ios, '15.5'"));
+  edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.replace(/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/g, 'IPHONEOS_DEPLOYMENT_TARGET = 15.5;'));
   const plist = 'ios/App/App/Info.plist';
   const add = { CFBundleDisplayName: NAME, NSCameraUsageDescription: 'NailFlow uses the camera to scan gift cards and QR codes.', NSFaceIDUsageDescription: 'NailFlow uses Face ID to open the app safely.' };
   edit(plist, (s) => { for (const [k, v] of Object.entries(add)) { if (s.includes(`<key>${k}</key>`)) s = s.replace(new RegExp(`<key>${k}</key>\\s*<string>[^<]*</string>`), `<key>${k}</key>\n\t<string>${v}</string>`); else s = s.replace('<dict>', `<dict>\n\t<key>${k}</key>\n\t<string>${v}</string>`); }

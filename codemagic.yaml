@@ -20,7 +20,11 @@ workflows:
       - name: Firebase file
         script: if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist; fi
       - name: iOS project
-        script: npm run add:ios && npm run assets && npx cap sync ios
+        script: |
+          npx cap add ios || echo "CocoaPods run again after the patch below"
+          node scripts/patch-native.js ios
+          npm run assets
+          npx cap sync ios
       - name: Signing
         script: xcode-project use-profiles
       - name: Build number
