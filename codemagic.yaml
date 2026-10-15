@@ -10,7 +10,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.nailflow.salonmanager
-      groups: [firebase]            # variable GOOGLE_SERVICE_INFO_PLIST = the text of GoogleService-Info.plist
+      # groups: [firebase]        # add later: variable GOOGLE_SERVICE_INFO_PLIST = the text of GoogleService-Info.plist
       node: 22
       xcode: latest
       cocoapods: default

@@ -12,7 +12,8 @@ if (which === 'ios') {
   edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.includes('CODE_SIGN_ENTITLEMENTS') ? s : s.replace(/(INFOPLIST_FILE = App\/Info\.plist;)/g, '$1\n\t\t\t\tCODE_SIGN_ENTITLEMENTS = App/App.entitlements;'));
   if (fs.existsSync('GoogleService-Info.plist')) fs.copyFileSync('GoogleService-Info.plist', 'ios/App/App/GoogleService-Info.plist');
   // Firebase (notifications): start it + hand Apple's push token to it (what @capacitor-firebase/messaging asks for)
-  edit('ios/App/App/AppDelegate.swift', (s) => s.includes('FirebaseApp.configure') ? s : s
+  // only when the Firebase file is there – without it FirebaseApp.configure() would crash the app at start
+  if (fs.existsSync('GoogleService-Info.plist')) edit('ios/App/App/AppDelegate.swift', (s) => s.includes('FirebaseApp.configure') ? s : s
     .replace('import Capacitor', 'import Capacitor\nimport FirebaseCore\nimport FirebaseMessaging')
     .replace(/(didFinishLaunchingWithOptions[^{]*\{)/, '$1\n        FirebaseApp.configure()')
     .replace(/\n\}\s*$/, `\n    func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {\n        Messaging.messaging().apnsToken = deviceToken\n        NotificationCenter.default.post(name: .capacitorDidRegisterForRemoteNotifications, object: deviceToken)\n    }\n    func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {\n        NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)\n    }\n}\n`));
