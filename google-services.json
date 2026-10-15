@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "188745611127",
+    "project_id": "nailflow-d1b45",
+    "storage_bucket": "nailflow-d1b45.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:188745611127:android:00315d7e7a6d44e2719372",
+        "android_client_info": {
+          "package_name": "com.nailflow.salonmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoRhHMbw-dvXe8M2mVhkD8-0DjikSAxmI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
