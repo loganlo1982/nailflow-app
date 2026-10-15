@@ -30,6 +30,10 @@ workflows:
         script: |
           npx cap add ios || echo "CocoaPods run again after the patch below"
           node scripts/patch-native.js ios
+          if [ -f ios/App/App/GoogleService-Info.plist ]; then
+            # put the Firebase file into the app bundle (Copy Bundle Resources), or FirebaseApp.configure() can't find it
+            ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; unless g.files.any? { |f| f.path == "GoogleService-Info.plist" }; r = g.new_reference("GoogleService-Info.plist"); t.resources_build_phase.add_file_reference(r); p.save; puts "added GoogleService-Info.plist"; end'
+          fi
           npm run assets
           npx cap sync ios
       - name: Signing
