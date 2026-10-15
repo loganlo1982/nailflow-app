@@ -18,7 +18,13 @@ workflows:
       - name: Install
         script: npm install
       - name: Firebase file
-        script: if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist; fi
+        script: |
+          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+            printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist
+          else
+            # Without the Firebase file the push plugin crashes the app at launch – leave it out until Firebase is set up
+            npm uninstall @capacitor-firebase/messaging
+          fi
       - name: iOS project
         script: |
           npx cap add ios || echo "CocoaPods run again after the patch below"
