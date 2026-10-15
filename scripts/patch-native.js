@@ -9,6 +9,7 @@ if (which === 'ios') {
   const plist = 'ios/App/App/Info.plist';
   const add = { CFBundleDisplayName: NAME, NSCameraUsageDescription: 'NailFlow uses the camera to scan gift cards and QR codes.', NSFaceIDUsageDescription: 'NailFlow uses Face ID to open the app safely.' };
   edit(plist, (s) => { for (const [k, v] of Object.entries(add)) { if (s.includes(`<key>${k}</key>`)) s = s.replace(new RegExp(`<key>${k}</key>\\s*<string>[^<]*</string>`), `<key>${k}</key>\n\t<string>${v}</string>`); else s = s.replace('<dict>', `<dict>\n\t<key>${k}</key>\n\t<string>${v}</string>`); }
+    if (!s.includes('ITSAppUsesNonExemptEncryption')) s = s.replace('<dict>', '<dict>\n\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>');
     if (!s.includes('UIBackgroundModes')) s = s.replace('<dict>', '<dict>\n\t<key>UIBackgroundModes</key>\n\t<array><string>remote-notification</string></array>'); return s; });
   const ent = 'ios/App/App/App.entitlements';
   fs.writeFileSync(ent, '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>aps-environment</key><string>production</string></dict></plist>\n');
