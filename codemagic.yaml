@@ -19,7 +19,7 @@ workflows:
         script: npm install
       - name: Firebase file
         script: |
-          if [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then
+          if [ ! -f GoogleService-Info.plist ] && [ -n "$GOOGLE_SERVICE_INFO_PLIST" ]; then   # (lệnh 534) the file in the repo (project an-salon-push) wins over an old variable
             case "$GOOGLE_SERVICE_INFO_PLIST" in "<"*) printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" > GoogleService-Info.plist ;; *) printf '%s' "$GOOGLE_SERVICE_INFO_PLIST" | base64 --decode > GoogleService-Info.plist ;; esac
           fi
           if [ ! -f GoogleService-Info.plist ]; then
@@ -58,7 +58,7 @@ workflows:
     scripts:
       - npm install
       - |
-        if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+        if [ ! -f google-services.json ] && [ -n "$GOOGLE_SERVICES_JSON" ]; then
           case "$GOOGLE_SERVICES_JSON" in "{"*) printf '%s' "$GOOGLE_SERVICES_JSON" > google-services.json ;; *) printf '%s' "$GOOGLE_SERVICES_JSON" | base64 --decode > google-services.json ;; esac
         fi
       - npm run add:android && npm run assets && npx cap sync android

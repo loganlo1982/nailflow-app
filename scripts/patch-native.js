@@ -34,4 +34,17 @@ if (which === 'android') {
     .replace('import com.getcapacitor.BridgeActivity;', 'import com.getcapacitor.BridgeActivity;\nimport android.os.Bundle;\nimport android.app.NotificationChannel;\nimport android.app.NotificationManager;\nimport android.os.Build;')
     .replace(/public class MainActivity extends BridgeActivity \{\s*\}/, `public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        if (Build.VERSION.SDK_INT >= 26) {\n            NotificationChannel ch = new NotificationChannel("nailflow", "NailFlow", NotificationManager.IMPORTANCE_HIGH);\n            ch.enableVibration(true);\n            getSystemService(NotificationManager.class).createNotificationChannel(ch);\n        }\n    }\n}`));
   if (fs.existsSync('google-services.json')) fs.copyFileSync('google-services.json', 'android/app/google-services.json');
+  // (lệnh 534) KHẨN: our own messaging service (rings + buzzes until tapped – FLAG_INSISTENT, full screen when locked) instead of the plugin's;
+  // tapping it opens the right screen (nf_url); the app is build 2 (the web then asks for urgent pushes)
+  const pkgDir = 'android/app/src/main/java/com/nailflow/salonmanager';
+  if (fs.existsSync(pkgDir)) fs.copyFileSync('native/android/NailFlowMessagingService.java', path.join(pkgDir, 'NailFlowMessagingService.java'));
+  edit('android/app/src/main/AndroidManifest.xml', (s) => { if (s.includes('NailFlowMessagingService')) return s;
+    if (!s.includes('xmlns:tools')) s = s.replace('<manifest ', '<manifest xmlns:tools="http://schemas.android.com/tools" ');
+    if (!s.includes('USE_FULL_SCREEN_INTENT')) s = s.replace('</manifest>', '    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />\n</manifest>');
+    return s.replace('</application>', '        <service android:name="io.capawesome.capacitorjs.plugins.firebase.messaging.MessagingService" tools:node="remove" />\n        <service android:name=".NailFlowMessagingService" android:exported="false">\n            <intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter>\n        </service>\n    </application>'); });
+  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 2').replace(/versionName "[^"]*"/, 'versionName "1.1"'));
+  if (main) edit(path.join('android/app/src/main/java', main), (s) => s.includes('nf_url') ? s : s
+    .replace('import com.getcapacitor.BridgeActivity;', 'import com.getcapacitor.BridgeActivity;\nimport android.content.Intent;')
+    .replace(/\n\}\s*$/, `\n    // (lệnh 534) a tapped YOUR TURN opens the right screen\n    private void nfOpen(Intent i) { if (i == null) return; final String u = i.getStringExtra("nf_url"); if (u == null || u.isEmpty()) return; i.removeExtra("nf_url");\n        final String js = "try{location.href=new URL(" + org.json.JSONObject.quote(u) + ",location.href).href}catch(e){}";\n        if (getBridge() != null && getBridge().getWebView() != null) getBridge().getWebView().postDelayed(() -> getBridge().getWebView().evaluateJavascript(js, null), 1200); }\n    @Override\n    protected void onNewIntent(Intent intent) { super.onNewIntent(intent); nfOpen(intent); }\n    @Override\n    public void onResume() { super.onResume(); nfOpen(getIntent()); }\n}\n`));
+
 }

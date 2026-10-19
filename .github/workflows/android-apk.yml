@@ -16,7 +16,7 @@ jobs:
       - run: npm install
       - name: Firebase file (notifications) – from the secret GOOGLE_SERVICES_JSON
         env: { GSJ: '${{ secrets.GOOGLE_SERVICES_JSON }}' }
-        run: if [ -n "$GSJ" ]; then printf '%s' "$GSJ" > google-services.json; else echo "No GOOGLE_SERVICES_JSON yet – the app works, only without notifications"; fi
+        run: if [ -f google-services.json ]; then echo "google-services.json from the repo (Firebase project an-salon-push)"; elif [ -n "$GSJ" ]; then printf '%s' "$GSJ" > google-services.json; else echo "No google-services.json – the app works, only without notifications"; fi
       - run: npm run add:android
       - run: npm run assets
       - run: npx cap sync android
