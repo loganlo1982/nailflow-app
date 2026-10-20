@@ -34,6 +34,8 @@ workflows:
             # put the Firebase file into the app bundle (Copy Bundle Resources), or FirebaseApp.configure() can't find it
             ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; unless g.files.any? { |f| f.path == "GoogleService-Info.plist" }; r = g.new_reference("GoogleService-Info.plist"); t.resources_build_phase.add_file_reference(r); p.save; puts "added GoogleService-Info.plist"; end'
           fi
+          # (lệnh 550) NailFlow's bell in the app bundle (aps.sound "nailflow_ring.wav")
+          if [ -f ios/App/App/nailflow_ring.wav ]; then ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; unless g.files.any? { |f| f.path == "nailflow_ring.wav" }; r = g.new_reference("nailflow_ring.wav"); t.resources_build_phase.add_file_reference(r); p.save; puts "added nailflow_ring.wav"; end'; fi
           npm run assets
           npx cap sync ios
       - name: Signing

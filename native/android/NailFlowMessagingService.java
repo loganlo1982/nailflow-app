@@ -33,6 +33,25 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         nm.createNotificationChannel(c);
     }
 
+    // (lệnh 550) two more channels, made when the service starts (before any notification arrives):
+    // "nailflow_quiet" = outside the salon's ring hours (shown, no sound / buzz) · "nailflow_ring" = NailFlow's own bell (res/raw/nailflow_ring)
+    static final String QUIET = "nailflow_quiet", RING = "nailflow_ring";
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        try {
+            NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (nm == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+            if (nm.getNotificationChannel(QUIET) == null) { NotificationChannel q = new NotificationChannel(QUIET, "Ngoài giờ (im lặng)", NotificationManager.IMPORTANCE_LOW);
+                q.setSound(null, null); q.enableVibration(false); nm.createNotificationChannel(q); }
+            if (nm.getNotificationChannel(RING) == null) { NotificationChannel r = new NotificationChannel(RING, "NailFlow – chuông", NotificationManager.IMPORTANCE_HIGH);
+                int id = getResources().getIdentifier("nailflow_ring", "raw", getPackageName());
+                Uri u = id != 0 ? Uri.parse("android.resource://" + getPackageName() + "/" + id) : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                r.setSound(u, new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+                r.enableVibration(true); r.setVibrationPattern(BUZZ); nm.createNotificationChannel(r); }
+        } catch (Exception e) { /* never stop the service */ }
+    }
+
     @Override
     public void onMessageReceived(@NonNull RemoteMessage m) {
         try {
