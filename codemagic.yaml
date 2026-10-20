@@ -36,6 +36,8 @@ workflows:
           fi
           # (lệnh 550) NailFlow's bell in the app bundle (aps.sound "nailflow_ring.wav")
           if [ -f ios/App/App/nailflow_ring.wav ]; then ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; unless g.files.any? { |f| f.path == "nailflow_ring.wav" }; r = g.new_reference("nailflow_ring.wav"); t.resources_build_phase.add_file_reference(r); p.save; puts "added nailflow_ring.wav"; end'; fi
+          # (lệnh 556) NailFlow's 8 own sounds in the app bundle (aps.sound "nf_<id>.caf")
+          ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; Dir.glob("ios/App/App/nf_*.caf").each { |f| n = File.basename(f); next if g.files.any? { |x| x.path == n }; r = g.new_reference(n); t.resources_build_phase.add_file_reference(r); puts "added " + n }; p.save'
           npm run assets
           npx cap sync ios
       - name: Signing

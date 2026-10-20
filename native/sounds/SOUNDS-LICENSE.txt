@@ -1,0 +1,18 @@
+NailFlow notification sounds (lệnh 556, 20/10/2026)
+
+All 8 sounds were made from scratch for NailFlow by a program (native/sounds/make-sounds.py: sine / FM tones, no recordings,
+no samples, nothing taken from Apple, Samsung, Google or any other app). Owner: American Nails and Spa / NailFlow.
+License: CC0 1.0 (public domain dedication) – https://creativecommons.org/publicdomain/zero/1.0/
+
+file (iOS .caf · Android .ogg)   what it is                       default for
+nf_alarm                         3 rising beeps ×2 (1.6 s)        YOUR TURN (tech)
+nf_rush                          fast double bell ×2 (1.8 s)      –
+nf_door                          2-note door chime (2.2 s)        booked / changed / cancelled
+nf_chime                         3-note chime up (2.0 s)          –
+nf_pop                           2 bubble pops (0.6 s)            customer text (Inbox)
+nf_knock                         2 woodblock knocks (0.7 s)       –
+nf_ping                          soft glass ping (1.4 s)          customer CONFIRM / can't come
+nf_marimba                       2 marimba notes (1.2 s)          –
+nailflow_ring.wav (lệnh 550)     made the same way (CC0)          the ring channel of app build 3
+
+Source: python3 native/sounds/make-sounds.py (numpy) → .wav → ffmpeg: .caf (pcm_s16le, iOS) · .ogg (libvorbis, Android). All ≤ 2.2 s (iOS limit 30 s).

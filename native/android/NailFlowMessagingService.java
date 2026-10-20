@@ -36,6 +36,7 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
     // (lệnh 550) two more channels, made when the service starts (before any notification arrives):
     // "nailflow_quiet" = outside the salon's ring hours (shown, no sound / buzz) · "nailflow_ring" = NailFlow's own bell (res/raw/nailflow_ring)
     static final String QUIET = "nailflow_quiet", RING = "nailflow_ring";
+    static final String[] SOUNDS = { "alarm", "rush", "door", "chime", "pop", "knock", "ping", "marimba" }; // (lệnh 556)
     @Override
     public void onCreate() {
         super.onCreate();
@@ -49,6 +50,11 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
                 Uri u = id != 0 ? Uri.parse("android.resource://" + getPackageName() + "/" + id) : RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 r.setSound(u, new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                 r.enableVibration(true); r.setVibrationPattern(BUZZ); nm.createNotificationChannel(r); }
+            // (lệnh 556) one channel per NailFlow sound ("nf_<id>", res/raw/nf_<id>.ogg) – the server picks the channel of the sound each person chose
+            for (String sn : SOUNDS) { String cid = "nf_" + sn; if (nm.getNotificationChannel(cid) != null) continue; int rid = getResources().getIdentifier("nf_" + sn, "raw", getPackageName()); if (rid == 0) continue;
+                NotificationChannel c = new NotificationChannel(cid, "NailFlow – " + sn, NotificationManager.IMPORTANCE_HIGH);
+                c.setSound(Uri.parse("android.resource://" + getPackageName() + "/" + rid), new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+                c.enableVibration(true); c.setVibrationPattern(BUZZ); nm.createNotificationChannel(c); }
         } catch (Exception e) { /* never stop the service */ }
     }
 
@@ -67,7 +73,14 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
                 i.putExtra("nf_url", d.get("url") != null ? d.get("url") : "");
                 PendingIntent pi = PendingIntent.getActivity(this, tag.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
                 Uri snd = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM); if (snd == null) snd = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                NotificationCompat.Builder b = new NotificationCompat.Builder(this, CH)
+                String chUse = CH; String sk = d.get("snd"); // (lệnh 556) the YOUR TURN sound this tech chose: its own "turn" channel (alarm usage, rings until tapped)
+                if (sk != null && sk.startsWith("nf_") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { int rid = getResources().getIdentifier(sk, "raw", getPackageName());
+                    if (rid != 0) { Uri u = Uri.parse("android.resource://" + getPackageName() + "/" + rid); String cid = "nailflow_turn_" + sk;
+                        if (nm.getNotificationChannel(cid) == null) { NotificationChannel c = new NotificationChannel(cid, "Khách / Turn – " + sk.substring(3), NotificationManager.IMPORTANCE_HIGH);
+                            c.setSound(u, new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
+                            c.enableVibration(true); c.setVibrationPattern(BUZZ); c.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); nm.createNotificationChannel(c); }
+                        chUse = cid; snd = u; } }
+                NotificationCompat.Builder b = new NotificationCompat.Builder(this, chUse)
                     .setSmallIcon(getApplicationInfo().icon)
                     .setContentTitle(d.get("title")).setContentText(d.get("body"))
                     .setStyle(new NotificationCompat.BigTextStyle().bigText(d.get("body")))

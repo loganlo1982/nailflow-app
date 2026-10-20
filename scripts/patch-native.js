@@ -16,6 +16,9 @@ if (which === 'ios') {
   edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.includes('CODE_SIGN_ENTITLEMENTS') ? s : s.replace(/(INFOPLIST_FILE = App\/Info\.plist;)/g, '$1\n\t\t\t\tCODE_SIGN_ENTITLEMENTS = App/App.entitlements;'));
   if (fs.existsSync('GoogleService-Info.plist')) fs.copyFileSync('GoogleService-Info.plist', 'ios/App/App/GoogleService-Info.plist');
   if (fs.existsSync('native/sounds/nailflow_ring.wav')) fs.copyFileSync('native/sounds/nailflow_ring.wav', 'ios/App/App/nailflow_ring.wav'); // (lệnh 550) the bell for aps.sound
+  // (lệnh 556) NailFlow's 8 own sounds (aps.sound "<id>.caf") + version 1.3 (the web then asks for them: caps "snd")
+  for (const f of fs.readdirSync('native/sounds').filter(f => /^nf_.*\.caf$/.test(f))) fs.copyFileSync('native/sounds/' + f, 'ios/App/App/' + f);
+  edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.replace(/MARKETING_VERSION = [0-9.]+;/g, 'MARKETING_VERSION = 1.3;'));
   // Firebase (notifications): start it + hand Apple's push token to it (what @capacitor-firebase/messaging asks for)
   // only when the Firebase file is there – without it FirebaseApp.configure() would crash the app at start
   if (fs.existsSync('GoogleService-Info.plist')) edit('ios/App/App/AppDelegate.swift', (s) => s.includes('FirebaseApp.configure') ? s : s
@@ -45,7 +48,9 @@ if (which === 'android') {
     return s.replace('</application>', '        <service android:name="io.capawesome.capacitorjs.plugins.firebase.messaging.MessagingService" tools:node="remove" />\n        <service android:name=".NailFlowMessagingService" android:exported="false">\n            <intent-filter><action android:name="com.google.firebase.MESSAGING_EVENT" /></intent-filter>\n        </service>\n    </application>'); });
   // (lệnh 550) NailFlow's own bell for the notification channel "nailflow_ring"; build 3 (the web then may use the quiet / ring channels)
   fs.mkdirSync('android/app/src/main/res/raw', { recursive: true }); if (fs.existsSync('native/sounds/nailflow_ring.wav')) fs.copyFileSync('native/sounds/nailflow_ring.wav', 'android/app/src/main/res/raw/nailflow_ring.wav');
-  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 3').replace(/versionName "[^"]*"/, 'versionName "1.2"'));
+  // (lệnh 556) the 8 own sounds (res/raw/nf_*.ogg → one channel each, made by NailFlowMessagingService) – build 4 / 1.3
+  for (const f of fs.readdirSync('native/sounds').filter(f => /^nf_.*\.ogg$/.test(f))) fs.copyFileSync('native/sounds/' + f, 'android/app/src/main/res/raw/' + f);
+  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 4').replace(/versionName "[^"]*"/, 'versionName "1.3"'));
   if (main) edit(path.join('android/app/src/main/java', main), (s) => s.includes('nf_url') ? s : s
     .replace('import com.getcapacitor.BridgeActivity;', 'import com.getcapacitor.BridgeActivity;\nimport android.content.Intent;')
     .replace(/\n\}\s*$/, `\n    // (lệnh 534) a tapped YOUR TURN opens the right screen\n    private void nfOpen(Intent i) { if (i == null) return; final String u = i.getStringExtra("nf_url"); if (u == null || u.isEmpty()) return; i.removeExtra("nf_url");\n        final String js = "try{location.href=new URL(" + org.json.JSONObject.quote(u) + ",location.href).href}catch(e){}";\n        if (getBridge() != null && getBridge().getWebView() != null) getBridge().getWebView().postDelayed(() -> getBridge().getWebView().evaluateJavascript(js, null), 1200); }\n    @Override\n    protected void onNewIntent(Intent intent) { super.onNewIntent(intent); nfOpen(intent); }\n    @Override\n    public void onResume() { super.onResume(); nfOpen(getIntent()); }\n}\n`));
