@@ -40,6 +40,11 @@ workflows:
           ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; Dir.glob("ios/App/App/nf_*.caf").each { |f| n = File.basename(f); next if g.files.any? { |x| x.path == n }; r = g.new_reference(n); t.resources_build_phase.add_file_reference(r); puts "added " + n }; p.save'
           npm run assets
           npx cap sync ios
+      - name: iMessage-like customer texts (lệnh 581 – Notification Service Extension)
+        # ON only when the variable NF_NSE = 1 (Codemagic → this app → Environment variables), AFTER Apple Developer has:
+        # App ID com.nailflow.salonmanager.NSE + its App Store profile, and "Communication Notifications" on com.nailflow.salonmanager. Off: the app as before.
+        script: |
+          if [ "$NF_NSE" = "1" ]; then ruby scripts/add-nse.rb; else echo "NF_NSE is not 1 – the extension is left out (notifications as before)"; fi
       - name: Signing
         script: xcode-project use-profiles
       - name: Build number
