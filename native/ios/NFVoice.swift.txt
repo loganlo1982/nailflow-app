@@ -1,0 +1,118 @@
+
+// ===== (lệnh 569) NFVoice – "🗣 Giọng đọc" on iPhone =====
+// A notification can only play a sound FILE that is already on the phone (Library/Sounds) – it cannot speak by itself.
+// So the web page (assets/native.js) asks the server which sentences this phone needs ("Nancy ơi, bạn có khách…", "American Nails, bạn có tin nhắn"…)
+// and this plugin makes each one ONCE with the iPhone's own voice (AVSpeechSynthesizer, the Vietnamese / English voice of iOS):
+// a short chime + the sentence → Library/Sounds/nfv_<id>.caf. The server then sends aps.sound "nfv_<id>.caf".
+// generate({items:[{id,text,lang}]}) → {done:[ids]} · have() → {ids:[…]} · muted() → {muted:null} (iOS has no way to read the silent switch)
+// critical() → asks for Critical Alerts (only works once Apple grants the entitlement – lệnh 569 THÊM 23:56 B)
+class NFViewController: CAPBridgeViewController {
+    override func capacitorDidLoad() { bridge?.registerPluginInstance(NFVoicePlugin()) }
+}
+
+@objc(NFVoicePlugin)
+public class NFVoicePlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "NFVoicePlugin"
+    public let jsName = "NFVoice"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "generate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "have", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "muted", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "critical", returnType: CAPPluginReturnPromise)
+    ]
+    private let synth = AVSpeechSynthesizer()
+    private var busy = false
+
+    private func soundsDir() -> URL {
+        let lib = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0].appendingPathComponent("Sounds", isDirectory: true)
+        try? FileManager.default.createDirectory(at: lib, withIntermediateDirectories: true)
+        return lib
+    }
+    private func ids() -> [String] {
+        let fs = (try? FileManager.default.contentsOfDirectory(atPath: soundsDir().path)) ?? []
+        return fs.filter { $0.hasPrefix("nfv_") && $0.hasSuffix(".caf") }.map { String($0.dropFirst(4).dropLast(4)) }
+    }
+
+    @objc func have(_ call: CAPPluginCall) { call.resolve(["ids": ids()]) }
+    @objc func muted(_ call: CAPPluginCall) { call.resolve(["muted": NSNull()]) }
+    @objc func critical(_ call: CAPPluginCall) {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge, .criticalAlert]) { ok, _ in call.resolve(["granted": ok]) }
+    }
+
+    @objc func generate(_ call: CAPPluginCall) {
+        if busy { call.resolve(["done": ids(), "busy": true]); return }
+        let raw = call.getArray("items", JSObject.self) ?? []
+        let have = Set(ids())
+        var todo: [(String, String, String)] = []
+        for it in raw {
+            guard let id = it["id"] as? String, let text = it["text"] as? String, !id.isEmpty, !text.isEmpty,
+                  id.range(of: "^[a-f0-9]{6,40}$", options: .regularExpression) != nil, !have.contains(id) else { continue }
+            todo.append((id, text, (it["lang"] as? String) ?? "en-US"))
+        }
+        if todo.isEmpty { call.resolve(["done": ids()]); return }
+        busy = true
+        next(todo, 0) { [weak self] in
+            guard let self = self else { return }
+            self.busy = false
+            call.resolve(["done": self.ids()])
+        }
+    }
+
+    private func next(_ todo: [(String, String, String)], _ i: Int, _ end: @escaping () -> Void) {
+        if i >= todo.count { DispatchQueue.main.async { end() }; return }
+        let (id, text, lang) = todo[i]
+        make(text, lang, soundsDir().appendingPathComponent("nfv_" + id + ".caf")) { [weak self] _ in self?.next(todo, i + 1, end) }
+    }
+
+    /** The chime + the sentence, written as 16-bit PCM .caf (a notification sound must be < 30 s). */
+    private func make(_ text: String, _ lang: String, _ url: URL, _ done: @escaping (Bool) -> Void) {
+        let tmp = url.deletingLastPathComponent().appendingPathComponent("tmp_" + url.lastPathComponent)
+        try? FileManager.default.removeItem(at: tmp)
+        let u = AVSpeechUtterance(string: text)
+        u.voice = AVSpeechSynthesisVoice(language: lang) ?? AVSpeechSynthesisVoice(language: "en-US")
+        u.rate = AVSpeechUtteranceDefaultSpeechRate
+        var file: AVAudioFile? = nil
+        var finished = false
+        let finish: (Bool) -> Void = { ok in
+            if finished { return }
+            finished = true
+            file = nil // closes the file
+            if ok { try? FileManager.default.removeItem(at: url); try? FileManager.default.moveItem(at: tmp, to: url) } else { try? FileManager.default.removeItem(at: tmp) }
+            done(ok)
+        }
+        synth.write(u) { [weak self] (buf: AVAudioBuffer) in
+            guard let pcm = buf as? AVAudioPCMBuffer else { return }
+            if pcm.frameLength == 0 { finish(file != nil); return }
+            do {
+                if file == nil {
+                    let settings: [String: Any] = [AVFormatIDKey: kAudioFormatLinearPCM, AVSampleRateKey: pcm.format.sampleRate,
+                                                   AVNumberOfChannelsKey: pcm.format.channelCount, AVLinearPCMBitDepthKey: 16,
+                                                   AVLinearPCMIsFloatKey: false, AVLinearPCMIsBigEndianKey: false]
+                    file = try AVAudioFile(forWriting: tmp, settings: settings, commonFormat: pcm.format.commonFormat, interleaved: pcm.format.isInterleaved)
+                    if let ch = self?.chime(pcm.format) { try file?.write(from: ch) }
+                }
+                try file?.write(from: pcm)
+            } catch { finish(false) }
+        }
+    }
+
+    /** ~0.45 s two-note chime in the speech's own format (so the file has one format). */
+    private func chime(_ f: AVAudioFormat) -> AVAudioPCMBuffer? {
+        let sr = f.sampleRate
+        let n = AVAudioFrameCount(sr * 0.45)
+        guard !f.isInterleaved || f.channelCount == 1, let b = AVAudioPCMBuffer(pcmFormat: f, frameCapacity: n) else { return nil }
+        b.frameLength = n
+        for i in 0..<Int(n) {
+            let t = Double(i) / sr
+            let second = t >= 0.18
+            let freq = second ? 1318.5 : 987.8
+            let env = exp(-(second ? t - 0.18 : t) * 9.0)
+            let v = sin(2.0 * Double.pi * freq * t) * 0.35 * env
+            for c in 0..<Int(f.channelCount) {
+                if let fd = b.floatChannelData { fd[c][i] = Float(v) }
+                else if let id = b.int16ChannelData { id[c][i] = Int16(v * 32767.0) }
+            }
+        }
+        return b
+    }
+}

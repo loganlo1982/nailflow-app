@@ -10,6 +10,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.media.AudioAttributes;
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -58,6 +65,42 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         } catch (Exception e) { /* never stop the service */ }
     }
 
+    // (lệnh 569) "🗣 Giọng đọc": the server sends a DATA message with say / sayLang / sayAlarm – this phone shows the notification itself (no sound
+    // on the channel) and READS the sentence after a short chime. sayAlarm = "1" (YOUR TURN / a new customer for a clocked-in tech): the ALARM
+    // stream, like a clock app – heard even on silent / vibrate (Do Not Disturb: when NailFlow is allowed, Me → 📖).
+    static final String VOICE = "nailflow_voice", VOICE_TURN = "nailflow_voice_turn";
+    private void voiceChannels(NotificationManager nm) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        if (nm.getNotificationChannel(VOICE) == null) { NotificationChannel c = new NotificationChannel(VOICE, "NailFlow – giọng đọc", NotificationManager.IMPORTANCE_HIGH);
+            c.setSound(null, null); c.enableVibration(true); c.setVibrationPattern(BUZZ); nm.createNotificationChannel(c); }
+        if (nm.getNotificationChannel(VOICE_TURN) == null) { NotificationChannel c = new NotificationChannel(VOICE_TURN, "Khách / Turn – giọng đọc", NotificationManager.IMPORTANCE_HIGH);
+            c.setSound(null, null); c.enableVibration(true); c.setVibrationPattern(BUZZ); c.setBypassDnd(true); c.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); nm.createNotificationChannel(c); }
+    }
+    /** The chime, then the sentence (TextToSpeech of the phone, the language asked). Waits until spoken (≤ 15 s) – the service stays alive meanwhile. */
+    private void speak(final String text, final String lang, final boolean alarm) {
+        final AudioAttributes aa = new AudioAttributes.Builder().setUsage(alarm ? AudioAttributes.USAGE_ALARM : AudioAttributes.USAGE_NOTIFICATION_EVENT)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build();
+        try { int rid = getResources().getIdentifier("nf_ping", "raw", getPackageName());
+            if (rid != 0) { MediaPlayer mp = new MediaPlayer(); mp.setAudioAttributes(aa); mp.setDataSource(this, Uri.parse("android.resource://" + getPackageName() + "/" + rid));
+                mp.prepare(); mp.start(); Thread.sleep(Math.min(900, Math.max(300, mp.getDuration()))); mp.release(); } } catch (Exception e) { /* no chime – still read */ }
+        final CountDownLatch done = new CountDownLatch(1);
+        final TextToSpeech[] t = new TextToSpeech[1];
+        try {
+            t[0] = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() { @Override public void onInit(int status) {
+                if (status != TextToSpeech.SUCCESS) { done.countDown(); return; }
+                try { t[0].setLanguage(Locale.forLanguageTag(lang != null && !lang.isEmpty() ? lang : "en-US")); t[0].setAudioAttributes(aa);
+                    t[0].setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                        @Override public void onStart(String id) {}
+                        @Override public void onDone(String id) { done.countDown(); }
+                        @Override public void onError(String id) { done.countDown(); } });
+                    Bundle b = new Bundle(); b.putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, 1f);
+                    if (t[0].speak(text, TextToSpeech.QUEUE_FLUSH, b, "nf569") != TextToSpeech.SUCCESS) done.countDown();
+                } catch (Exception e) { done.countDown(); } } });
+            done.await(15, TimeUnit.SECONDS);
+        } catch (Exception e) { /* never stop the service */ }
+        try { if (t[0] != null) t[0].shutdown(); } catch (Exception e) {}
+    }
+
     @Override
     public void onMessageReceived(@NonNull RemoteMessage m) {
         try {
@@ -80,6 +123,8 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
                             c.setSound(u, new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                             c.enableVibration(true); c.setVibrationPattern(BUZZ); c.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); nm.createNotificationChannel(c); }
                         chUse = cid; snd = u; } }
+                final String say = d.get("say"); // (lệnh 569) YOUR TURN read out: the notification buzzes (no ring – the voice is the sound)
+                if (say != null && !say.isEmpty()) { voiceChannels(nm); chUse = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? VOICE_TURN : CH; snd = null; }
                 NotificationCompat.Builder b = new NotificationCompat.Builder(this, chUse)
                     .setSmallIcon(getApplicationInfo().icon)
                     .setContentTitle(d.get("title")).setContentText(d.get("body"))
@@ -91,6 +136,22 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
                 Notification n = b.build();
                 n.flags |= Notification.FLAG_INSISTENT;
                 nm.notify(tag, ID, n);
+                if (say != null && !say.isEmpty()) speak(say, d.get("sayLang"), !"0".equals(d.get("sayAlarm")));
+            } else if (nm != null && d.get("say") != null && !d.get("say").isEmpty() && m.getNotification() == null) { // (lệnh 569) any other read-out notification
+                voiceChannels(nm);
+                String tag = d.get("tag") != null && !d.get("tag").isEmpty() ? d.get("tag") : "v" + System.currentTimeMillis();
+                Intent i = new Intent(this, MainActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                i.putExtra("nf_url", d.get("url") != null ? d.get("url") : "");
+                PendingIntent pi = PendingIntent.getActivity(this, tag.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                NotificationCompat.Builder b = new NotificationCompat.Builder(this, VOICE)
+                    .setSmallIcon(getApplicationInfo().icon)
+                    .setContentTitle(d.get("title")).setContentText(d.get("body"))
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(d.get("body")))
+                    .setPriority(NotificationCompat.PRIORITY_MAX).setVisibility(NotificationCompat.VISIBILITY_PUBLIC).setAutoCancel(true)
+                    .setVibrate(BUZZ).setSound(null).setContentIntent(pi);
+                nm.notify(tag, 569, b.build());
+                speak(d.get("say"), d.get("sayLang"), "1".equals(d.get("sayAlarm")));
             }
         } catch (Exception e) { /* never stop the plugin */ }
         super.onMessageReceived(m);
