@@ -10,6 +10,8 @@ if (which === 'ios') {
   const add = { CFBundleDisplayName: NAME, NSCameraUsageDescription: 'NailFlow uses the camera to scan gift cards and QR codes.', NSFaceIDUsageDescription: 'NailFlow uses Face ID to open the app safely.' };
   edit(plist, (s) => { for (const [k, v] of Object.entries(add)) { if (s.includes(`<key>${k}</key>`)) s = s.replace(new RegExp(`<key>${k}</key>\\s*<string>[^<]*</string>`), `<key>${k}</key>\n\t<string>${v}</string>`); else s = s.replace('<dict>', `<dict>\n\t<key>${k}</key>\n\t<string>${v}</string>`); }
     if (!s.includes('ITSAppUsesNonExemptEncryption')) s = s.replace('<dict>', '<dict>\n\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>');
+    // (lệnh 576) nailflow://open?u=<manager link> – "📱 Open in app" on a manager page in Safari opens it in the app (native.js → /app/?mlink=, checked by the server)
+    if (!s.includes('CFBundleURLSchemes')) s = s.replace('<dict>', '<dict>\n\t<key>CFBundleURLTypes</key>\n\t<array><dict><key>CFBundleURLName</key><string>com.nailflow.salonmanager</string><key>CFBundleURLSchemes</key><array><string>nailflow</string></array></dict></array>');
     if (!s.includes('UIBackgroundModes')) s = s.replace('<dict>', '<dict>\n\t<key>UIBackgroundModes</key>\n\t<array><string>remote-notification</string></array>'); return s; });
   const ent = 'ios/App/App/App.entitlements';
   fs.writeFileSync(ent, '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>aps-environment</key><string>production</string></dict></plist>\n');
@@ -46,6 +48,8 @@ if (which === 'android') {
   // tapping it opens the right screen (nf_url); the app is build 2 (the web then asks for urgent pushes)
   const pkgDir = 'android/app/src/main/java/com/nailflow/salonmanager';
   if (fs.existsSync(pkgDir)) { fs.copyFileSync('native/android/NailFlowMessagingService.java', path.join(pkgDir, 'NailFlowMessagingService.java')); fs.copyFileSync('native/android/NFVoicePlugin.java', path.join(pkgDir, 'NFVoicePlugin.java')); } // (lệnh 569) + the NFVoice plugin
+  // (lệnh 576) nailflow://open?u=<manager link> → the app (Capacitor App plugin "appUrlOpen"; native.js sends it to /app/?mlink=)
+  edit('android/app/src/main/AndroidManifest.xml', (s) => s.includes('android:scheme="nailflow"') ? s : s.replace(/(<activity[^>]*\.MainActivity"[\s\S]*?)(\n\s*<\/activity>)/, '$1\n            <intent-filter>\n                <action android:name="android.intent.action.VIEW" />\n                <category android:name="android.intent.category.DEFAULT" />\n                <category android:name="android.intent.category.BROWSABLE" />\n                <data android:scheme="nailflow" />\n            </intent-filter>$2'));
   edit('android/app/src/main/AndroidManifest.xml', (s) => { if (s.includes('NailFlowMessagingService')) return s;
     if (!s.includes('xmlns:tools')) s = s.replace('<manifest ', '<manifest xmlns:tools="http://schemas.android.com/tools" ');
     if (!s.includes('USE_FULL_SCREEN_INTENT')) s = s.replace('</manifest>', '    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />\n</manifest>');
@@ -59,7 +63,7 @@ if (which === 'android') {
   // The app now asks for firebase-messaging itself (same version as the plugin, 24.1.0 unless the project sets one) + androidx.core (NotificationCompat).
   edit('android/app/build.gradle', (s) => s.includes('com.google.firebase:firebase-messaging') ? s : s.replace(/(implementation project\(':capacitor-android'\))/,
     "$1\n    implementation \"com.google.firebase:firebase-messaging:${rootProject.ext.has('firebaseMessagingVersion') ? rootProject.ext.firebaseMessagingVersion : '24.1.0'}\" // (lệnh 571) NailFlowMessagingService\n    implementation \"androidx.core:core:${rootProject.ext.has('androidxCoreVersion') ? rootProject.ext.androidxCoreVersion : '1.15.0'}\" // (lệnh 571) NotificationCompat"));
-  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 5').replace(/versionName "[^"]*"/, 'versionName "1.4"') /* (lệnh 569) build 5 / 1.4: voice */);
+  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 6').replace(/versionName "[^"]*"/, 'versionName "1.4"') /* (lệnh 569) 1.4: voice · (lệnh 576) build 6: nailflow:// link */);
   // (lệnh 534) tap → the right screen: now in native/android/MainActivity.java (copied above)
 
 }
