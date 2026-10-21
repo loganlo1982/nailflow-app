@@ -50,6 +50,11 @@ if (which === 'android') {
   fs.mkdirSync('android/app/src/main/res/raw', { recursive: true }); if (fs.existsSync('native/sounds/nailflow_ring.wav')) fs.copyFileSync('native/sounds/nailflow_ring.wav', 'android/app/src/main/res/raw/nailflow_ring.wav');
   // (lệnh 556) the 8 own sounds (res/raw/nf_*.ogg → one channel each, made by NailFlowMessagingService) – build 4 / 1.3
   for (const f of fs.readdirSync('native/sounds').filter(f => /^nf_.*\.ogg$/.test(f))) fs.copyFileSync('native/sounds/' + f, 'android/app/src/main/res/raw/' + f);
+  // (lệnh 571) NailFlowMessagingService extends the plugin's service, which extends Firebase's FirebaseMessagingService and uses RemoteMessage –
+  // the plugin adds firebase-messaging as "implementation" (not "api"), so the APP did not see it: "cannot find symbol" (RemoteMessage, getResources…).
+  // The app now asks for firebase-messaging itself (same version as the plugin, 24.1.0 unless the project sets one) + androidx.core (NotificationCompat).
+  edit('android/app/build.gradle', (s) => s.includes('com.google.firebase:firebase-messaging') ? s : s.replace(/(implementation project\(':capacitor-android'\))/,
+    "$1\n    implementation \"com.google.firebase:firebase-messaging:${rootProject.ext.has('firebaseMessagingVersion') ? rootProject.ext.firebaseMessagingVersion : '24.1.0'}\" // (lệnh 571) NailFlowMessagingService\n    implementation \"androidx.core:core:${rootProject.ext.has('androidxCoreVersion') ? rootProject.ext.androidxCoreVersion : '1.15.0'}\" // (lệnh 571) NotificationCompat"));
   edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 4').replace(/versionName "[^"]*"/, 'versionName "1.3"'));
   if (main) edit(path.join('android/app/src/main/java', main), (s) => s.includes('nf_url') ? s : s
     .replace('import com.getcapacitor.BridgeActivity;', 'import com.getcapacitor.BridgeActivity;\nimport android.content.Intent;')
