@@ -43,7 +43,8 @@ workflows:
       - name: Signing
         script: xcode-project use-profiles
       - name: Build number
-        script: cd ios/App && agvtool new-version -all $((BUILD_NUMBER + 1))
+        # (lệnh 557, 20/10) always higher than any build already on TestFlight: the date + time (yymmddHHMM, e.g. 2610202345)
+        script: cd ios/App && agvtool new-version -all $(TZ=America/Chicago date +%y%m%d%H%M)
       - name: Build
         script: xcode-project build-ipa --workspace ios/App/App.xcworkspace --scheme App
     artifacts:
