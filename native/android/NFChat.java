@@ -50,7 +50,8 @@ public class NFChat {
         String thread = d.get("thread"); if (thread == null || thread.isEmpty()) thread = "chat";
         String name = d.get("sender"); if (name == null || name.isEmpty()) name = d.get("title"); if (name == null || name.isEmpty()) name = "Khách";
         String tag = "chat:" + thread;
-        String ch = "1".equals(d.get("quiet")) ? "nailflow_quiet" : d.get("ch");
+        String say = d.get("say"), snd = d.get("snd");
+        String ch = "1".equals(d.get("quiet")) ? "nailflow_quiet" : (say != null && !say.isEmpty() ? "nailflow_voice" : (snd != null && snd.startsWith("nf_") ? snd : d.get("ch"))); // read out: the silent voice channel (the service speaks) · the sound this person chose
         if (ch == null || ch.isEmpty()) ch = "nailflow";
         if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(ch) == null) {
             ch = "nailflow";
@@ -77,6 +78,7 @@ public class NFChat {
             .setGroup(GROUP).setAutoCancel(true).setOnlyAlertOnce(false)
             .setContentIntent(pi);
         Notification n = b.build();
+        if ("1".equals(d.get("urgent"))) n.flags |= Notification.FLAG_INSISTENT; // (lệnh 550) the owner's "ring until opened" stays
         nm.notify(tag, ID, n);
         return true;
     }

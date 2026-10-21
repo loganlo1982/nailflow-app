@@ -106,7 +106,9 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         try {
             Map<String, String> d = m.getData();
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            if (nm != null && m.getNotification() == null && NFChat.show(this, nm, d)) { super.onMessageReceived(m); return; } // (lệnh 581) a customer's text: Messages-style
+            if (nm != null && m.getNotification() == null && "1".equals(d.get("chat"))) { // (lệnh 581) a customer's text: Messages-style (still rings / reads out when set)
+                String say = d.get("say"); boolean hasSay = say != null && !say.isEmpty(); if (hasSay) voiceChannels(nm);
+                if (NFChat.show(this, nm, d)) { if (hasSay) speak(say, d.get("sayLang"), "1".equals(d.get("sayAlarm"))); super.onMessageReceived(m); return; } }
             String cancel = d.get("cancel");
             if (nm != null && cancel != null && !cancel.isEmpty()) { NFStop.markCancelled(this, cancel); nm.cancel(cancel, ID); nm.cancel(cancel, 569); return; } // (lệnh 583) + remembered, the voice stops
             if ("1".equals(d.get("urgent")) && m.getNotification() == null && (NFStop.stale(d) || NFStop.wasCancelled(this, d.get("tag")))) return; // (lệnh 583) an OLD YOUR TURN (after Accept / late): never rings
