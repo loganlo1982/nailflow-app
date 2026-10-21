@@ -86,7 +86,7 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         final CountDownLatch done = new CountDownLatch(1);
         final TextToSpeech[] t = new TextToSpeech[1];
         try {
-            t[0] = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() { @Override public void onInit(int status) {
+            t[0] = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() { @Override public void onInit(int status) { NFStop.setTts(t[0]); // (lệnh 583) a cancel can stop it
                 if (status != TextToSpeech.SUCCESS) { done.countDown(); return; }
                 try { t[0].setLanguage(Locale.forLanguageTag(lang != null && !lang.isEmpty() ? lang : "en-US")); t[0].setAudioAttributes(aa);
                     t[0].setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -106,8 +106,10 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         try {
             Map<String, String> d = m.getData();
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            if (nm != null && m.getNotification() == null && NFChat.show(this, nm, d)) { super.onMessageReceived(m); return; } // (lệnh 581) a customer's text: Messages-style
             String cancel = d.get("cancel");
-            if (nm != null && cancel != null && !cancel.isEmpty()) { nm.cancel(cancel, ID); return; }
+            if (nm != null && cancel != null && !cancel.isEmpty()) { NFStop.markCancelled(this, cancel); nm.cancel(cancel, ID); nm.cancel(cancel, 569); return; } // (lệnh 583) + remembered, the voice stops
+            if ("1".equals(d.get("urgent")) && m.getNotification() == null && (NFStop.stale(d) || NFStop.wasCancelled(this, d.get("tag")))) return; // (lệnh 583) an OLD YOUR TURN (after Accept / late): never rings
             if (nm != null && "1".equals(d.get("urgent")) && m.getNotification() == null) {
                 channel(nm);
                 String tag = d.get("tag") != null ? d.get("tag") : "turn";
