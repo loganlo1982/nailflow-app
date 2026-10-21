@@ -16,3 +16,10 @@ nf_marimba                       2 marimba notes (1.2 s)          –
 nailflow_ring.wav (lệnh 550)     made the same way (CC0)          the ring channel of app build 3
 
 Source: python3 native/sounds/make-sounds.py (numpy) → .wav → ffmpeg: .caf (pcm_s16le, iOS) · .ogg (libvorbis, Android). All ≤ 2.2 s (iOS limit 30 s).
+
+(lệnh 569, 21/10/2026) GIỌNG ĐỌC / VOICE
+- No recorded or third-party voice files are shipped. The sentences ("Nancy ơi, bạn có khách…") are spoken by the phone's OWN system voice:
+  · iPhone: AVSpeechSynthesizer (Apple's built-in voices, part of iOS, licensed to apps for speech output on the device) – the app writes the
+    spoken sentence + a chime it synthesizes itself (two sine tones, made in code, no source file) to Library/Sounds/nfv_<id>.caf on that phone only.
+  · Android: android.speech.tts.TextToSpeech (the phone's installed TTS engine, e.g. Google Speech Services), spoken live, nothing stored.
+- Chime before the sentence on Android: nf_ping.ogg (made by NailFlow, CC0 – see above).
