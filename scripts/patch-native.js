@@ -63,7 +63,7 @@ if (which === 'android') {
   // The app now asks for firebase-messaging itself (same version as the plugin, 24.1.0 unless the project sets one) + androidx.core (NotificationCompat).
   edit('android/app/build.gradle', (s) => s.includes('com.google.firebase:firebase-messaging') ? s : s.replace(/(implementation project\(':capacitor-android'\))/,
     "$1\n    implementation \"com.google.firebase:firebase-messaging:${rootProject.ext.has('firebaseMessagingVersion') ? rootProject.ext.firebaseMessagingVersion : '24.1.0'}\" // (lệnh 571) NailFlowMessagingService\n    implementation \"androidx.core:core:${rootProject.ext.has('androidxCoreVersion') ? rootProject.ext.androidxCoreVersion : '1.15.0'}\" // (lệnh 571) NotificationCompat"));
-  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 7').replace(/versionName "[^"]*"/, 'versionName "1.5"') /* (lệnh 569) 1.4: voice · (lệnh 576) build 6: nailflow:// link */);
+  edit('android/app/build.gradle', (s) => s.replace(/versionCode \d+/, 'versionCode 8').replace(/versionName "[^"]*"/, 'versionName "1.5"') /* (lệnh 569) 1.4: voice · (lệnh 576) build 6: nailflow:// link · (lệnh 589) build 8: nailflow_silent */);
   // (lệnh 534) tap → the right screen: now in native/android/MainActivity.java (copied above)
 
 }

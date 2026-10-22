@@ -51,7 +51,7 @@ public class NFChat {
         String name = d.get("sender"); if (name == null || name.isEmpty()) name = d.get("title"); if (name == null || name.isEmpty()) name = "Khách";
         String tag = "chat:" + thread;
         String say = d.get("say"), snd = d.get("snd");
-        String ch = "1".equals(d.get("quiet")) ? "nailflow_quiet" : (say != null && !say.isEmpty() ? "nailflow_voice" : (snd != null && snd.startsWith("nf_") ? snd : d.get("ch"))); // read out: the silent voice channel (the service speaks) · the sound this person chose
+        String ch = "1".equals(d.get("quiet")) ? (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel("nailflow_silent") != null ? "nailflow_silent" : "nailflow_quiet") /* (lệnh 589) shown, no sound */ : (say != null && !say.isEmpty() ? "nailflow_voice" : (snd != null && snd.startsWith("nf_") ? snd : d.get("ch"))); // read out: the silent voice channel (the service speaks) · the sound this person chose
         if (ch == null || ch.isEmpty()) ch = "nailflow";
         if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(ch) == null) {
             ch = "nailflow";
@@ -74,7 +74,7 @@ public class NFChat {
             .setSmallIcon(ctx.getApplicationInfo().icon)
             .setStyle(st)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-            .setPriority("1".equals(d.get("quiet")) ? NotificationCompat.PRIORITY_LOW : NotificationCompat.PRIORITY_HIGH)
+            .setPriority("1".equals(d.get("quiet")) ? NotificationCompat.PRIORITY_DEFAULT : NotificationCompat.PRIORITY_HIGH).setSilent("1".equals(d.get("quiet"))) // (lệnh 589)
             .setGroup(GROUP).setAutoCancel(true).setOnlyAlertOnce(false)
             .setContentIntent(pi);
         Notification n = b.build();

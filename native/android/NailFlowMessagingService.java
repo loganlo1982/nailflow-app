@@ -42,7 +42,7 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
 
     // (lệnh 550) two more channels, made when the service starts (before any notification arrives):
     // "nailflow_quiet" = outside the salon's ring hours (shown, no sound / buzz) · "nailflow_ring" = NailFlow's own bell (res/raw/nailflow_ring)
-    static final String QUIET = "nailflow_quiet", RING = "nailflow_ring";
+    static final String QUIET = "nailflow_quiet", RING = "nailflow_ring", SILENT = "nailflow_silent"; // (lệnh 589) nailflow_silent = IMPORTANCE_DEFAULT, no sound (nailflow_quiet LOW stayed hidden in the shade)
     static final String[] SOUNDS = { "alarm", "rush", "door", "chime", "pop", "knock", "ping", "marimba" }; // (lệnh 556)
     @Override
     public void onCreate() {
@@ -50,6 +50,8 @@ public class NailFlowMessagingService extends io.capawesome.capacitorjs.plugins.
         try {
             NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             if (nm == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+            if (nm.getNotificationChannel(SILENT) == null) { NotificationChannel q = new NotificationChannel(SILENT, "Ngoài giờ (hiện, không kêu)", NotificationManager.IMPORTANCE_DEFAULT); // (lệnh 589) outside ring hours: shown (status bar + lock screen), no sound / buzz
+                q.setSound(null, null); q.enableVibration(false); q.setVibrationPattern(null); q.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); nm.createNotificationChannel(q); }
             if (nm.getNotificationChannel(QUIET) == null) { NotificationChannel q = new NotificationChannel(QUIET, "Ngoài giờ (im lặng)", NotificationManager.IMPORTANCE_LOW);
                 q.setSound(null, null); q.enableVibration(false); nm.createNotificationChannel(q); }
             if (nm.getNotificationChannel(RING) == null) { NotificationChannel r = new NotificationChannel(RING, "NailFlow – chuông", NotificationManager.IMPORTANCE_HIGH);
