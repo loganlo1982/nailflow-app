@@ -10,7 +10,7 @@
   "ios": { "contentInset": "never", "limitsNavigationsToAppBoundDomains": false, "backgroundColor": "#0F1420" },
   "android": { "backgroundColor": "#0F1420", "allowMixedContent": false },
   "plugins": {
-    "SplashScreen": { "launchShowDuration": 1200, "launchAutoHide": true, "backgroundColor": "#0F1420", "showSpinner": false },
+    "SplashScreen": { "launchShowDuration": 1200, "launchAutoHide": true, "backgroundColor": "#061C6E", "showSpinner": false },
     "FirebaseMessaging": { "presentationOptions": ["badge", "sound", "alert"] }
   }
 }
