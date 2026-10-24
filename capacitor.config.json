@@ -4,7 +4,7 @@
   "webDir": "www",
   "server": {
     "url": "https://american-nails-and-spa.com/app/",
-    "allowNavigation": ["american-nails-and-spa.com", "*.american-nails-and-spa.com"],
+    "allowNavigation": ["american-nails-and-spa.com", "*.american-nails-and-spa.com", "nailflowapp.com", "*.nailflowapp.com"],
     "errorPath": "offline.html"
   },
   "ios": { "contentInset": "never", "limitsNavigationsToAppBoundDomains": false, "backgroundColor": "#0F1420" },
