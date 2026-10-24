@@ -7,7 +7,7 @@ if (which === 'ios') {
   edit('ios/App/Podfile', (s) => s.replace(/platform :ios, '[0-9.]+'/, "platform :ios, '15.5'"));
   edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.replace(/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/g, 'IPHONEOS_DEPLOYMENT_TARGET = 15.5;'));
   const plist = 'ios/App/App/Info.plist';
-  const add = { CFBundleDisplayName: NAME, NSCameraUsageDescription: 'NailFlow uses the camera to scan gift cards and QR codes.', NSFaceIDUsageDescription: 'NailFlow uses Face ID to open the app safely.' };
+  const add = { CFBundleDisplayName: NAME, NSCameraUsageDescription: 'NailFlow uses the camera to scan gift cards and QR codes.', NSFaceIDUsageDescription: 'NailFlow uses Face ID to open the app safely.', NSMicrophoneUsageDescription: 'NailFlow uses the microphone only when you start a call between the front desk and a tech (Talk). Calls are not recorded.', NSPhotoLibraryUsageDescription: 'NailFlow lets you choose a photo for a tech profile or the salon gallery.' };
   edit(plist, (s) => { for (const [k, v] of Object.entries(add)) { if (s.includes(`<key>${k}</key>`)) s = s.replace(new RegExp(`<key>${k}</key>\\s*<string>[^<]*</string>`), `<key>${k}</key>\n\t<string>${v}</string>`); else s = s.replace('<dict>', `<dict>\n\t<key>${k}</key>\n\t<string>${v}</string>`); }
     if (!s.includes('ITSAppUsesNonExemptEncryption')) s = s.replace('<dict>', '<dict>\n\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>');
     if (!s.includes('UIBackgroundModes')) s = s.replace('<dict>', '<dict>\n\t<key>UIBackgroundModes</key>\n\t<array><string>remote-notification</string></array>'); return s; });
