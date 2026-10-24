@@ -6,7 +6,7 @@
   "scripts": {
     "add:android": "npx cap add android && node scripts/patch-native.js android",
     "add:ios": "npx cap add ios && node scripts/patch-native.js ios",
-    "assets": "npx capacitor-assets generate --assetPath resources --iconBackgroundColor '#1E3A8A' --splashBackgroundColor '#0F1420' --splashBackgroundColorDark '#0F1420'",
+    "assets": "npx capacitor-assets generate --assetPath resources --iconBackgroundColor '#021B76' --splashBackgroundColor '#021B76' --splashBackgroundColorDark '#021B76'",
     "sync": "npx cap sync"
   },
   "dependencies": {

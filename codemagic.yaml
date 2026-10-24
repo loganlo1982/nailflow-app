@@ -39,6 +39,11 @@ workflows:
           # (lệnh 556) NailFlow's 8 own sounds in the app bundle (aps.sound "nf_<id>.caf")
           ruby -e 'require "xcodeproj"; p = Xcodeproj::Project.open("ios/App/App.xcodeproj"); t = p.targets.find { |x| x.name == "App" }; g = p.main_group["App"]; Dir.glob("ios/App/App/nf_*.caf").each { |f| n = File.basename(f); next if g.files.any? { |x| x.path == n }; r = g.new_reference(n); t.resources_build_phase.add_file_reference(r); puts "added " + n }; p.save'
           npm run assets
+          # (23/10) App icon = Logan's exact NailFlowApp logo: one 1024×1024 PNG (no alpha, square – iOS rounds it), single-size AppIcon set
+          S=ios/App/App/Assets.xcassets/AppIcon.appiconset
+          rm -f $S/*.png && cp resources/ios/AppIcon-1024.png $S/AppIcon-512@2x.png
+          printf '{\n  "images" : [\n    {\n      "filename" : "AppIcon-512@2x.png",\n      "idiom" : "universal",\n      "platform" : "ios",\n      "size" : "1024x1024"\n    }\n  ],\n  "info" : {\n    "author" : "xcode",\n    "version" : 1\n  }\n}\n' > $S/Contents.json
+          grep -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;' ios/App/App.xcodeproj/project.pbxproj && echo "AppIcon set ready" || { echo "AppIcon name not set in the Xcode project"; exit 1; }
           npx cap sync ios
       - name: Signing
         script: xcode-project use-profiles
