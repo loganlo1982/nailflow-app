@@ -11,6 +11,6 @@
   "android": { "backgroundColor": "#0F1420", "allowMixedContent": false },
   "plugins": {
     "SplashScreen": { "launchShowDuration": 1200, "launchAutoHide": true, "backgroundColor": "#021B76", "showSpinner": false },
-    "FirebaseMessaging": { "presentationOptions": ["badge"] }
+    "FirebaseMessaging": { "presentationOptions": ["badge", "sound", "alert"] }
   }
 }
