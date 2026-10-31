@@ -18,7 +18,15 @@ if (which === 'ios') {
   if (fs.existsSync('native/sounds/nailflow_ring.wav')) fs.copyFileSync('native/sounds/nailflow_ring.wav', 'ios/App/App/nailflow_ring.wav'); // (lệnh 550) the bell for aps.sound
   // (lệnh 556) NailFlow's 8 own sounds (aps.sound "<id>.caf") + version 1.3 (the web then asks for them: caps "snd")
   for (const f of fs.readdirSync('native/sounds').filter(f => /^nf_.*\.caf$/.test(f))) fs.copyFileSync('native/sounds/' + f, 'ios/App/App/' + f);
-  edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.replace(/MARKETING_VERSION = [0-9.]+;/g, 'MARKETING_VERSION = 1.4;'));
+  edit('ios/App/App.xcodeproj/project.pbxproj', (s) => s.replace(/MARKETING_VERSION = [0-9.]+;/g, 'MARKETING_VERSION = 1.4.1;'));
+  // (1.4.1) ROOT CAUSE of "app notifications show but never ring" (iPhone Settings → Notifications → NailFlow has no "Sounds" row):
+  // the web sets the red number on open (native.js badge() → Badge.set/clear) BEFORE the owner turns notifications on, and
+  // @capawesome/capacitor-badge asks iOS with options .badge ONLY → that first answer is the app's permission; FirebaseMessaging then
+  // sees "granted" (checkPermissions) and never asks again, so .sound/.alert are never requested. Fix: the badge plugin asks for
+  // badge + sound + alert, so whichever plugin asks first, the iPhone gets sound. (Already-installed apps: delete + reinstall once.)
+  const bsw = 'node_modules/@capawesome/capacitor-badge/ios/Plugin/Badge.swift';
+  if (fs.existsSync(bsw)) edit(bsw, (s) => s.replace('requestAuthorization(options: .badge)', 'requestAuthorization(options: [.badge, .sound, .alert])'));
+  if (fs.existsSync(bsw) && !fs.readFileSync(bsw, 'utf8').includes('[.badge, .sound, .alert]')) { console.error('Badge.swift: permission line not found'); process.exit(1); }
   // Firebase (notifications): start it + hand Apple's push token to it (what @capacitor-firebase/messaging asks for)
   // only when the Firebase file is there – without it FirebaseApp.configure() would crash the app at start
   if (fs.existsSync('GoogleService-Info.plist')) edit('ios/App/App/AppDelegate.swift', (s) => s.includes('FirebaseApp.configure') ? s : s
