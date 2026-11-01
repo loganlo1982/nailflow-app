@@ -6,7 +6,7 @@ f = R + '/inc/calls-agent.php'; t = open(f, encoding='utf-8').read()
 print('sha', hashlib.sha256(t.encode()).hexdigest()[:8])
 a_old = 'never repeat the summary.'
 a_new = 'never repeat the summary. After your goodbye, call end_call.'
-m = re.search(r'# Open with \(the salon greeting and \\"this call may be recorded\\" were ALREADY played - NEVER repeat them\)\\n\\"Sorry we missed you .{1,3} how can I help\?\\"\\n', t)
+m = re.search(r'# Open with \(the salon greeting and \\"this call may be recorded\\" were ALREADY played .{1,3} NEVER repeat them\)\\n\\"Sorry we missed you .{1,3} how can I help\?\\"\\n', t)
 print('a', t.count(a_old), 'b', 1 if m else 0, 'already', 'call end_call.' in t)
 if t.count(a_old) != 1 or not m: sys.exit('ANCHOR FAIL')
 n = t.replace(a_old, a_new)
