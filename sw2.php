@@ -2,7 +2,7 @@
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') exit;
 $A = $argv[1];
-require '/home/uyurpyzubx0m/app/sites/an/current/inc/core.php'; require_once '/home/uyurpyzubx0m/app/sites/an/current/inc/calls.php';
+require '/home/uyurpyzubx0m/app/sites/an/current/inc/core.php'; require_once '/home/uyurpyzubx0m/app/sites/an/current/inc/calls.php'; foreach (['calls-job', 'calls-ivr', 'replies'] as $x) require_once '/home/uyurpyzubx0m/app/sites/an/current/inc/' . $x . '.php';
 $src = (string)file_get_contents($A . '/inc/calls-agent.php'); $src = preg_replace('/^<\?php\s*/', '', $src); $src = preg_replace('/^declare\(strict_types=1\);/m', '', $src);
 $src = str_replace("__DIR__ . '/", "'/home/uyurpyzubx0m/app/sites/an/current/inc/", $src);
 $src = str_replace("q(\"INSERT INTO calls", "(fn() => null)(\"INSERT INTO calls", $src); // never write a test row
