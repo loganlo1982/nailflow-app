@@ -7,8 +7,8 @@
 import sys, os, shutil, time, subprocess, hashlib
 R = sys.argv[1].rstrip('/'); go = 'go' in sys.argv[2:]
 fs = [R + '/inc/calls-agent.php']
-A = "['cond' => [['when' => '/' . $re . '/i.test(prompt_value) || (prompt_value || \"\").split(\" \").length >= 10', 'then' => [['hangup' => (object)[]]]]]],\n['request' => ['url' => cl_agent_url('talked', '&sid=' . rawurlencode((string)($_GET['sid'] ?? ''))), 'method' => 'POST']]]]];"
-B = "['cond' => [['when' => '/' . $re . '/i.test(prompt_value) || (prompt_value || \"\").split(\" \").length >= 10', 'then' => [['hangup' => (object)[]]]]]]]]]; /* (CHAT 01/11 606v) NO `request` here - connect confirm allows only cond/switch/set/unset/hangup/play/prompt/record/... (SignalWire docs); a request broke the screening -> the iPhone voicemail was bridged (AN #70) */"
+A = "        ['request' => ['url' => cl_agent_url('talked', '&sid=' . rawurlencode((string)($_GET['sid'] ?? ''))), 'method' => 'POST']]]]];"
+B = "        ]]]; /* (CHAT 01/11 606v) NO `request` here - connect confirm allows only cond/switch/set/unset/hangup/play/prompt/record/... (SignalWire docs); a request broke the screening -> the iPhone voicemail was bridged (AN #70) */"
 for f in fs:
     t = open(f, encoding='utf-8').read(); print(f, hashlib.sha256(t.encode()).hexdigest()[:8], 'anchor', t.count(A))
     if t.count(A) != 1: sys.exit('ANCHOR FAIL')
