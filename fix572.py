@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# (CHAT rebase 31/10 21:00: replies.php anchor starts at ($via - 592 made it elseif)
 # LAMWEB 2.99.572 (CHAT -> LAMWEB: bo dong 'Da tu huy hen' + 1 thong bao huy, anh Logan 23:12 / 00:39):
 # a customer texts CANCEL -> ONE notification to the owner, AT ONCE: "<salon> - <customer> cancelled Sat 10/31 12:00 PM (text)"; no 2nd 'message' push for that text;
 # the red line "X Da tu huy hen ... - Undo" no longer in the conversation (Messages, every salon). The calendar cancels as before; Undo stays on the appointment.
@@ -23,8 +24,8 @@ P = [
   "        if (!empty($r['mid'])) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); }",
   "        if (!empty($r['mid']) && !in_array((string)($r['result'] ?? ''), ['cancelled', 'cancelled-late', 'many', 'resched', 'off', 'started'], true)) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); } /* (2.99." + TAG + ") a CANCEL text: only its own cancel notice (1 push), no 2nd 'message' push */"),
  ('inc/replies.php',
-  "    if ($via !== '') { $t = '" + X + " ' . $who . ' hu\u1ef7 h\u1eb9n ' . rp_when($a) . ($via === 'web' ? ' (qua web)' : ' (qua tin nh\u1eafn)') . ($late ? ' \u2013 HU\u1ef6 S\u00c1T GI\u1edc' : '');",
-  "    if ($via !== '') { $t = $via === 'web' ? '" + X + " ' . $who . ' hu\u1ef7 h\u1eb9n ' . rp_when($a) . ' (qua web)' . ($late ? ' \u2013 HU\u1ef6 S\u00c1T GI\u1edc' : '') : '" + X + " ' . $who . ' cancelled ' . rp_when($a) . ($late ? ' \u2013 late cancel' : ''); // (2.99." + TAG + ") texted cancel: '<customer> cancelled Sat 10/31 12:00 PM'"),
+  "($via !== '') { $t = '" + X + " ' . $who . ' hu\u1ef7 h\u1eb9n ' . rp_when($a) . ($via === 'web' ? ' (qua web)' : ' (qua tin nh\u1eafn)') . ($late ? ' \u2013 HU\u1ef6 S\u00c1T GI\u1edc' : '');",
+  "($via !== '') { $t = $via === 'web' ? '" + X + " ' . $who . ' hu\u1ef7 h\u1eb9n ' . rp_when($a) . ' (qua web)' . ($late ? ' \u2013 HU\u1ef6 S\u00c1T GI\u1edc' : '') : '" + X + " ' . $who . ' cancelled ' . rp_when($a) . ($late ? ' \u2013 late cancel' : ''); // (2.99." + TAG + ") texted cancel: '<customer> cancelled Sat 10/31 12:00 PM'"),
  ('inc/shareddev.php',
   "    $line = '\u2014 ' . $nm . ($ph !== '' ? ' ' . $ph : '');",
   "    $top = strtok(ltrim($body), \"\\n\"); if (is_string($top) && (mb_stripos($top, $nm) === 0 || (function_exists('gsm7_clean') && mb_stripos($top, gsm7_clean($nm)) === 0))) return $body; // (2.99." + TAG + ") the salon's name already on the first line: never a 2nd '- <salon>' at the end\n"
