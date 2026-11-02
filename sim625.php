@@ -1,8 +1,8 @@
 <?php
 /* CHAT 625 – conversation test with the REAL model (Telnyx chat completions), NO call, NO SMS, NO booking (tools are faked here).
-   php sim625.php <app dir> <old|new> [scenario]   – app dir = a copy (old or new calls-agent.php). Prints the transcript. */
-$app = $argv[1]; $mode = $argv[2] ?? 'new'; $only = $argv[3] ?? '';
-chdir($app); require $app . '/inc/core.php'; settings(); require_once $app . '/inc/calls-tx.php'; require_once $app . '/inc/calls-agent.php';
+   SALON_ID=an php sim625.php <live app> <dir with the calls-agent.php to test> <label> [scenario]. Read-only on the live DB. Prints the transcript. */
+$app = $argv[1]; $ag = $argv[2]; $mode = $argv[3] ?? 'test'; $only = $argv[4] ?? '';
+chdir($app); require $app . '/inc/core.php'; settings(); require_once $ag . '/inc/calls-agent.php'; require_once $app . '/inc/calls-tx.php';
 $g = cl_agent_data('');
 $sys = str_replace(['{{now}}', '{{days}}', '{{menu}}', '{{techs}}', '{{caller_name}}', '{{upcoming}}'],
     [$g['now'], implode("\n", $g['days']), implode("\n", $g['menu']), implode("\n", $g['techs']), 'none', 'none'], tx_instructions());
