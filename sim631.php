@@ -23,8 +23,13 @@ function caller(string $ai, array &$s): string {
     return 'Yes, that\'s right.';
 }
 function chat(array $msgs, array $tools): array {
-    $r = tx_api('POST', '/ai/chat/completions', ['model' => tx_model(), 'messages' => $msgs, 'tools' => $tools, 'temperature' => 0.3, 'max_tokens' => 300], 60);
-    return (array)($r['choices'][0]['message'] ?? []);
+    for ($k = 0; $k < 4; $k++) { /* CHAT 631: an empty answer (API hiccup) -> ask again, up to 4 times */
+        $r = tx_api('POST', '/ai/openai/chat/completions', ['model' => tx_model(), 'messages' => $msgs, 'tools' => $tools, 'temperature' => 0.3, 'max_tokens' => 600], 60);
+        $m = (array)($r['choices'][0]['message'] ?? []);
+        if (trim((string)($m['content'] ?? '')) !== '' || !empty($m['tool_calls'])) return $m;
+        sleep(2);
+    }
+    return $m;
 }
 function run(string $id, string $first, array $s, array $sys_tools): array {
     [$sys, $tools] = $sys_tools; $s += ['asked' => 0, 'same_q' => 0, 'book' => null, 'asked_before_book' => 0, 'log' => []];
