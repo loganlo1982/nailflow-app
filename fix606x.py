@@ -5,7 +5,7 @@ import sys, os, shutil, time, subprocess, hashlib
 R = sys.argv[1].rstrip('/'); go = 'go' in sys.argv[2:]
 f = R + '/inc/calls-agent.php'
 A = "'default' => [['execute' => ['dest' => 'after']]]]];"
-B = "'default' => [['request' => ['url' => cl_agent_url('why', $q) . '&why=%{connect_failed_reason}', 'method' => 'POST']], ['execute' => ['dest' => 'after']]]]]; /* (CHAT 01/11 606x) log why the iPhone leg failed */"
+B = "'default' => [['request' => ['url' => cl_agent_url('missed', $q) . '&why=%{connect_failed_reason}', 'method' => 'POST']], ['execute' => ['dest' => 'after']]]]]; /* (CHAT 01/11 606x) log why the iPhone leg failed */"
 t = open(f, encoding='utf-8').read(); print(f, hashlib.sha256(t.encode()).hexdigest()[:8], 'anchor', t.count(A))
 if t.count(A) != 1: sys.exit('ANCHOR FAIL')
 n = t.replace(A, B); print('new sha', hashlib.sha256(n.encode()).hexdigest()[:8])
