@@ -36,6 +36,18 @@ if (which === 'ios') {
   // (lệnh 569) "🗣 Giọng đọc": the iPhone makes its read-out sounds itself (AVSpeechSynthesizer → Library/Sounds/nfv_<id>.caf) – the NFVoice plugin
   // + the view controller that registers it (Main.storyboard); AFTER the Firebase lines above (they add to the end of AppDelegate). App 1.4.
   edit('ios/App/App/AppDelegate.swift', (s) => s.includes('NFVoicePlugin') ? s : s.replace('import Capacitor', 'import Capacitor\nimport AVFoundation\nimport UserNotifications') + fs.readFileSync('native/ios/NFVoice.swift.txt', 'utf8'));
+  // (TTP-UAT 04/11/2026) Dejavoo Tap to Pay on iPhone through iPOSgo! – ONLY when NF_TTP=1 (the ttp-uat branch). Off: the app exactly as before.
+  if (process.env.NF_TTP === '1') {
+    const env = process.env.NF_TTP_ENV === 'PROD' ? 'PROD' : 'UAT'; // never PROD unless set on purpose
+    edit(plist, (s) => { // answer from iPOSgo!: invokeApplink:// · ask iPOSgo!: ogApplink:// · the SDK reads "Enviroment" (Dejavoo's spelling)
+      if (!s.includes('<string>invokeApplink</string>')) s = s.replace('<string>nailflow</string>', '<string>nailflow</string><string>invokeApplink</string>');
+      if (!s.includes('LSApplicationQueriesSchemes')) s = s.replace('<dict>', '<dict>\n\t<key>LSApplicationQueriesSchemes</key>\n\t<array><string>ogApplink</string></array>');
+      else if (!s.includes('<string>ogApplink</string>')) s = s.replace(/(<key>LSApplicationQueriesSchemes<\/key>\s*<array>)/, '$1<string>ogApplink</string>');
+      if (!s.includes('<key>Enviroment</key>')) s = s.replace('<dict>', `<dict>\n\t<key>Enviroment</key>\n\t<string>${env}</string>`);
+      return s; });
+    edit('ios/App/App/AppDelegate.swift', (s) => s.includes('NFTapPlugin') ? s : s.replace('import Capacitor', 'import Capacitor\nimport DeepLinking') + fs.readFileSync('native/ios/NFTap.swift.txt', 'utf8'));
+    edit('ios/App/App/AppDelegate.swift', (s) => s.replace('bridge?.registerPluginInstance(NFVoicePlugin()) }', 'bridge?.registerPluginInstance(NFVoicePlugin()); bridge?.registerPluginInstance(NFTapPlugin()) }'));
+  }
   edit('ios/App/App/Base.lproj/Main.storyboard', (s) => s.replace('customClass="CAPBridgeViewController" customModule="Capacitor"', 'customClass="NFViewController" customModule="App" customModuleProvider="target"'));
 }
 if (which === 'android') {

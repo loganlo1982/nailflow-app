@@ -11,6 +11,10 @@ workflows:
         distribution_type: app_store
         bundle_identifier: com.nailflow.salonmanager
       # Firebase files are in the repo (GoogleService-Info.plist, google-services.json – public app config, not secrets)
+      vars:
+        NF_TTP: "1"          # (TTP-UAT branch) Dejavoo Tap to Pay on iPhone in this build – UAT only
+        NF_TTP_ENV: "UAT"
+        NF_TTP_ZIP_SHA256: "26673fec2dc3013b3f9de69abd71f4a397cd8cab8fc4f9cd00528fef8222c7ae"
       node: 22
       xcode: latest
       cocoapods: default
@@ -45,6 +49,14 @@ workflows:
           printf '{\n  "images" : [\n    {\n      "filename" : "AppIcon-512@2x.png",\n      "idiom" : "universal",\n      "platform" : "ios",\n      "size" : "1024x1024"\n    }\n  ],\n  "info" : {\n    "author" : "xcode",\n    "version" : 1\n  }\n}\n' > $S/Contents.json
           grep -q 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;' ios/App/App.xcodeproj/project.pbxproj && echo "AppIcon set ready" || { echo "AppIcon name not set in the Xcode project"; exit 1; }
           npx cap sync ios
+      - name: Dejavoo Tap to Pay (TTP-UAT – only this branch, NF_TTP=1)
+        script: |
+          if [ "$NF_TTP" = "1" ]; then
+            curl -sfL -o /tmp/dl.zip https://github.com/dejavoo-integration/Tap-to-Pay-on-iOS-Deeplinking/raw/634f68a34e00f3504cdcb87c7746d14df09b01ec/IceCream/DeepLinking.xcframework.zip
+            echo "$NF_TTP_ZIP_SHA256  /tmp/dl.zip" | sha256sum -c - || { echo "DeepLinking zip checksum differs - STOP"; exit 1; }
+            rm -rf ios/App/App/DeepLinking.xcframework && unzip -q /tmp/dl.zip -d /tmp/dl && cp -R "$(find /tmp/dl -maxdepth 2 -name DeepLinking.xcframework -type d | head -1)" ios/App/App/
+            ruby scripts/add-ttp.rb
+          else echo "NF_TTP is not 1 - Tap to Pay left out"; fi
       - name: Signing
         script: xcode-project use-profiles
       - name: Build number

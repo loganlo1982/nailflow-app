@@ -1,0 +1,113 @@
+
+// ===== (TTP-UAT, 04/11/2026) NFTap – Dejavoo Tap to Pay on iPhone through iPOSgo! (Deep Linking V2) =====
+// The tap itself happens in Dejavoo's iPOSgo! app (it holds Apple's Tap to Pay entitlement). NailFlow only:
+//   1) asks iPOSgo! to do something (register the TPN / a sale / a void / a refund) – the DeepLinking SDK makes the link, we open it;
+//   2) gets the answer back on the URL scheme "invokeApplink" (Info.plist) – the SDK turns it into JSON ({"Spin_Response": {...}});
+//   3) hands that JSON to the web page (event "result") and keeps the last one on the phone (UserDefaults) in case the page reloaded.
+// The web page then sends it to the server, which checks it against the payment it started before the bill is marked PAID.
+// No card data ever passes here (iPOSgo! keeps it); only the result: ResultCode, PNRef (RRN), AuthCode, amounts, last 4 if given.
+// JS: NFTap.ready() · register({tpn, merchantCode}) · sale({amount, tip, fee, ref, showTip}) · voidTx({rrn, ref}) · refund({amount, ref})
+//     last() → {raw, ref, at} · clear() · addListener("result", fn)
+
+
+struct NFTapRegister: Register { var tpn: String; var merchantCode: String }
+struct NFTapTxn: PayloadParameter {
+    var amount: String; var feeAmount: String?; var tipAmount: String?; var currencyCode: CurrencyCode; var tranType: TransType
+    var showTipScreen: Bool?; var showBreakUpScreen: Bool?; var showApprovalScreen: Bool?
+}
+struct NFTapVoid: VoidPayloadParameter { var rrn: String; var tranType: TransType; var showApprovalScreen: Bool? }
+
+@objc(NFTapPlugin)
+public class NFTapPlugin: CAPPlugin, CAPBridgedPlugin, DLProtocolV2 {
+    public let identifier = "NFTapPlugin"
+    public let jsName = "NFTap"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "ready", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "register", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "sale", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "voidTx", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "refund", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "last", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise)
+    ]
+    private let wrapper = Wrapper()
+    private let kLast = "nf_tap_last", kRef = "nf_tap_ref"
+    private var launchCall: CAPPluginCall?
+
+    override public func load() {
+        NotificationCenter.default.addObserver(self, selector: #selector(onOpenURL(_:)), name: Notification.Name.capacitorOpenURL, object: nil)
+    }
+
+    // amounts: the SDK wants "12.34" (2 decimals)
+    private func money(_ v: Any?) -> String? {
+        var d: Double? = nil
+        if let n = v as? NSNumber { d = n.doubleValue } else if let s = v as? String, let x = Double(s) { d = x }
+        guard let x = d, x >= 0, x < 1_000_000 else { return nil }
+        return String(format: "%.2f", x)
+    }
+    private func remember(ref: String?) { UserDefaults.standard.set(ref ?? "", forKey: kRef) }
+
+    @objc func ready(_ call: CAPPluginCall) {
+        let env = (Bundle.main.object(forInfoDictionaryKey: "Enviroment") as? String) ?? ""
+        call.resolve(["ok": true, "env": env, "version": 1])
+    }
+    @objc func register(_ call: CAPPluginCall) {
+        guard let tpn = call.getString("tpn"), tpn.range(of: "^[0-9]{12}$", options: .regularExpression) != nil,
+              let mc = call.getString("merchantCode"), !mc.isEmpty else { call.reject("TPN (12 digits) and merchant code are needed"); return }
+        remember(ref: "register"); launchCall = call
+        DispatchQueue.main.async { self.wrapper.downloadParameter(param: NFTapRegister(tpn: tpn, merchantCode: mc), delegate: self) }
+    }
+    @objc func sale(_ call: CAPPluginCall) {
+        guard let amt = money(call.getValue("amount")), amt != "0.00" else { call.reject("amount"); return }
+        let tip = money(call.getValue("tip")), fee = money(call.getValue("fee"))
+        let p = NFTapTxn(amount: amt, feeAmount: (fee == "0.00" ? nil : fee), tipAmount: (tip == "0.00" ? nil : tip), currencyCode: .usd, tranType: .SALE,
+                         showTipScreen: call.getBool("showTip") ?? false, showBreakUpScreen: false, showApprovalScreen: true)
+        remember(ref: call.getString("ref")); launchCall = call
+        DispatchQueue.main.async { self.wrapper.startTransaction(params: p, delegate: self) }
+    }
+    @objc func refund(_ call: CAPPluginCall) {
+        guard let amt = money(call.getValue("amount")), amt != "0.00" else { call.reject("amount"); return }
+        let p = NFTapTxn(amount: amt, feeAmount: nil, tipAmount: nil, currencyCode: .usd, tranType: .REFUND, showTipScreen: false, showBreakUpScreen: false, showApprovalScreen: true)
+        remember(ref: call.getString("ref")); launchCall = call
+        DispatchQueue.main.async { self.wrapper.startTransaction(params: p, delegate: self) }
+    }
+    @objc func voidTx(_ call: CAPPluginCall) {
+        guard let rrn = call.getString("rrn"), !rrn.isEmpty else { call.reject("rrn"); return }
+        remember(ref: call.getString("ref")); launchCall = call
+        DispatchQueue.main.async { self.wrapper.startVoid(params: NFTapVoid(rrn: rrn, tranType: .VOID, showApprovalScreen: true), delegate: self) }
+    }
+    @objc func last(_ call: CAPPluginCall) {
+        call.resolve(["raw": UserDefaults.standard.string(forKey: kLast) ?? "", "ref": UserDefaults.standard.string(forKey: kRef) ?? "",
+                      "at": UserDefaults.standard.double(forKey: kLast + "_at")])
+    }
+    @objc func clear(_ call: CAPPluginCall) {
+        UserDefaults.standard.removeObject(forKey: kLast); UserDefaults.standard.removeObject(forKey: kLast + "_at"); call.resolve()
+    }
+
+    // ---- DeepLinking SDK delegate ----
+    public func didReceiveV2Response(success: URL?) { // the link to iPOSgo! – open it
+        DispatchQueue.main.async {
+            guard let u = success, UIApplication.shared.canOpenURL(u) else {
+                self.launchCall?.reject("iPOSgo! is not installed on this iPhone (or not the UAT build)"); self.launchCall = nil; return }
+            UIApplication.shared.open(u, options: [:]) { ok in
+                if ok { self.launchCall?.resolve(["launched": true]) } else { self.launchCall?.reject("iPOSgo! did not open") }
+                self.launchCall = nil
+            }
+        }
+    }
+    public func didReceive_TransactionResponse(res: String?) { if let r = res, !r.isEmpty { deliver(r) } }
+    public func didReceiveRespV2Error(err: String?) {
+        DispatchQueue.main.async { self.launchCall?.reject(err ?? "iPOSgo! request was refused"); self.launchCall = nil }
+    }
+
+    // ---- the answer coming back: invokeApplink://… ----
+    @objc func onOpenURL(_ n: Notification) {
+        guard let obj = n.object as? [String: Any], let url = obj["url"] as? URL, (url.scheme ?? "").lowercased() == "invokeapplink" else { return }
+        deliver(wrapper.parseURL(strURL: url))
+    }
+    private func deliver(_ raw: String) {
+        UserDefaults.standard.set(raw, forKey: kLast); UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: kLast + "_at")
+        let ref = UserDefaults.standard.string(forKey: kRef) ?? ""
+        DispatchQueue.main.async { self.notifyListeners("result", data: ["raw": raw, "ref": ref], retainUntilConsumed: true) }
+    }
+}
