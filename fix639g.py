@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+# fix639g.py - QA-0010 (P2): a group whose people start at different times: the customer move checked everyone at the 1st time but saved each
+# at their own (+ the old gap) -> the later person was never checked. Now each such person is checked at their own new time. 1 file.
+# Run:  python3 fix639g.py <release dir>   (kiem)   /   ... go
+import sys, os, shutil, time, hashlib, json, subprocess
+args = [a for a in sys.argv[1:]]
+if not args: sys.exit('usage: python3 fix639g.py <release dir> [go]')
+go = args[-1] == 'go'
+if go: args = args[:-1]
+R = args[0].rstrip('/'); XP = [os.path.abspath(a) for a in args[1:]]
+def sha(t): return hashlib.sha256(t.encode('utf-8')).hexdigest()[:8]
+F = json.loads(r"""{"inc/api/links.php": {"base": "d6a25f70", "new": "8ca3a33c", "A": [["    if (!$ok) fail('Sorry, that time was just taken. Please pick another time.', 409);\n    actor_set('online', 'Customer (text link)');\n", "    if (!$ok) fail('Sorry, that time was just taken. Please pick another time.', 409);\n    foreach ($members as $i => $m) { $o = $off($m); if ($o === 0 || !isset($per[$i])) continue; /* (2.99.639g QA-0010) a person who starts later / earlier in the group: checked at THEIR own new time too */\n        if (!in_array($start + $o, public_slots($date, [(int)($people2[$i] ?? 0)], array_map('intval', (array)$per[$i]['sids']), (int)$per[$i]['dur'], false, [$per[$i]]), true)) fail('Sorry, that time does not work for everyone in your group. Please pick another time or call us.', 409); }\n    actor_set('online', 'Customer (text link)');\n"]]}}""")
+plan = []; bad = 0
+for f, x in F.items():
+    p = f'{R}/{f}'
+    if not os.path.isfile(p): print(f, 'MISSING'); bad = 1; continue
+    s = open(p, encoding='utf-8').read(); n = [s.count(a) for a, _ in x['A']]
+    al = '639g' in s; print(f, 'sha', sha(s), '(LAMWEB base', x['base'] + ')', 'anchors', *n, 'already', al)
+    if al or n != [1] * len(n): bad = 1; continue
+    t = s
+    for a, b in x['A']: t = t.replace(a, b)
+    plan.append((f, p, t))
+XA = json.loads(r"""[]""")
+if XA and not XP: print('NOTE: this package also patches the web api.php copies (Love Nails ~/lovenails/api.php, ...) - give their paths after the release dir'); bad = 1
+for p in XP:
+    s = open(p, encoding='utf-8').read(); n = [s.count(a) for a, _ in XA]; al = '639g' in s; print(p, 'sha', sha(s), 'anchors', *n, 'already', al)
+    if al or n != [1] * len(n): bad = 1; continue
+    t = s
+    for a, b in XA: t = t.replace(a, b)
+    plan.append((p, p, t))
+NEWF = json.loads(r"""{}""")
+for f, t in NEWF.items():
+    p = f'{R}/{f}'; ex = os.path.exists(p); print('NEW FILE', f, 'exists' if ex else 'ok', sha(t))
+    if ex: bad = 1
+if bad: sys.exit('STOP: an anchor is not found exactly once, already patched, or a new file is already there - nothing changed')
+if not go:
+    for f, p, t in plan: print('NEW would be', f, sha(t))
+    sys.exit('check only - run again with: go')
+bk = os.path.expanduser('~/app/old'); os.makedirs(bk, exist_ok=True); st = time.strftime('%m%d%H%M'); done = []
+made = []
+def back(msg):
+    for q, bb in done: shutil.copy2(bb, q)
+    for q in made:
+        try: os.remove(q)
+        except OSError: pass
+    sys.exit('ERROR ' + msg + ' - every file put back, new files removed')
+def chk(p):
+    c = ['php', '-l', p] if p.endswith('.php') else (['node', '--check', p] if p.endswith('.js') and shutil.which('node') else None)
+    if not c: return
+    r = subprocess.run(c, capture_output=True, text=True)
+    if r.returncode: back('in ' + p + ': ' + (r.stdout + r.stderr)[:300])
+for f, p, t in plan:
+    b = f'{bk}/' + f.strip('/').replace('/', '__') + f'.pre-639g-{st}'; shutil.copy2(p, b); m = os.stat(p).st_mode; open(p, 'w', encoding='utf-8').write(t); os.chmod(p, m); done.append((p, b)); chk(p)
+    print('NEW', f, sha(t), 'backup', b)
+for f, t in NEWF.items():
+    p = f'{R}/{f}'; open(p, 'w', encoding='utf-8').write(t); made.append(p); os.chmod(p, 0o644); chk(p); print('MADE', f, sha(t))
+print('OK 2.99.639g (QA-0010) - restart php-fpm.')
