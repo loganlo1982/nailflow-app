@@ -1,0 +1,590 @@
+/* (hair-ui - LENH-HAIR-UI, anh Logan 03/11 20:03) hair-ui.css: the iPhone look of the nail app's owner pages (assets/admin-popups.css of the nail app,
+   its part after this app's own copy: Home pages + wallpaper + dock + red '< Home' + the light iPhone pages), loaded right after admin-popups.css.
+   Left out on purpose: the nail Book step-3 number pad / back button (the hair booking stays as it is) and the polish-colour swatches. */
+/* (2.99.459 – lệnh 459) Checkout of a group: the customer's name on ONE line ("…" only when too long – never cut letter by letter); under it "1 tech · $40"
+   and a small "Pay separately" on the right (it goes under when the card is narrow); the tech card with one service: the money box on the tech's line (no "$47" above it) */
+html body #sheet.ckA .ck-cust{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+html body #sheet.ckA .ck-cust .ck-cn1{flex:1 1 100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+html body #sheet.ckA .ck-cust .ck-cn2{flex:0 0 auto;white-space:nowrap}
+html body #sheet.ckA .ck-cust .ck-paysep,html body #sheet.ckA .ck-grp .ck-cust .ck-paysep{margin:0 0 0 auto;min-height:30px;padding:3px 8px;font-size:12.5px;font-weight:700;border-radius:9px}
+html body #sheet.ckA .ck-card .ck-ch .tk-price.ck-hpamt{margin:0 0 0 auto;flex:0 0 84px;width:84px;min-width:0;min-height:38px;height:38px;padding:0 8px;border-radius:8px;border-width:1px}
+html body #sheet.ckA .ck-card .ck-ch .tk-price.ck-hpamt span{font-size:14px;font-weight:600}
+html body #sheet.ckA .ck-card .ck-ch .tk-price.ck-hpamt input{font-size:17px!important;font-weight:800;text-align:right;min-width:0;width:100%;height:34px;min-height:0;padding:0}
+/* (2.99.462 – LỆNH 462, anh Logan 29/10) the owner's admin pages: no top row ("+ Book", the salon name, "?", 🌙) – the bottom bar (Home with the red dot) stays */
+html[data-app="admin"] .ns-head,html[data-app="admin"] #hpBtn,html[data-app="admin"] #lookBtn,html[data-app="admin"] #lookMenu{display:none!important}
+/* (462) the 🎙 talk-to-iPad button (Check-in) sat in that row, left of "?" and 🌙: now at the right edge, the title keeps clear of it */
+html[data-app="admin"] .talk-btn.t-owner{right:calc(12px + env(safe-area-inset-right,0px))}
+html[data-app="admin"] body.talk-on #p-checkin > h2:first-child{padding-right:64px}
+/* (2.99.463 – LỆNH 463) Messages list like iPhone Messages: whole row = open the chat, no "View ›"; circle + letter, name bold, time ›, last text grey (2 lines), blue dot = unread, thin lines */
+.ib-list{display:block;background:var(--card,#fff);border-radius:12px;overflow:hidden}
+.ib-row{display:flex;align-items:flex-start;gap:10px;width:100%;margin:0;padding:10px 12px 0 4px;border:0;border-radius:0;background:transparent;color:var(--ink,#111);text-align:left;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ib-row:active{background:var(--ios-fill,rgba(0,0,0,.06))}
+.ib-row .ib-dot{flex:none;width:10px;height:10px;margin-top:21px;border-radius:50%;background:transparent}
+.ib-row.unread .ib-dot{background:#0A84FF}
+.ib-row .ib-av{flex:none;width:46px;height:46px;border-radius:50%;color:#fff;font-weight:600;font-size:20px;line-height:46px;text-align:center;text-transform:uppercase}
+.ib-row .main{flex:1;min-width:0;display:block;padding-bottom:10px;border-bottom:1px solid var(--ios-sep,rgba(60,60,67,.18))}
+.ib-row:last-child .main{border-bottom:0}
+.ib-row .ib-top{display:flex;align-items:baseline;gap:8px}
+.ib-row .t1{flex:1;min-width:0;font-weight:700;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink,#111)}
+.ib-row .ib-when{flex:none;font-size:14px;color:var(--muted,#8E8E93);white-space:nowrap}
+.ib-row .t2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px;font-size:15px;line-height:1.3;font-weight:400;color:var(--muted,#8E8E93);white-space:normal}
+.ib-row.unread .t1{font-weight:800}
+.ib-row .chip{display:inline-block;margin-top:3px}
+/* (2.99.464 – LỆNH 464, anh Logan 29/10) "‹ Home" on the owner's pages = a RED button (white words, round, big enough for a finger) – same place, same job, light + dark */
+html[data-app="admin"] .homeback,html[data-app="admin"] #sheet.ckA .page-top .homeback,html.look-dark[data-app="admin"] .homeback{display:inline-flex;align-items:center;justify-content:center;gap:2px;min-height:44px;min-width:96px;margin:6px 0;padding:0 18px 0 14px;border:0;border-radius:22px;background:#D92D20;color:#fff;font-size:17px;font-weight:700;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.18);-webkit-tap-highlight-color:transparent}
+html[data-app="admin"] .homeback:active{opacity:.75;transform:none}
+/* (464 bổ sung) "+ Book" on the Appointments date row (owner) – books for Anyone, like the old top button */
+.ap-book{margin-left:auto;border:0;border-radius:999px;min-height:40px;padding:0 16px;background:var(--ns-blue,#285F9C);color:#fff;font-size:15px;font-weight:700;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ap-book:active{opacity:.75}
+.ap-book + .ap-find{margin-left:0}
+html[data-app="admin"] .ns-dateline{height:auto;min-height:46px;padding-top:3px;padding-bottom:3px}
+/* (2.99.465) a Settings page opened from a Home icon: its "‹ Home" (#setBack) is the same red button */
+html[data-app="admin"] #setBack.homeback{background:#D92D20;color:#fff;font-weight:700;padding:0 18px 0 14px;border:0;border-radius:22px;min-height:44px;min-width:96px;margin:6px 0}
+/* (2.99.467 – LỆNH 467, anh Logan 29/10) HOME like the iPhone: each group (Salon, Techs, Money, Customers…) = one screen, swipe sideways (scroll-snap), dots below;
+   icons bright + glossy (the pictures of the video task; light from the top, soft shadow). Owner only (the manager's Home is unchanged). */
+html[data-app="admin"] #p-settings .hm-pager{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;padding:4px 0 6px;outline:none}
+html[data-app="admin"] #p-settings .hm-pager::-webkit-scrollbar{display:none}
+html[data-app="admin"] #p-settings .hm-pager > .home-sec{flex:0 0 100%;min-width:0;margin:0;scroll-snap-align:start;scroll-snap-stop:always;min-height:min(56vh,520px);padding:18px 10px 16px}
+html[data-app="admin"] #p-settings .hm-pager > .home-sec .home-gh{font-size:22px;margin:0 6px 18px}
+html[data-app="admin"] #p-settings .hm-pager .hs-grid.home-grid{gap:22px 6px}
+.hm-dots{display:flex;justify-content:center;align-items:center;gap:4px;margin:10px 0 2px}
+.hm-dots[hidden]{display:none}
+.hm-dot{width:26px;height:26px;padding:0;border:0;background:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+.hm-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:rgba(60,60,67,.3);transition:background .2s,transform .2s}
+.hm-dot.on::before{background:#1C1C1E;transform:scale(1.15)}
+:where(html.look-dark) .hm-dot::before{background:rgba(255,255,255,.3)}:where(html.look-dark) .hm-dot.on::before{background:#fff}
+html[data-app="admin"] #p-settings .hs-ic{width:66px;height:66px;border-radius:15px;background-image:linear-gradient(180deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.12) 42%,rgba(255,255,255,0) 52%,rgba(0,0,0,.14) 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 4px rgba(0,0,0,.12),0 6px 14px rgba(0,0,0,.20),0 1px 2px rgba(0,0,0,.18)}
+html[data-app="admin"] #p-settings .hs-ic::after{content:'';position:absolute;inset:0;border-radius:inherit;border:1px solid rgba(255,255,255,.28);pointer-events:none}
+html[data-app="admin"] #p-settings .hs-ic svg{width:38px;height:38px;filter:drop-shadow(0 1.5px 1.5px rgba(0,0,0,.28))}
+html[data-app="admin"] #p-settings .hs-lb{font-weight:600}
+@media (max-width:380px){html[data-app="admin"] #p-settings .hs-ic{width:60px;height:60px;border-radius:14px}html[data-app="admin"] #p-settings .hs-ic svg{width:34px;height:34px}}
+@media (prefers-reduced-motion:reduce){.hm-dot::before{transition:none}}
+/* (467) the picture fills the rounded square (it has its own light + colour); the line drawing under it shows only if the picture is missing */
+html[data-app="admin"] #p-settings .hs-ic .hs-img{position:absolute;inset:0;width:100%;height:100%;border-radius:inherit;object-fit:cover;display:block}
+html[data-app="admin"] #p-settings .hs-ic:has(.hs-img)::after{border-color:rgba(255,255,255,.18)}
+/* (467) bottom bar pictures: same size as the old drawing, rounded, a soft shadow; the drawing hides only once the picture is there */
+.tabbar .tab-img{display:none;width:32px;height:32px;border-radius:8px;object-fit:cover;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.tabbar button.has-ti > svg{display:none}
+.tabbar button.has-ti > .tab-img{display:block}
+/* (2.99.468 – LỆNH 468, anh Logan 29/10) the owner's HOME like the iPhone home screen: a wallpaper over the whole screen, the icons straight on it (no white boxes),
+   white names with a soft shadow, white page dots; the bottom bar = a frosted glass dock. Only while Home shows (the pager is there) – other pages keep their look. */
+.tabbar .tab-out{flex:0 0 auto;min-width:0;padding:4px 6px;opacity:.9}
+.tabbar .tab-out svg{width:24px;height:24px}
+.tabbar .tab-out span{font-size:11px!important}
+body.on-settings:has(#hmPager) #app{background:radial-gradient(120% 70% at 85% 8%,rgba(120,190,255,.55) 0%,rgba(120,190,255,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(110,225,205,.45) 0%,rgba(130,235,215,0) 60%),linear-gradient(165deg,#0B3A8C 0%,#1D63D6 34%,#2A92C8 62%,#2FA9B5 84%,#2C9A9A 100%);background-color:#1D63D6}
+:where(html.look-dark) body.on-settings:has(#hmPager) #app{background:radial-gradient(120% 70% at 85% 8%,rgba(70,120,220,.45) 0%,rgba(70,120,220,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(40,150,140,.40) 0%,rgba(40,150,140,0) 60%),linear-gradient(165deg,#050C22 0%,#0B2A66 40%,#0F4C6E 72%,#123F4A 100%);background-color:#0B2A66}
+html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings{background:transparent!important}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec{background:transparent!important;box-shadow:none!important;border:0}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec .home-gh{color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec .home-gh::before{background:#fff!important;opacity:.85}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager .hs-lb{color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec{min-height:min(48vh,460px)}
+body.on-settings:has(#hmPager) .hm-dot::before{background:rgba(255,255,255,.45)!important}
+body.on-settings:has(#hmPager) .hm-dot.on::before{background:#fff!important}
+body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(255,255,255,.16)!important;-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);border:1px solid rgba(255,255,255,.38)!important;box-shadow:0 8px 30px rgba(0,0,0,.18)!important}
+body.on-settings:has(#hmPager) #tabbar.tabbar button{color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+body.on-settings:has(#hmPager) #tabbar.tabbar button.on{background:rgba(255,255,255,.26)!important}
+:where(html.look-dark) body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(20,28,48,.35)!important;border-color:rgba(255,255,255,.18)!important}
+body.on-settings:has(#hmPager) #tabbar.tabbar button,body.on-settings:has(#hmPager) #tabbar.tabbar button span{color:#fff!important}
+@media (max-width:380px){body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-size:11.5px!important}}
+@media (max-width:380px){.tabbar .tab-out{padding:4px 2px}.tabbar .tab-out span{font-size:10px!important}.tabbar .tab-out svg{width:22px;height:22px}}
+/* (2.99.469 – LỆNH 469 e, anh Logan 29/10) Home: the page dots sit right ABOVE the dock (like the iPhone) – the swipe area fills the space above them */
+html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings{display:flex;flex-direction:column;padding-bottom:0}
+html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings > *{flex-shrink:0}
+html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings .hm-pager{flex:1 0 auto}
+html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings .hm-dots{position:sticky;bottom:0;margin:6px 0 0;padding:4px 0 2px;z-index:2}
+/* (2.99.470 – LỆNH 469 f, anh Logan 29/10) Home: a BIG clear dock like the iPhone – icons as big as the Home icons (rounded, glossy shadow), white bold names,
+   Log out as a glossy gray tile like the others; still frosted glass; 5 buttons on one row even on a 375px iPhone. Only while the owner's Home shows. */
+body.on-settings:has(#hmPager) #tabbar.tabbar{padding:8px 6px;border-radius:30px;gap:0}
+body.on-settings:has(#hmPager) #tabbar.tabbar button{flex:1 1 0;min-width:0;padding:4px 0 2px;gap:4px;border-radius:20px;opacity:1}
+body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img{width:58px;height:58px;border-radius:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 5px 12px rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.2)}
+body.on-settings:has(#hmPager) #tabbar.tabbar .tab-out svg{width:58px;height:58px;padding:14px;box-sizing:border-box;border-radius:13px;color:#fff;background:linear-gradient(180deg,#A1A1A8 0%,#6E6E76 55%,#55555C 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 5px 12px rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.2)}
+body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-size:12.5px!important;font-weight:700;letter-spacing:-.01em;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 3px rgba(0,0,0,.55)}
+body.on-settings:has(#hmPager) #tabbar.tabbar button.on{background:rgba(255,255,255,.2)!important}
+@media (max-width:400px){body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img,body.on-settings:has(#hmPager) #tabbar.tabbar .tab-out svg{width:52px;height:52px;border-radius:12px}
+  body.on-settings:has(#hmPager) #tabbar.tabbar .tab-out svg{padding:12px}
+  body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-size:10.5px!important;letter-spacing:-.03em}}
+body.on-settings:has(#hmPager) #tabbar.tabbar button[data-short] span[data-short]{font-size:0!important}
+body.on-settings:has(#hmPager) #tabbar.tabbar button[data-short] span[data-short]::after{content:attr(data-short);font-size:12.5px}
+@media (max-width:400px){body.on-settings:has(#hmPager) #tabbar.tabbar button[data-short] span[data-short]::after{font-size:10.5px}}
+/* (2.99.471 – LỆNH 469 a) Messages from Home: '‹ Home' + 'To send · Sent · Inbox' on one row */
+#homeBar.hb-seg{display:flex;align-items:center;gap:10px}
+#homeBar.hb-seg[hidden]{display:none}
+#homeBar.hb-seg .msg-seg{flex:1;min-width:0;margin:6px 0}
+/* (2.99.473 – LỆNH 469 d) a page opened from a Home icon: no dock (like an app opened on the iPhone) – '‹ Home' goes back */
+body.no-dock #tabbar{display:none!important}
+/* (2.99.475 – LỆNH 472, anh Logan 30/10) owner's Appointments date row: [date] [🔍 Find customer] …… [+ Book] – Find right after the date, + Book bigger at the right */
+.ns-dateline:has(#apBook) .ap-find{margin-left:10px}
+.ns-dateline .ap-find + .ap-book{margin-left:auto;min-height:52px;padding:0 22px;font-size:18px;font-weight:800;letter-spacing:-.01em}
+@media (max-width:400px){.ns-dateline:has(#apBook) .ap-find-x{display:none}.ns-dateline .ap-find + .ap-book{padding:0 18px}}
+/* (2.99.476 – LỆNH 473 phần 2) the owner's Home, at the bottom (above the dots + dock): "NailFlowApp · v…" + "Support: (601) 666-6677" (tap = call) */
+.hm-info{flex-shrink:0;text-align:center;font-size:12px;line-height:1.45;font-weight:600;color:rgba(255,255,255,.88);text-shadow:0 1px 3px rgba(0,0,0,.55);margin:8px 0 0;padding:0 16px}
+.hm-info a{color:#fff;font-weight:700;text-decoration:none;display:inline-block;padding:2px 4px;min-height:24px}
+html:not([data-app="admin"]) .hm-info,body:not(.on-settings) .hm-info{display:none}
+/* (2.99.477 – LỆNH 470) Home: hold an icon ~0.6s → arrange (wiggle, drag, Done / Reset to default) */
+html[data-app="admin"] #hmPager .hs-app{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+html[data-app="admin"] #hmPager .hs-app img{-webkit-user-drag:none;pointer-events:none}
+html[data-app="admin"] #hmPager.hm-arr .hs-app{touch-action:none;cursor:grab}
+html[data-app="admin"] #hmPager.hm-arr .hs-ic{animation:hmWig .26s ease-in-out infinite alternate}
+html[data-app="admin"] #hmPager.hm-arr .hs-app:nth-child(2n) .hs-ic{animation-delay:-.13s;animation-direction:alternate-reverse}
+@keyframes hmWig{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+@media (prefers-reduced-motion:reduce){html[data-app="admin"] #hmPager.hm-arr .hs-ic{animation:none;outline:2px dashed rgba(255,255,255,.7);outline-offset:2px}}
+html[data-app="admin"] #hmPager .hs-app.hm-drag-src{opacity:.25}
+.hm-drag-ghost{position:fixed;z-index:9999;pointer-events:none;margin:0;transform:scale(1.12);filter:drop-shadow(0 8px 16px rgba(0,0,0,.35));list-style:none;background:none;border:0}
+.hm-drag-ghost .hs-ic{animation:none!important}
+.hm-arr-bar{position:fixed;z-index:60;top:calc(env(safe-area-inset-top,0px) + 8px);left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;pointer-events:none}
+.hm-arr-bar[hidden]{display:none}
+.hm-arr-bar>button{pointer-events:auto;border:0;border-radius:999px;padding:8px 16px;font-family:inherit;font-size:15px;font-weight:600;line-height:1.2;color:#fff;background:rgba(60,60,67,.55);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 2px 8px rgba(0,0,0,.2);min-height:38px}
+.hm-arr-bar>.hm-arr-done{background:#fff;color:#000}
+.hm-arr-ask{flex-basis:100%;pointer-events:auto}
+.hm-arr-ask:empty{display:none}
+.hm-arr-ask .confirm{background:var(--card,#fff);color:var(--ink,#000);border-radius:14px;padding:12px 14px;box-shadow:0 8px 28px rgba(0,0,0,.3)}
+html[data-app="admin"] #hmPager.hm-arr .home-gh{visibility:hidden} /* the Done / Reset bar sits there – the icons never jump under the finger */
+/* (2.99.478 – LỆNH 466) the SHOW salon only (body.is-showapp): the "?" (hidden by 462 on owner pages) is back – small, bottom-right above the dock; Guide sheet */
+html[data-app="admin"] body.is-showapp #hpBtn{display:flex!important;align-items:center;justify-content:center;top:auto;right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 118px);z-index:40;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+html[data-app="admin"] body.is-showapp.no-dock #hpBtn{bottom:calc(env(safe-area-inset-bottom,0px) + 18px)}
+html[data-app="admin"] body.is-showapp.hm-arranging #hpBtn{display:none!important}
+.gd-h{margin:18px 2px 8px;font-size:17px}
+.gd-card{padding:12px 14px;margin:0 0 10px}
+.gd-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gd-card ul,.gd-intro{margin:8px 0 0;padding-left:20px}
+.gd-card li,.gd-intro li{margin:3px 0;line-height:1.4}
+.gd-card p{margin:6px 0 0}
+/* (2.99.479 – LỆNH 474b) Receipts → Close day: the paper walk-in sheet print (owner) */
+.ws-cd{margin:14px 0 8px;padding:12px 14px}
+.ws-cd .hint{margin:4px 0 10px}
+/* (2.99.480 – LỆNH 475b, anh Logan 30/10) Settings → Turn rules, tidy like iPhone Settings – the look only (trTidy in settings-pay.js) */
+.tr-tidy [hidden]{display:none!important}
+.tr-tidy .tr-one{margin:0 0 10px;color:var(--muted,#5B6475);font-size:14px}
+.tr-tidy .tr-sum{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:rgba(22,160,133,.10);border:1px solid rgba(22,160,133,.35);font-size:15px;line-height:1.4}
+.tr-tidy .tr-sum ul{margin:6px 0 0;padding-left:18px}.tr-tidy .tr-sum li{margin:2px 0}
+.tr-tidy .tr-an{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 4px}
+.tr-tidy .tr-an .hint{display:none}
+.tr-tidy .tr-an .btn{white-space:nowrap;min-height:34px;padding:0 12px;font-size:14px}
+.tr-tidy .tr-sec{margin:22px 0 2px;padding:8px 12px;font-size:15px}
+.tr-tidy .tr-q{margin:0 0 6px;padding:0 2px;font-size:15px;font-weight:600}
+.tr-tidy .lbl.tr-lq{display:block;margin:14px 0 4px;font-size:15px;font-weight:700;color:var(--ink,#1F2937)}
+.tr-tidy .tr-row{gap:6px 8px;margin:2px 0}
+.tr-tidy .tr-row:has(> .tr-opt),.tr-tidy .tr-row.tr-col{flex-direction:column;align-items:stretch;gap:0}
+.tr-tidy .check.tr-opt{display:flex;align-items:center;gap:10px;width:100%;min-height:42px;margin:0;padding:6px 2px;border-bottom:1px solid var(--line,#E3E5E8);text-align:left}
+.tr-tidy .check.tr-opt > input[type="radio"],.tr-tidy .check.tr-opt > input[type="checkbox"]{flex:0 0 auto;margin:0}
+.tr-tidy .check.tr-opt > span{flex:1;min-width:0;line-height:1.3}
+.tr-tidy .tr-col3{gap:0}.tr-tidy .tr-o3{display:block}
+.tr-tidy .tr-num,.tr-tidy .tr-in,.tr-tidy .check input.tr-in{width:70px;flex:0 0 70px;min-height:36px;height:36px;padding:2px 6px;font-size:16px;text-align:center}
+.tr-tidy .tr-in,.tr-tidy .check input.tr-in{margin:0 4px}
+.tr-tidy .tr-kid{margin:2px 0 6px 28px;padding-left:10px;border-left:2px solid var(--line,#E3E5E8)}
+.tr-tidy .tr-subq{margin:10px 0 2px;font-size:14px}
+.tr-tidy .tr-ex{margin:2px 0 8px 2px}
+.tr-tidy .tr-tip{display:inline-block;margin:4px 0 2px;padding:2px 8px;border:0;border-radius:999px;background:transparent;color:var(--ns-blue,#285F9C);font-size:13px;font-weight:600;cursor:pointer}
+.tr-tidy .tr-tip.on{background:rgba(40,95,156,.1)}
+.tr-tidy.tr-dirty #trSave{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:6;width:100%;min-height:50px;font-size:17px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+:where(html.look-dark) .tr-tidy .lbl.tr-lq{color:#E6EAF2}
+:where(html.look-dark) .tr-tidy .tr-tip{color:#8AB4F8}
+:where(html.look-dark) .tr-tidy .check.tr-opt{border-bottom-color:#2C3546}
+.tr-tidy .tr-uq{display:block;margin:12px 0 4px;font-size:15px;font-weight:700}
+.tr-tidy .tr-row > span{font-size:15px}
+.tr-tidy .check.tr-opt > span{font-size:15px}
+/* (2.99.482 – LỆNH 475c, anh Logan 30/10) Settings → Hours like iPhone Settings – the look only (hrTidy in settings-salon.js) */
+.hr-tidy [hidden]{display:none!important}
+.hr-tidy #hrs{margin-top:4px!important;border-radius:12px;overflow:hidden;border:1px solid var(--line,#E3E5E8);background:var(--card,#fff)}
+.hr-tidy #hrs .hours-row{display:grid;grid-template-columns:52px 56px minmax(0,1fr);align-items:center;gap:0 10px;margin:0;padding:8px 12px;min-height:52px;border-bottom:1px solid var(--line,#E3E5E8)}
+.hr-tidy #hrs .hours-row:last-child{border-bottom:0}
+.hr-tidy #hrs .hours-row > b{font-size:15px}
+.hr-tidy .hr-sw{position:relative;display:inline-block;width:51px;height:31px;margin:0;cursor:pointer}
+.hr-tidy .hr-sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:1}
+.hr-tidy .hr-sw span{position:absolute;inset:0;border-radius:31px;background:#D1D5DB;transition:background .2s}
+.hr-tidy .hr-sw span::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:transform .2s}
+.hr-tidy .hr-sw input:checked + span{background:#34C759}
+.hr-tidy .hr-sw input:checked + span::after{transform:translateX(20px)}
+.hr-tidy .hr-sw input:focus-visible + span{outline:2px solid var(--ns-blue,#285F9C);outline-offset:2px}
+.hr-tidy .hr-sum{justify-self:end;border:0;background:none;padding:6px 4px;font-size:16px;font-weight:600;color:var(--ns-blue,#285F9C);white-space:nowrap;cursor:pointer}
+.hr-tidy .hr-sum.on{text-decoration:underline}
+.hr-tidy .hours-row.hr-closed .hr-sum{color:var(--muted,#8E8E93);font-weight:500;cursor:default}
+.hr-tidy .hr-times{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-top:8px}
+.hr-tidy .hr-times input[type=time]{width:100%;min-width:0;box-sizing:border-box}
+.hr-tidy #hSave{display:none}
+.hr-tidy.hr-dirty #hSave{display:block;position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:6;min-height:50px;font-size:17px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.hr-tidy .hr-one{margin:0 0 8px;font-size:14px}
+.hr-tidy h3{margin-top:22px}
+.hr-tidy .hr-add{margin-top:8px}
+.hr-tidy .hr-addbox{margin-top:8px;padding:12px;border-radius:12px;border:1px solid var(--line,#E3E5E8);background:var(--card,#fff)}
+.hr-tidy .hr-addbox .two{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.hr-tidy .hr-addbox .two > .field{min-width:0}
+.hr-tidy .hr-addbox input{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+:where(html.look-dark) .hr-tidy #hrs,:where(html.look-dark) .hr-tidy .hr-addbox{background:#1A2132;border-color:#2C3546}
+:where(html.look-dark) .hr-tidy #hrs .hours-row{border-bottom-color:#2C3546}
+:where(html.look-dark) .hr-tidy .hr-sw span{background:#3A4763}
+:where(html.look-dark) .hr-tidy .hr-sum{color:#8AB4F8}
+.hr-tidy .hr-sw span{padding:0;margin:0;box-sizing:border-box}
+.hr-tidy .hr-sw{width:51px!important;height:31px!important;min-height:0!important;padding:0!important;display:inline-block!important;flex:none!important}
+.hr-tidy #hrs .hours-row{grid-template-columns:46px 51px minmax(0,1fr);gap:0 10px}
+.hr-tidy .hr-sum{font-size:15px;letter-spacing:-.01em;min-width:0}
+@media (max-width:360px){.hr-tidy .hr-sum{font-size:14px}}
+/* (2.99.483 – LỆNH 477b) Home drag fixes: every icon bright + wiggling like the iPhone (each a little off-beat), the dragged one = the icon tile (same size, round, a shadow) */
+html[data-app="admin"] #hmPager.hm-arr .hs-app{opacity:1!important;filter:none!important}
+html[data-app="admin"] #hmPager.hm-arr .hs-ic{animation:hmWig2 .25s ease-in-out infinite alternate!important;filter:none!important;opacity:1!important}
+html[data-app="admin"] #hmPager.hm-arr .hs-app:nth-child(3n+2) .hs-ic{animation-delay:-.08s!important;animation-duration:.27s!important}
+html[data-app="admin"] #hmPager.hm-arr .hs-app:nth-child(3n) .hs-ic{animation-delay:-.16s!important;animation-duration:.23s!important;animation-direction:alternate-reverse!important}
+@keyframes hmWig2{from{transform:rotate(-2.5deg)}to{transform:rotate(2.5deg)}}
+@keyframes hmWigS{from{transform:rotate(-1deg)}to{transform:rotate(1deg)}}
+@media (prefers-reduced-motion:reduce){html[data-app="admin"] #hmPager.hm-arr .hs-ic{animation:hmWigS .4s ease-in-out infinite alternate!important;outline:0}}
+html[data-app="admin"] #hmPager .hs-app.hm-drag-src{opacity:1!important}
+html[data-app="admin"] #hmPager .hs-app.hm-drag-src .hs-ic{opacity:.22!important;animation:none!important}
+html[data-app="admin"] #hmPager .hs-app.hm-drag-src .hs-lb{opacity:0}
+.hm-drag-ghost{position:fixed!important;z-index:9999;pointer-events:none;margin:0!important;display:flex!important;align-items:center;justify-content:center;overflow:hidden;transform:scale(1.1);box-shadow:0 10px 24px rgba(0,0,0,.4);filter:none;animation:none!important;background-size:cover}
+.hm-drag-ghost img{position:absolute;inset:0;width:100%!important;height:100%!important;object-fit:cover;display:block}
+.hm-drag-ghost svg{width:58%;height:58%}
+.hm-drag-ghost:has(img) svg{display:none}
+/* (2.99.483 – LỆNH 477b mục 7) the line under Home: bigger, easy to read */
+.hm-info{font-size:16px;line-height:1.4;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.65)}
+.hm-info b{font-weight:800}
+.hm-info a{font-size:17px;font-weight:800}
+/* (2.99.483 – LỆNH 473 phần 1) the Home wallpaper (task video, AI, approved): light = wall-light-1, dark = wall-dark-1; iPad / ≥768px the big one; the 468 gradient stays under it (picture not loaded yet / failed) */
+body.on-settings:has(#hmPager) #app{background:url(wall/wall-light-1-iphone.webp?v=483) center/cover no-repeat,radial-gradient(120% 70% at 85% 8%,rgba(120,190,255,.55) 0%,rgba(120,190,255,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(110,225,205,.45) 0%,rgba(130,235,215,0) 60%),linear-gradient(165deg,#0B3A8C 0%,#1D63D6 34%,#2A92C8 62%,#2FA9B5 84%,#2C9A9A 100%);background-color:#1D63D6}
+:where(html.look-dark) body.on-settings:has(#hmPager) #app{background:url(wall/wall-dark-1-iphone.webp?v=483) center/cover no-repeat,radial-gradient(120% 70% at 85% 8%,rgba(70,120,220,.45) 0%,rgba(70,120,220,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(40,150,140,.40) 0%,rgba(40,150,140,0) 60%),linear-gradient(165deg,#050C22 0%,#0B2A66 40%,#0F4C6E 72%,#123F4A 100%);background-color:#0B2A66}
+@media (min-width:768px){body.on-settings:has(#hmPager) #app{background:url(wall/wall-light-1-ipad.webp?v=483) center/cover no-repeat,radial-gradient(120% 70% at 85% 8%,rgba(120,190,255,.55) 0%,rgba(120,190,255,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(110,225,205,.45) 0%,rgba(130,235,215,0) 60%),linear-gradient(165deg,#0B3A8C 0%,#1D63D6 34%,#2A92C8 62%,#2FA9B5 84%,#2C9A9A 100%);background-color:#1D63D6}
+  :where(html.look-dark) body.on-settings:has(#hmPager) #app{background:url(wall/wall-dark-1-ipad.webp?v=483) center/cover no-repeat,radial-gradient(120% 70% at 85% 8%,rgba(70,120,220,.45) 0%,rgba(70,120,220,0) 55%),radial-gradient(90% 60% at 10% 75%,rgba(40,150,140,.40) 0%,rgba(40,150,140,0) 60%),linear-gradient(165deg,#050C22 0%,#0B2A66 40%,#0F4C6E 72%,#123F4A 100%);background-color:#0B2A66}}
+/* (2.99.484 – LỆNH 477c, anh Logan 30/10) the owner's dock on its 3 pages (Check-in, Appointments, Receipts): the SAME look as the Home dock (glossy picture icons,
+   frosted glass, soft border, round) but SMALLER (40px icons, 11px names, ~64px high) – room for the calendar; no Log out here (only on the Home dock). */
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{min-height:64px;box-sizing:border-box;padding:4px 6px;gap:0;border-radius:24px;background:rgba(255,255,255,.72)!important;-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid rgba(0,0,0,.08)!important;box-shadow:0 6px 22px rgba(0,0,0,.14)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar #tabOut{display:none!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button{flex:1 1 0;min-width:0;padding:3px 0 2px;gap:2px;border-radius:16px}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-img{width:40px;height:40px;border-radius:10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 8px rgba(0,0,0,.22)}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button span{font-size:11px!important;font-weight:600;letter-spacing:-.01em;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on{background:rgba(40,95,156,.12)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on span{color:var(--ns-blue,#285F9C)!important;font-weight:800}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{background:rgba(26,33,50,.72)!important;border-color:rgba(255,255,255,.12)!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on{background:rgba(125,179,255,.16)!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on span{color:#9CC3FF!important}
+@media (max-width:400px){html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button[data-short] span[data-short]{font-size:0!important}
+  html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button[data-short] span[data-short]::after{content:attr(data-short);font-size:11px}}
+/* (2.99.484) 475 date row on a 375px iPhone: the date and "🔍 Find" stay on one line each */
+.ns-dateline:has(#apBook) #dayTitle,.ns-dateline:has(#apBook) .ap-find{white-space:nowrap}
+@media (max-width:400px){.ns-dateline:has(#apBook) .ap-find{padding:0 10px;margin-left:6px}.ns-dateline .ap-find + .ap-book{padding:0 14px;font-size:17px}}
+/* (2.99.485 – LỆNH 475d, anh Logan 30/10) Settings → Services short and clear (svTidy in settings-salon.js) – the look only */
+.sv-tidy [hidden]{display:none!important}
+.sv-tidy .sv-top{margin:0 0 10px}
+.sv-tidy .sv-addbig{min-height:54px;font-size:18px;font-weight:800;border-radius:14px}
+.sv-tidy .sv-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 4px}
+.sv-tidy #svSort.on{background:var(--ns-blue,#285F9C);color:#fff}
+.sv-tidy .sv-grp{margin:14px 0 0}
+.sv-tidy .sv-gt{margin:0 0 6px 4px;font-size:14px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--muted,#5B6475);white-space:normal;overflow-wrap:anywhere}
+.sv-tidy .sv-rows{border-radius:12px;overflow:hidden;border:1px solid var(--line,#E3E5E8);background:var(--card,#fff)}
+.sv-tidy .sv-r{display:flex;align-items:center;border-bottom:1px solid var(--line,#E3E5E8)}
+.sv-tidy .sv-up{flex:0 0 auto;margin-left:6px}
+.sv-tidy .sv-open{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto auto 14px;align-items:center;gap:10px;min-height:50px;padding:8px 12px;border:0;background:none;text-align:left;font-size:16px;color:var(--ink,#1F2937);cursor:pointer}
+.sv-tidy .sv-n{font-weight:600;overflow-wrap:anywhere;line-height:1.25}
+.sv-tidy .sv-p{font-weight:700;font-variant-numeric:tabular-nums}
+.sv-tidy .sv-m{color:var(--muted,#5B6475);font-size:14px;font-variant-numeric:tabular-nums;min-width:48px;text-align:right}
+.sv-tidy .sv-go{color:var(--muted,#9AA3B2);font-size:20px}
+.sv-tidy .sv-hid{display:inline-block;margin-left:6px;padding:0 6px;border-radius:6px;background:rgba(142,142,147,.18);color:var(--muted,#5B6475);font-size:11px;font-weight:700;text-transform:uppercase;vertical-align:middle}
+.sv-tidy .sv-plus{display:block;width:100%;min-height:44px;padding:8px 12px;border:0;background:none;text-align:left;color:var(--ns-blue,#285F9C);font-size:15px;font-weight:700;cursor:pointer}
+.sv-tidy .sv-sortbar{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);z-index:6;margin-top:10px}
+.sv-tidy .sv-sortbar .btn{min-height:50px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.sv-tidy .sv-gbtn{margin:16px 0 8px}
+.sv-tidy .sv-gbtn.on{background:rgba(40,95,156,.1)}
+.sv-tidy .sv-gbox{padding:10px;border-radius:12px;border:1px solid var(--line,#E3E5E8);background:var(--card,#fff);margin-bottom:12px}
+.sv-tidy .sg-row{display:grid!important;grid-template-columns:56px minmax(0,1fr);gap:6px;align-items:center}
+.sv-tidy .sg-row > .nm,.sv-tidy .sg-row > input[data-g="name_es"],.sv-tidy .sg-row > .sg-note{grid-column:2/-1;width:100%;min-width:0}
+.sv-tidy .sg-row > .sg-ic{grid-row:1;width:56px;text-align:center;font-size:20px}
+.sv-tidy .sg-row > select,.sv-tidy .sg-row > .sg-hide{grid-column:1/-1}
+.sv-tidy .sg-row > .icon-btn{justify-self:start}
+#sheet .sv-edit .svc-row{border:0;padding:0;margin:0;background:transparent}
+#sheet .sv-foot{display:grid;gap:8px;margin-top:12px;position:sticky;bottom:0;padding:8px 0;background:var(--card,#fff)}
+html.look-dark .sv-tidy .sv-rows,html.look-dark .sv-tidy .sv-gbox{background:#1A2132;border-color:#2C3546}
+html.look-dark .sv-tidy .sv-r{border-bottom-color:#2C3546}
+html.look-dark .sv-tidy .sv-open{color:#E6EAF2}
+html.look-dark .sv-tidy .sv-plus{color:#8AB4F8}
+html.look-dark #sheet .sv-foot{background:#1A2132}
+.sv-tidy .tr-tip{display:inline-block;padding:2px 8px;border:0;border-radius:999px;background:transparent;color:var(--ns-blue,#285F9C);font-size:13px;font-weight:600;cursor:pointer}
+#sheet .sv-edit .svc-row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 10px;align-items:end}
+#sheet .sv-edit .svc-row > .nm{grid-column:1/2;min-height:48px;font-size:17px;font-weight:700}
+#sheet .sv-edit .svc-row > .tools{grid-column:2/3;justify-content:flex-end}
+#sheet .sv-edit .svc-row > .mn,#sheet .sv-edit .svc-row > .es,#sheet .sv-edit .svc-row > .grp,#sheet .sv-edit .svc-row > .ad,#sheet .sv-edit .svc-row > .mini-chk,#sheet .sv-edit .svc-row > p{grid-column:1/-1}
+#sheet .sv-edit .svc-row > .check{display:flex;flex-direction:row;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--ink,#1F2937)}
+#sheet .sv-edit .svc-row > .check input{flex:0 0 auto;width:22px;height:22px}
+#sheet .sv-edit .svc-row .mini{font-size:13px}
+#sheet .sv-edit .svc-row select,#sheet .sv-edit .svc-row textarea{width:100%;min-width:0;box-sizing:border-box}
+#sheet .sv-foot .btn.red{background:transparent;color:#C62828;border:1px solid rgba(198,40,40,.35)}
+/* (2.99.487 – LỆNH 475e, anh Logan 30/10) Receipts → Reports tidy – the look only: 2×2 equal cards (big number one line, $22,055), % only when the period before has enough,
+   a small column chart for Check-ins (tap = its numbers), the long day list folded, the range rows short (no word breaks) */
+.rp-cards.rp-c4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rp-cards.rp-c4 > div{padding:12px 14px;border-radius:14px}
+.rp-cards.rp-c4 b{font-size:clamp(20px,6.4vw,28px);font-weight:800;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;font-variant-numeric:tabular-nums}
+.rp-cards.rp-c4 span{font-size:13px}
+.rp-cards.rp-c4 .rp-vs{font-size:13px;white-space:nowrap}
+.rp-chart{display:flex;align-items:flex-end;gap:3px;height:150px;padding:8px 4px 0;border-bottom:1px solid var(--line,#E3E5E8);overflow-x:auto}
+.rp-col{flex:1 0 12px;max-width:44px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;border:0;padding:0;background:none;cursor:pointer;position:relative}
+.rp-col .rp-stk{display:flex;flex-direction:column;min-height:2px;border-radius:4px 4px 0 0;overflow:hidden}
+.rp-col .rp-stk i{display:block;min-height:0}
+.rp-col small{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted,#5B6475);white-space:nowrap}
+.rp-col.on .rp-stk{outline:2px solid var(--ns-blue,#285F9C);outline-offset:1px}
+.rp-tip{margin:24px 0 6px;font-size:14px;color:var(--muted,#5B6475);min-height:20px}
+.rp-days{margin:4px 0 8px}
+.rp-days > summary{cursor:pointer;color:var(--ns-blue,#285F9C);font-weight:700;padding:6px 0;list-style:none}
+.rp-days > summary::-webkit-details-marker{display:none}
+.rp-days[open] > summary{margin-bottom:6px}
+.seg.rp-range,.seg.rp-by{display:flex;flex-wrap:wrap;gap:6px}
+.seg.rp-range > button,.seg.rp-by > button{white-space:nowrap;flex:1 1 auto;min-width:0;padding:8px 10px;font-size:14px}
+html.look-dark .rp-cards.rp-c4 > div{background:#1A2132;border-color:#2C3546}
+html.look-dark .rp-chart{border-bottom-color:#2C3546}
+html.look-dark .rp-days > summary{color:#8AB4F8}
+/* (2.99.490 – LỆNH 489, anh Logan 30/10) the owner's Appointments: no date row (Oct-29-26 · Find · + Book) – the calendar gets the room; tap the chosen day = pick any date;
+   🔍 Find customer = a small button at the right of the day strip; '+ Book' is in the dock (between Receipts and Home); the owner's dock sits flush on the bottom, full width */
+html[data-app="admin"] #p-appts .ns-dateline{display:none!important}
+html[data-app="admin"] #p-appts.has-find-ic{position:relative}
+html[data-app="admin"] #p-appts.has-find-ic > #dateStrip{padding-right:50px}
+.ap-find-ic{position:absolute;right:0;z-index:5;width:48px;border:0;border-left:1px solid var(--line,#E3E5E8);background:var(--card,#fff);font-size:20px;cursor:pointer;box-shadow:-6px 0 10px -6px rgba(0,0,0,.18)}
+html.look-dark .ap-find-ic{background:#1A2132;border-left-color:#2C3546}
+.tabbar .tab-book{flex:1 1 0;min-width:0}
+html[data-app="admin"] #tabbar.tabbar .tab-book svg{width:40px;height:40px;padding:8px;box-sizing:border-box;border-radius:10px;color:#fff;background:linear-gradient(180deg,#4FA3FF 0%,#1F6FE5 55%,#1557C2 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 3px 8px rgba(0,0,0,.22)}
+body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{width:58px;height:58px;padding:14px;border-radius:13px;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 5px 12px rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.2)}
+@media (max-width:400px){body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{width:50px;height:50px;padding:12px;border-radius:12px}
+  body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img,body.on-settings:has(#hmPager) #tabbar.tabbar .tab-out svg{width:50px;height:50px}}
+/* the owner's dock: flush on the bottom edge, full width, round top corners only, as low as it can be (+ the safe area) */
+html[data-app="admin"] #tabbar.tabbar{margin:0!important;border-radius:18px 18px 0 0!important;border-bottom:0!important;padding-top:4px!important;padding-bottom:calc(2px + env(safe-area-inset-bottom,0px))!important;min-height:0!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{padding-left:2px!important;padding-right:2px!important}
+/* (2.99.490) a short screen (iPhone SE): the Home line + the dots never overlap */
+@media (max-height:700px){html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec{min-height:min(40vh,400px)}
+  .hm-info{font-size:14px;line-height:1.3;margin-top:4px}.hm-info a{font-size:15px}}
+/* (2.99.500 – LỆNH 499 b, anh Logan 30/10) a big screen (iPad landscape / computer, ≥ 900px wide): the owner's Home = EVERY group on one screen –
+   a grid of frames (one per group, glass on the wallpaper), Daily first, no sideways swipe, no dots. Phones / iPad portrait (< 900px): pages as before. */
+@media (min-width:900px){
+html[data-app="admin"] #p-settings .hm-pager,html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings .hm-pager{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));grid-auto-flow:row dense;align-items:start;gap:10px;overflow:visible;scroll-snap-type:none;padding:4px 2px 10px;flex:0 0 auto}
+html[data-app="admin"] #p-settings .hm-pager > .home-sec,html[data-app="admin"] body.on-settings #p-settings .hm-pager > .home-sec{min-height:0;padding:9px 8px 10px;scroll-snap-align:none;border-radius:20px;background:rgba(255,255,255,.13)!important;border:1px solid rgba(255,255,255,.22)!important;-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 6px 18px rgba(0,0,0,.18)!important}
+html[data-app="admin"] #p-settings .hm-pager > .home-sec .home-gh{font-size:15px;margin:0 6px 6px}
+html[data-app="admin"] #p-settings .hm-pager .hs-grid.home-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px 2px;margin:0;padding:0 2px}
+html[data-app="admin"] #p-settings .hm-pager .hs-ic{width:46px;height:46px;border-radius:11px}
+html[data-app="admin"] #p-settings .hm-pager .hs-ic svg{width:27px;height:27px}
+html[data-app="admin"] #p-settings .hm-pager .hs-lb{font-size:11.5px;line-height:1.15;white-space:normal;overflow:hidden;text-align:center;overflow-wrap:anywhere;max-width:100%;padding:0 1px}
+html[data-app="admin"] #p-settings .hm-dots,html[data-app="admin"] body.on-settings:has(#hmPager) #p-settings .hm-dots{display:none!important}
+}
+/* (2.99.504 – LỆNH 500 b) a narrow booking: the name on ONE line, cut neatly with '…'; the services on ONE line (the 1st, '…', then '+N') – one tap shows everything */
+.appt.ns-one .nstx .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal}
+.appt.ns-one .nstx .sv{display:block;-webkit-line-clamp:unset;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appt.ns-one .nstx .sv:not(.more){max-width:100%}
+.appt.ns-one .nstx .svrow{display:flex;align-items:baseline;gap:3px;min-width:0;flex:none}.appt.ns-one .nstx .svrow .sv{flex:1 1 auto;min-width:0}.appt.ns-one .nstx .svrow .sv.more{flex:none;display:inline-block}
+.appt-peek .pk-st{font-weight:700;opacity:.95}
+.appt-peek .pk-ph{opacity:.95}
+/* (2.99.505 – LỆNH 504, anh Logan 30/10) Appointments (owner + manager): the time column narrow (~48px, smaller than a tech column) – the rest goes to the techs.
+   Whole hours '10' + a small 'AM' under it; 15 / 30 / 45 small and gray; right-aligned next to the grid. The corner above it narrows the same. */
+html[data-app="admin"] #grid,html[data-app="manager"] #grid{--time-w:48px}
+html[data-app="admin"] #grid .times div,html[data-app="manager"] #grid .times div{padding-right:5px;text-align:right;font-size:11.5px;color:#8A93A3;white-space:nowrap}
+html[data-app="admin"] #grid .times .hr,html[data-app="manager"] #grid .times .hr{font-size:16px;font-weight:700;color:#111;line-height:1}
+html[data-app="admin"] #grid .times .hr small,html[data-app="manager"] #grid .times .hr small{display:block;font-size:10px;font-weight:700;color:#6B7280;margin-top:1px;letter-spacing:.02em}
+html.look-dark[data-app="admin"] #grid .times .hr,html.look-dark[data-app="manager"] #grid .times .hr{color:#F2F4F8}
+html.look-dark[data-app="admin"] #grid .times div:not(.hr),html.look-dark[data-app="manager"] #grid .times div:not(.hr),html.look-dark[data-app="admin"] #grid .times .hr small,html.look-dark[data-app="manager"] #grid .times .hr small{color:#A7B0C2}
+/* (2.99.506 – LỆNH 503, anh Logan 30/10) ONE dock for every main page of the owner: Home = Appointments = Check-in = Receipts –
+   5 buttons Check-in · Appts · Receipts · Book · Home, the same 40px pictures, the same words, the same frosted glass, flush on the bottom (the small one, no big Home one).
+   (Home's big glass dock of 2.99.483/484 is undone here with the values of the other pages; Log out left the dock – bottom of Home + last row of Settings.) */
+html[data-app="admin"] #tabbar.tabbar #tabOut{display:none!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar{min-height:64px!important;box-sizing:border-box;padding:4px 2px calc(2px + env(safe-area-inset-bottom,0px))!important;gap:0;border-radius:18px 18px 0 0!important;background:rgba(255,255,255,.72)!important;-webkit-backdrop-filter:blur(20px) saturate(170%);backdrop-filter:blur(20px) saturate(170%);border:1px solid rgba(0,0,0,.08)!important;border-bottom:0!important;box-shadow:0 6px 22px rgba(0,0,0,.14)!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button{flex:1 1 0;min-width:0;padding:3px 0 2px;gap:2px;border-radius:16px;color:#222!important;text-shadow:none!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-size:11px!important;font-weight:600;letter-spacing:-.01em;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#222!important;text-shadow:none!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img{width:40px!important;height:40px!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 8px rgba(0,0,0,.22)!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{width:40px!important;height:40px!important;padding:8px!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 3px 8px rgba(0,0,0,.22)!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button.on{background:rgba(40,95,156,.12)!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button.on span{color:var(--ns-blue,#285F9C)!important;font-weight:800}
+html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(26,33,50,.72)!important;border-color:rgba(255,255,255,.12)!important}
+html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button,html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{color:#F2F4F8!important}
+html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button.on{background:rgba(125,179,255,.16)!important}
+html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button.on span{color:#9CC3FF!important}
+@media (max-width:400px){html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button[data-short] span[data-short]{font-size:0!important}
+  html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button[data-short] span[data-short]::after{content:attr(data-short);font-size:11px}}
+/* Log out: small words at the bottom of Home (under NailFlowApp / Support) and the last row of Settings */
+html[data-app="admin"] .hm-info .hm-out{margin:4px 0 0;min-height:32px;padding:4px 14px;border:0;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;font:inherit;font-size:13px;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.55);cursor:pointer}
+html[data-app="admin"] .set-outbox{margin-top:18px}
+html[data-app="admin"] .set-out{width:100%;justify-content:center;color:#C62828;font-weight:700;border:0;background:none;font:inherit;font-weight:700;min-height:44px;cursor:pointer}
+/* (2.99.507 – LỆNH 505) a tech's pay slip: 1 big TOTAL PAY, Check · Cash under it, the sum like a receipt (numbers in a right column), edit check/cash folded, Print + Text + Close stuck to the bottom */
+.pt-cust{margin:-4px 0 8px}
+.pt-total{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#EEF4FC;border:1px solid #BCD3EE;border-radius:14px;padding:12px 14px;margin:0 0 8px}
+.pt-total span{font-size:14px;font-weight:800;letter-spacing:.02em;color:#1F4E8C}
+.pt-total b{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums}
+.pt-cc{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+.pt-cc>div{display:flex;justify-content:space-between;align-items:baseline;gap:6px;background:#fff;border:1px solid var(--line,#D8DEE8);border-radius:12px;padding:8px 12px}
+.pt-cc span{font-size:13px;color:var(--muted,#626C80);font-weight:600}.pt-cc b{font-size:18px;font-variant-numeric:tabular-nums}
+.pt-cc>div:only-child{grid-column:1/-1}
+.pt-calc{width:100%;border-collapse:collapse;margin:4px 0 10px;font-size:15px}
+.pt-calc th{text-align:left;font-weight:500;padding:5px 0;color:inherit}
+.pt-calc th small{color:var(--muted,#626C80);font-weight:400}
+.pt-calc td{text-align:right;padding:5px 0;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pt-calc tr.pt-sub th,.pt-calc tr.pt-sub td{font-weight:700;border-top:1px solid var(--line,#D8DEE8)}
+.pt-calc tr.pt-tot th,.pt-calc tr.pt-tot td{font-weight:900;font-size:17px;border-top:3px double currentColor;padding-top:7px}
+.pt-edit{border:1px solid var(--line,#D8DEE8);border-radius:12px;padding:6px 12px;margin:0 0 10px;background:var(--card,#fff)}
+.pt-edit summary{cursor:pointer;font-weight:700;min-height:36px;display:flex;align-items:center;list-style:none}
+.pt-edit summary::-webkit-details-marker{display:none}
+.pt-edit[open] summary span{display:inline-block;transform:rotate(90deg)}
+.pt-edit summary span{margin-left:6px}
+.pt-paid{margin:2px 0 8px}
+.pt-foot{position:sticky;bottom:0;z-index:3;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px -4px 0;padding:10px 4px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg,#F2F2F7);border-top:1px solid var(--line,#D8DEE8)}
+.pt-foot>.btn,.pt-foot #ptText{flex:1 1 0;min-width:0;min-height:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pt-foot>.btn.x{flex:0 0 auto;padding-left:16px;padding-right:16px}
+.pt-foot .pt-text p,.pt-foot #ptTxBox{flex:1 1 100%}
+.pt-foot #ptTxBox:empty{display:none}
+html.look-dark .pt-total{background:#1D2A3D;border-color:#2F4A6E}html.look-dark .pt-total span{color:#9CC3FF}
+html.look-dark .pt-cc>div{background:#1A2132;border-color:#2A3347}
+html.look-dark .pt-foot,html.look-dark .pt-edit{background:#1A2132;border-color:#2A3347}
+/* (2.99.508 – LỆNH 506) Auto texts: the owner's status card */
+.as-stat{display:block;font-weight:700;font-size:15px;line-height:1.4;padding:12px 14px;text-decoration:none}
+.as-stat.ok{background:#E8F6EC;border-color:#9ED3AE;color:#14532D}
+.as-stat.hand{background:#F4F6FA;color:#374151}
+.as-stat.bad{background:#FDECEC;border-color:#F3A6A6;color:#B42318}
+html.look-dark .as-stat.ok{background:#14301F;border-color:#2C6B43;color:#B7F0C9}html.look-dark .as-stat.hand{background:#1A2132;color:#D7DCE6}html.look-dark .as-stat.bad{background:#3A1717;border-color:#7A2B2B;color:#FFB4B4}
+/* (2.99.509  CHAT, anh Logan 30/10 00:47) time column a little wider + 15 / 30 / 45 easier to read */
+html[data-app="admin"] #grid,html[data-app="manager"] #grid{--time-w:58px}
+html[data-app="admin"] #grid .times div:not(.hr),html[data-app="manager"] #grid .times div:not(.hr){font-size:14px;font-weight:600;color:#4B5563}
+html.look-dark[data-app="admin"] #grid .times div:not(.hr),html.look-dark[data-app="manager"] #grid .times div:not(.hr){color:#C9D0DC}
+/* (2.99.510  CHAT, anh Logan 30/10 00:48+00:50) the owner's dock on EVERY page = clear glass like the iPhone (no white milk layer of 506) + bigger icons (54px, 48px on a small phone) */
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(255,255,255,.28)!important;-webkit-backdrop-filter:blur(26px) saturate(180%)!important;backdrop-filter:blur(26px) saturate(180%)!important;border:0!important;border-top:1px solid rgba(0,0,0,.06)!important;box-shadow:none!important;padding-top:7px!important;min-height:0!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(255,255,255,.16)!important;border-top-color:rgba(255,255,255,.30)!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{background:rgba(15,20,32,.40)!important;border-top-color:rgba(255,255,255,.08)!important}
+html.look-dark[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar{background:rgba(10,16,34,.22)!important;border-top-color:rgba(255,255,255,.14)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-img,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img{width:54px!important;height:54px!important;border-radius:12px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 4px 10px rgba(0,0,0,.22)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-book svg,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{width:54px!important;height:54px!important;padding:12px!important;border-radius:12px!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button span,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-size:12px!important;font-weight:600}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{color:#fff!important;text-shadow:0 1px 3px rgba(0,0,0,.55)!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button.on{background:rgba(255,255,255,.18)!important}
+@media (max-width:380px){html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-img,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img,html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-book svg,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{width:48px!important;height:48px!important}html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-book svg,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-book svg{padding:10px!important}}
+
+/* (2.99.512  CHAT, anh Logan 30/10 00:57) Appointments: '+ Book' at the top right of the day strip (in the old Find place), big + blue; the dock: Messages in Book's place */
+html[data-app="admin"] #p-appts.has-find-ic > #dateStrip{padding-right:118px}
+html[data-app="admin"] .ap-find-ic.ap-book-ic{width:auto;min-width:108px;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:6px;border:0;color:#fff;font-size:18px;font-weight:800;letter-spacing:-.01em;background:linear-gradient(180deg,#4FA3FF 0%,#1F6FE5 55%,#1557C2 100%)!important;box-shadow:-6px 0 12px -6px rgba(0,0,0,.25)}
+html[data-app="admin"] .ap-find-ic.ap-book-ic svg{width:26px;height:26px;flex:0 0 auto}
+.tabbar .tab-msg{position:relative;flex:1 1 0;min-width:0}
+.tabbar .tab-msg.has-ti svg{display:none}
+.tabbar .tab-msg .tab-img{display:block}
+.tabbar .tab-msg .tab-badge{top:0;left:calc(50% + 14px)}
+/* (2.99.513  CHAT, anh Logan 30/10 01:10 "nt Book khng p") Book = a small round blue (+) like the iPhone Calendar, the word 'Book' under it  the same narrow place as the old , the dates are not covered */
+html[data-app="admin"] #p-appts.has-find-ic > #dateStrip{padding-right:66px}
+html[data-app="admin"] .ap-find-ic.ap-book-ic{width:64px;min-width:0;padding:0;flex-direction:column;gap:3px;color:#1F6FE5;font-size:12px;font-weight:700;background:var(--card,#fff)!important;border-left:1px solid var(--line,#E3E5E8);box-shadow:-6px 0 10px -6px rgba(0,0,0,.18)}
+html[data-app="admin"] .ap-find-ic.ap-book-ic svg{width:44px;height:44px;padding:9px;box-sizing:border-box;border-radius:50%;color:#fff;background:linear-gradient(180deg,#4FA3FF 0%,#1F6FE5 60%,#1557C2 100%);box-shadow:0 3px 8px rgba(31,111,229,.35)}
+html.look-dark[data-app="admin"] .ap-find-ic.ap-book-ic{background:#1A2132!important;border-left-color:#2C3546;color:#7DB3FF}
+/* (2.99.515  CHAT, anh Logan 30/10 01:19 "icon ging Android, khng ging iPhone") step 1: like the iPhone  no shadow under the icons, no white rim, thin names with a light shadow (Home + dock) */
+html[data-app="admin"] #p-settings .hm-pager .hs-ic{box-shadow:none!important}
+html[data-app="admin"] #p-settings .hm-pager .hs-ic::after{border:0!important}
+html[data-app="admin"] body.on-settings #p-settings .hm-pager .hs-lb{font-weight:500!important;letter-spacing:0;text-shadow:0 1px 2px rgba(0,0,0,.35)!important}
+html[data-app="admin"] #tabbar.tabbar .tab-img,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar .tab-img,html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar .tab-img{box-shadow:none!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button span,html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{font-weight:500!important}
+html[data-app="admin"] body.on-settings:has(#hmPager) #tabbar.tabbar button span{text-shadow:0 1px 2px rgba(0,0,0,.35)!important}
+
+/* (2.99.518  CHAT, anh Logan 30/10 01:30 "ch Book b ct, khng cn icon") Book = the word only, in a blue rounded button, centered (nothing cut) */
+html[data-app="admin"] .ap-find-ic.ap-book-ic{justify-content:center;align-items:center;gap:0;padding:0 5px}
+html[data-app="admin"] .ap-find-ic.ap-book-ic svg{display:none!important}
+html[data-app="admin"] .ap-find-ic.ap-book-ic span{display:block;width:100%;padding:11px 0;border-radius:12px;text-align:center;color:#fff;font-size:16px;font-weight:700;line-height:1;background:linear-gradient(180deg,#4FA3FF 0%,#1F6FE5 60%,#1557C2 100%);box-shadow:0 2px 6px rgba(31,111,229,.35)}
+
+/* (2.99.520  CHAT, anh Logan 30/10 01:36 duyt) like the iPhone: the wallpaper ONLY on Home; every page inside (Appointments, Check-in, Receipts, Payroll, Close day, History, Messages)
+   = the iPhone light gray page, white cards with black words, gray group titles, the segment bar iPhone gray with a white chosen button, the dock = light frosted glass (517/519 wallpaper removed) */
+html[data-app="admin"] body:not(.on-settings) #app{background:#F2F2F7!important}
+html[data-app="admin"] body:not(.on-settings) .panel:not([hidden]){background:transparent}
+html[data-app="admin"] body:not(.on-settings) .seg{background:rgba(118,118,128,.12)!important;border:0!important}
+html[data-app="admin"] body:not(.on-settings) .seg > button{color:#111!important;text-shadow:none!important}
+html[data-app="admin"] body:not(.on-settings) .seg > button.on{background:#fff!important;color:#111!important;box-shadow:0 1px 3px rgba(0,0,0,.12)!important}
+html[data-app="admin"] body:not(.on-settings) .page h3,html[data-app="admin"] body:not(.on-settings) .panel > h3{color:#6D6D72!important;text-shadow:none!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{background:rgba(250,250,252,.86)!important;-webkit-backdrop-filter:blur(24px) saturate(180%)!important;backdrop-filter:blur(24px) saturate(180%)!important;border-top:1px solid rgba(0,0,0,.10)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button,html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button span{color:#3C3C43!important;text-shadow:none!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on,html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar #tabMsg.on{background:rgba(0,122,255,.10)!important}
+html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on span,html[data-app="admin"] body:not(.on-settings) #tabbar.tabbar #tabMsg.on span{color:#007AFF!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #app{background:#000!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) .seg{background:rgba(118,118,128,.24)!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) .seg > button{color:#F2F4F8!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) .seg > button.on{background:#636366!important;color:#fff!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) .page h3,html.look-dark[data-app="admin"] body:not(.on-settings) .panel > h3{color:#8E8E93!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar{background:rgba(22,22,24,.86)!important;border-top-color:rgba(255,255,255,.10)!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button,html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button span{color:#EBEBF5!important}
+html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar button.on span,html.look-dark[data-app="admin"] body:not(.on-settings) #tabbar.tabbar #tabMsg.on span{color:#0A84FF!important}
+html[data-app="admin"] body.ib-chat:not(.on-settings) #app{background:#fff!important} /* (2.99.520) one chat = white like iPhone Messages */
+html.look-dark[data-app="admin"] body.ib-chat:not(.on-settings) #app{background:#000!important}
+/* (2.99.522  CHAT, anh Logan 30/10 01:43 "10am 11am r hn") the hour labels on the calendar: bigger + bolder, AM/PM bigger and darker */
+html[data-app="admin"] #grid .times .hr,html[data-app="manager"] #grid .times .hr{font-size:20px!important;font-weight:800!important;color:#000!important;letter-spacing:-.02em}
+html[data-app="admin"] #grid .times .hr small,html[data-app="manager"] #grid .times .hr small{font-size:12px!important;font-weight:800!important;color:#374151!important;margin-top:2px}
+html.look-dark[data-app="admin"] #grid .times .hr,html.look-dark[data-app="manager"] #grid .times .hr{color:#fff!important}
+html.look-dark[data-app="admin"] #grid .times .hr small,html.look-dark[data-app="manager"] #grid .times .hr small{color:#D1D5DB!important}
+/* (2.99.523  CHAT, anh Logan 30/10 01:45) the hour and AM/PM on ONE line ("10 AM"), fits the 58px column */
+html[data-app="admin"] #grid .times .hr,html[data-app="manager"] #grid .times .hr{white-space:nowrap;font-size:19px!important}
+html[data-app="admin"] #grid .times .hr small,html[data-app="manager"] #grid .times .hr small{display:inline!important;font-size:11px!important;margin:0 0 0 2px!important;letter-spacing:0}
+
+/* (2.99.524) Services: the real-time line under a service */
+.svt-hint{grid-column:1/-1;width:100%;margin:4px 0 0;padding:6px 10px;border-radius:10px;background:#FFF7E6;color:#8A5A00;font-size:13px;font-weight:600}
+html.look-dark .svt-hint{background:#3A2E12;color:#FFD58A}
+
+/* (2.99.525  CHAT, anh Logan 30/10 01:59) Reports: the Day/Week/Month bar under the chart title, a legend under the chart, the dates under the columns readable */
+.rp-legend{margin:2px 0 14px}.rp-legend .rp-k{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:3px}
+/* the dates under the columns were cut: .rp-chart has overflow-x:auto (so y is clipped too) and the labels sit 18px BELOW it  room inside it now */
+.rp-chart{height:174px!important;padding-bottom:24px!important}
+.rp-chart .rp-col small{font-size:11px;font-weight:600;color:#6D6D72}
+
+/* (2.99.528 - CHAT, anh Logan 30/10 02:19) the Gift cards page: no big 'Sell gift card' button for the owner - Home has the Sell gift card icon */
+html[data-app="admin"] #gfSell{display:none!important}
+
+/* (2.99.532) Settings → Checkout, tax & payments: the start day is set once – shown only when it has a warning; the deposits fold */
+.field.cx-start:not(:has(.cx-before)){display:none}
+.cx-dep{margin-top:12px}.cx-dep > summary{font-size:17px;font-weight:700;padding:12px 2px;cursor:pointer}
+/* (2.99.536 - anh Logan 30/10 14:33) a page opened from Home (Services, Win-back, every Settings page): the Home row stays on top while scrolling, like 1099 */
+#p-settings > .subhead:has(.homeback){position:sticky;top:-10px;z-index:5;background:var(--ios-bg,#F2F2F7);box-shadow:0 0 0 100vmax var(--ios-bg,#F2F2F7);clip-path:inset(0 -100vmax);margin-bottom:8px}
+:where(html.look-dark) #p-settings > .subhead:has(.homeback){background:var(--ios-bg,#212136);box-shadow:0 0 0 100vmax var(--ios-bg,#212136)}
+
+/* (2.99.538 - anh Logan 30/10 17:38) the OWNER's dock like the iPhone, every page: 4 big clear icons, no names, a floating see-through glass panel; the page scrolls under it */
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar{position:fixed!important;left:50%!important;right:auto!important;transform:translateX(-50%);bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;width:min(560px,calc(100% - 16px))!important;z-index:60;margin:0!important;padding:9px 6px!important;min-height:0!important;gap:0!important;border-radius:34px!important;background:rgba(255,255,255,.22)!important;-webkit-backdrop-filter:blur(28px) saturate(180%)!important;backdrop-filter:blur(28px) saturate(180%)!important;border:1px solid rgba(255,255,255,.45)!important;box-shadow:0 10px 30px rgba(0,0,0,.18)!important}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar button{flex:1 1 0!important;min-width:0!important;padding:0!important;background:transparent!important;border-radius:16px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar button > span:not(.tab-badge){display:none!important}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar .tab-img{width:62px!important;height:62px!important;border-radius:15px!important;box-shadow:0 2px 6px rgba(0,0,0,.18)!important}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar button:active .tab-img{opacity:.75}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar .tab-badge{top:-4px!important;left:calc(50% + 18px)!important}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar .tab-dot{top:-2px!important;right:calc(50% - 34px)!important}
+:where(html.look-dark)[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar{background:rgba(30,30,34,.30)!important;border-color:rgba(255,255,255,.16)!important}
+html[data-app="admin"] body.own-dock:not(.no-dock):not(.ib-chat) #app > .panel{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important;box-sizing:border-box}
+@media (max-width:380px){html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar .tab-img{width:56px!important;height:56px!important;border-radius:13px!important}}
+html[data-app="admin"] body.own-dock #tabbar#tabbar#tabbar.tabbar button[hidden]{display:none!important}
+
+/* (2.99.539 - anh Logan 30/10 18:10) ONE CHAT like iPhone Messages: the reply box down at the bottom edge (the 538 dock space was pushing it up), the send button = a round blue up arrow inside the box */
+body.ib-chat #p-messages .composer{position:relative;border-top:0!important;padding-top:6px}
+body.ib-chat #p-messages .composer textarea{border-radius:20px!important;padding:8px 44px 8px 14px!important;min-height:38px!important}
+body.ib-chat #p-messages .composer #thSend.ib-send{position:absolute;right:4px;bottom:4px;width:31px;height:31px;min-height:0!important;min-width:0!important;padding:0!important;margin:0;border:0;border-radius:50%!important;background:#007AFF!important;color:#fff!important;display:flex;align-items:center;justify-content:center;box-shadow:none!important}
+body.ib-chat #p-messages .composer #thSend.ib-send:disabled{background:#AEB9C8!important}
+body.ib-chat #p-messages .composer #thSend.ib-send svg{width:17px;height:17px;display:block}
+/* (2.99.539 - anh Logan 30/10 18:12 Refer) a page opened from Home: its title row (.sheet-head, sticky too, drawn later) slid over the sticky Home row and hid it - the title now scrolls away like an iPhone large title, Home stays on top */
+#sheet.as-page .sheet-head{position:static!important}
+#sheet.as-page .page-top{z-index:6!important}
+/* (2.99.542 - anh Logan 30/10 19:00, App iPhone) ROOT CAUSE: the salon-name bar (.ns-head) carried the space for the clock (safe area) and #app has none when that bar exists (#app:has(> .ns-head){padding-top:0}); the owner admin hides that bar (html[data-app=admin] .ns-head{display:none}) -> no space left: the top row under the clock. In the app the page goes under the clock (safe area 62px); the Home Screen web app starts below it (0) so it never showed there. Fix: #app keeps the safe area itself (Settings keeps its own border). */
+html[data-app="admin"] body:not(.on-settings) #app:has(> .ns-head){padding-top:env(safe-area-inset-top,0px)!important}
+/* (2.99.543 - anh Logan 30/10 19:07) ROOT CAUSE: the 538 dock floats (position:fixed, z-index 60) above every pop-up page (Book, Checkout, ...) and covered their bottom buttons. Like the iPhone: the dock only on the 4 main pages - any open sheet / page hides it. */
+html[data-app="admin"] body.own-dock:has(#sheet:not([hidden])) #tabbar#tabbar#tabbar.tabbar{display:none!important}
+
+/* (2.99.561 - LENH 561, anh Logan 30/10 22:58) like the iPhone: the owner's dock only on Home - the pages use the whole screen (to the bottom edge), '‹ Home' at the top stays while scrolling */
+html[data-app="admin"] body.own-dock.no-dock:not(.ib-chat) #app > .panel.page:not(#p-appts){padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;box-sizing:border-box}
+html[data-app="admin"] .homeback.own-hb,html[data-app="admin"] #homeBar.hb-seg .homeback{min-width:0;min-height:40px;margin:0;padding:0 13px 0 10px;font-size:16px;flex:0 0 auto;white-space:nowrap}
+#homeBar.hb-seg{gap:8px}
+#homeBar.hb-seg .msg-seg button{padding-left:6px;padding-right:6px}
+/* Appointments: '‹ Home' at the left of the day strip, like Book at its right */
+html[data-app="admin"] #p-appts.has-home-ic{position:relative}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip{padding-left:86px}
+html[data-app="admin"] .ap-home-ic{position:absolute;left:0;z-index:5;width:84px;display:flex;align-items:center;justify-content:center;background:var(--card,#fff);border-right:1px solid var(--line,#E3E5E8);box-shadow:6px 0 10px -6px rgba(0,0,0,.18)}
+html.look-dark[data-app="admin"] .ap-home-ic{background:#1A2132;border-right-color:#2C3546}
+html[data-app="admin"] .ap-home-ic .homeback.own-hb{padding:0 9px 0 7px;font-size:15px;min-height:36px}
+@media (max-width:380px){html[data-app="admin"] #p-appts.has-home-ic > #dateStrip{padding-left:78px}html[data-app="admin"] .ap-home-ic{width:76px}html[data-app="admin"] .ap-home-ic .homeback.own-hb{font-size:14px;padding:0 7px 0 6px}}
+/* Check-in: '‹ Home' in the title row, the row stays on top while scrolling */
+html[data-app="admin"] #p-checkin > h2.own-h{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:10px;background:var(--ios-bg,#F2F2F7);box-shadow:0 0 0 100vmax var(--ios-bg,#F2F2F7);clip-path:inset(0 -100vmax);padding-top:4px;padding-bottom:6px}
+html[data-app="admin"] #p-checkin > h2.own-h .own-ht{flex:1;min-width:0;font-size:clamp(18px,5.2vw,24px);line-height:1.15}
+:where(html.look-dark)[data-app="admin"] #p-checkin > h2.own-h{background:var(--ios-bg,#212136);box-shadow:0 0 0 100vmax var(--ios-bg,#212136)}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip > button.day{flex:0 0 auto;min-width:64px;padding:0 4px;box-sizing:border-box}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip .day .n{font-size:clamp(22px,6.2vw,28px)}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip .day .w{font-size:10px}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip .day .m{font-size:9.5px}
+
+/* (2.99.565 - anh Logan 30/10 23:45) the day strip (30 FRI / OCTOBER) the same size as the hours at the left (19px bold, small 11px) */
+html[data-app="admin"] #dateStrip .day .n{font-size:19px!important;font-weight:800!important}
+html[data-app="admin"] #dateStrip .day .w{font-size:11px!important;font-weight:700}
+html[data-app="admin"] #dateStrip .day .m{font-size:10px!important}
+html[data-app="admin"] #p-appts.has-home-ic > #dateStrip > button.day,html[data-app="admin"] #dateStrip > button.day{min-width:54px}
+
+/* (2.99.568 - anh Logan 31/10 00:09) the chosen day: orange line under it TWICE as thick (4 -> 8 px) */
+html[data-app="admin"] #dateStrip .day.sel{border-bottom-width:8px!important;border-bottom-color:var(--ns-orange)!important;padding-bottom:0!important}
+/* (2.99.569 - anh Logan 31/10 00:12) the chosen day in BLUE (like Book / the iPhone Calendar) - orange stays only for Sat/Sun */
+html[data-app="admin"] #dateStrip .day.sel{border-bottom-color:#2563EB!important;background:#E3EDFF!important}
+html[data-app="admin"] #dateStrip .day.sel .n,html[data-app="admin"] #dateStrip .day.sel .w{color:#2563EB!important}
+:where(html.look-dark)[data-app="admin"] #dateStrip .day.sel{background:#1E3A6E!important;border-bottom-color:#4DA3FF!important}
+:where(html.look-dark)[data-app="admin"] #dateStrip .day.sel .n,:where(html.look-dark)[data-app="admin"] #dateStrip .day.sel .w{color:#8FC2FF!important}
+/* (hair-ui) no Turns in the hair salon (Luna 19:50): the Check-in page button to the Turns page */
+html[data-app="admin"] #ckTurns{display:none!important}
+/* (hair 04/11, anh Logan "làm lại như của nails") svTidy now runs on hair too: the group rows under "Edit groups" keep the hair look (one wrapping line) */
+.sv-tidy #sgList .sg-row{display:flex!important;flex-wrap:wrap}
