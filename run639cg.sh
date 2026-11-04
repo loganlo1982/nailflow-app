@@ -1,6 +1,6 @@
 #!/bin/bash
 # CHAT 03/11 23:50: len chuoi 639c d e f g (QA-0021 0009 0015 0014 0010) – LAMWEB. Phase copy | live
-P=$1; S=__SHA__; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
+P=$1; S=86f1f230ee18cd556a3f9959dc64f7fba8c6fc41; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
 W=/root/f639cg; rm -rf $W; mkdir -p $W; cd $W
 for f in fix639c.py fix639d.py fix639e.py fix639f.py fix639g.py test618-639g.zip; do curl -sfL -o $f $B/$f || { echo "CURL FAIL $f"; exit 1; }; done
 sha256sum fix639?.py | cut -c1-8 | tr '\n' ' '; echo "(can 6d60f165 33433ce7 5b388fda f86fca96 0d39f43b)"
