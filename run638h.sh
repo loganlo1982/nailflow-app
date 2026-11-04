@@ -1,6 +1,6 @@
 #!/bin/bash
 # CHAT 03/11: len 638h (Dejavoo UserChoice). Phase copy | live
-P=$1; S=d5a0b3948afc95a669fa9e91d38ae5d292e49d8d; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
+P=$1; S=b1c8abea46941021763b1a499415d0122e8ef601; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
 W=/root/f638h; rm -rf $W; mkdir -p $W; cd $W
 for f in fix638h.py test618-638h.zip; do curl -sfL -o $f $B/$f || { echo "CURL FAIL $f"; exit 1; }; done
 sha256sum fix638h.py test618-638h.zip | cut -c1-8 | tr '\n' ' '; echo "(can 6c292d0b ...)"
