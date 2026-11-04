@@ -12,7 +12,8 @@ if [ "$P" = copy ]; then
   WEB="/root/t638w/AN_api.php /root/t638w/LN_api.php"; T=/root/t638
 elif [ "$P" = live ]; then WEB="$ANW $LNW"; T=$REL
 else echo "usage: copy|live"; exit 1; fi
-for x in a b c d e g d2; do python3 $W/fix638$x.py $T $WEB go 2>&1 | tail -1; done
+python3 $W/fix638a.py $T go 2>&1 | tail -1
+for x in b c d e g d2; do python3 $W/fix638$x.py $T $WEB go 2>&1 | tail -1; done
 python3 $W/fixC638a.py $T go | tail -1
 echo -n "moc: "; grep -c "2.99.638b" $T/api.php $WEB | tr '\n' ' '; grep -c "638C-a" $T/assets/admin/calls.js; ls $T/inc/dejavoo*.php | wc -l
 if [ "$P" = copy ]; then
