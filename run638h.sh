@@ -8,7 +8,7 @@ REL=$(readlink -f /home/uyurpyzubx0m/app/sites/an/current)
 if [ "$P" = copy ]; then
   rm -rf /root/t638h /root/t638hw; cp -a $REL /root/t638h; mkdir /root/t638hw; cp /home/uyurpyzubx0m/public_html/api.php /root/t638hw/AN_api.php; cp /home/uyurpyzubx0m/lovenails/api.php /root/t638hw/LN_api.php
   python3 $W/fix638h.py /root/t638h go | tail -1
-  K=/root/nftest/k638h; rm -rf $K; mkdir -p $K; cd $K; unzip -q $W/test618-638h.zip; cp /root/nftest/kit/clock/nfclock.so clock/
+  K=/root/nftest/k638h; rm -rf $K; cp -a /root/nftest/kit $K; rm -rf $K/run; cd $K; unzip -qo $W/test618-638h.zip
   S2=$(grep -o '^ALL="[^"]*"' run-tests.sh | sed 's/ALL="//;s/"$//' | tr ' ' '\n' | grep -v -E '^(book611a|book620|turn609)$' | tr '\n' ' ')
   NF_WEB_APIS="/root/t638hw/AN_api.php /root/t638hw/LN_api.php" ./run-tests.sh /root/t638h $S2 > /root/kit638h.txt 2>&1
   tail -2 /root/kit638h.txt; grep "FAIL MOI [1-9]" /root/kit639.txt
