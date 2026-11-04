@@ -16,7 +16,9 @@ F = json.loads(r"""{"api.php": {"base": "2a5e4ff1", "new": "576d81a0", "A": [["'
 plan = []; bad = 0
 for f, x in F.items():
     p = f'{R}/{f}'
-    if not os.path.isfile(p): print(f, 'MISSING'); bad = 1; continue
+    if not os.path.isfile(p):
+        if f == 'pub/api.php': print(f, 'not on this server - skipped (CHAT 03/11)'); continue
+        print(f, 'MISSING'); bad = 1; continue
     s = open(p, encoding='utf-8').read(); n = [s.count(a) for a, _ in x['A']]
     al = '2.99.638b' in s; print(f, 'sha', sha(s), '(LAMWEB base', x['base'] + ')', 'anchors', *n, 'already', al)
     if al or n != [1] * len(n): bad = 1; continue
