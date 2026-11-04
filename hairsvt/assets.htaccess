@@ -1,0 +1,7 @@
+# (hair 04/11, anh Logan "load chậm") the server has no mod_expires, so phones re-downloaded every file on each open:
+# keep the files in /assets for 7 days (their links change with each version: ?v=)
+<IfModule mod_headers.c>
+<FilesMatch "\.(css|js|webp|png|jpe?g|svg|gif|ico|mp3|woff2?)$">
+Header set Cache-Control "public, max-age=604800"
+</FilesMatch>
+</IfModule>
