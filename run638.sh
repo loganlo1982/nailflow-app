@@ -1,9 +1,9 @@
 #!/bin/bash
 # CHAT 03/11 toi: len 638a+b+c (LAMWEB) + fixC638a (CHAT). Phase: copy | live
-P=$1; S=693374fb64c790c8dd118ccafc8be58da9b9f73e; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
-W=/root/f638; mkdir -p $W; cd $W
+P=$1; S=cdccc560dffabcc7018c0a85d02d468bc5579027; B=https://raw.githubusercontent.com/loganlo1982/nailflow-app/$S
+W=/root/f638; rm -rf $W; mkdir -p $W; cd $W
 for f in fix638a.py fix638b.py fix638c.py fixC638a.py test618-638c.zip; do [ -s $f ] || curl -sfL -o $f $B/$f || { echo "CURL FAIL $f"; exit 1; }; done
-sha256sum fix638a.py fix638b.py fix638c.py fixC638a.py test618-638c.zip | cut -c1-8 | tr '\n' ' '; echo " (can f8968327 416df19b c240fc77 1be88390 e25af995)"
+sha256sum fix638a.py fix638b.py fix638c.py fixC638a.py test618-638c.zip | cut -c1-8 | tr '\n' ' '; echo " (can f8968327 c1eda073 5e360e35 1be88390 e25af995)"
 REL=$(readlink -f /home/uyurpyzubx0m/app/sites/an/current); ANW=/home/uyurpyzubx0m/public_html/api.php; LNW=/home/uyurpyzubx0m/lovenails/api.php
 echo "REL=$REL"; ls -l $ANW $LNW | cut -c1-160
 if [ "$P" = copy ]; then
