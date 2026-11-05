@@ -27,5 +27,6 @@ mv "$T/rel" "$NEW"; chown -R uyurpyzubx0m:uyurpyzubx0m "$NEW"
 TS=$(date +%m%d%H%M); BK=/root/backup/pre-646-$TS; mkdir -p "$BK"; cp -p "$ANAPI" "$BK/public_html-api.php"; cp -p "$LNAPI" "$BK/lovenails-api.php"
 for a in "$ANAPI" "$LNAPI"; do A2="$a" RT="$HR" $PHP -r '$f=getenv("A2"); $s=file_get_contents($f); $k="'"'"'pr_waiting'"'"' => '"'"'prpay'"'"', "; if(substr_count($s,$k)!==1) exit(1); file_put_contents($f, str_replace($k, $k.getenv("RT"), $s));' || die "route insert $a"; $PHP -l "$a" >/dev/null || die "php -l $a"; done
 for s in $SITES; do ln -sfn ../../releases/2.99.646 "$A/sites/$s/current.new" && mv -T "$A/sites/$s/current.new" "$A/sites/$s/current"; chown -h uyurpyzubx0m:uyurpyzubx0m "$A/sites/$s/current"; done
+/scripts/restartsrv_apache_php_fpm --graceful >/dev/null 2>&1 || die "php-fpm reload";  # a release switch MUST reload PHP (05/11: its realpath cache mixed 2.99.353 and 2.99.646 files -> 500)
 for s in $SITES demo; do echo "$s -> $(readlink "$A/sites/$s/current")"; done
 rm -rf "$T"; echo "backup: $BK"; echo "DEPLOY646-OK"
