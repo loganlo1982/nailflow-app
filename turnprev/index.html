@@ -1,474 +1,503 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F2F2F7">
-<title>Turn Rules Settings – Preview</title>
+<title>Chọn cách chia khách cho thợ – Xem thử</title>
 <style>
-:root{--bar:#E8F0FB;--bg:#F2F2F7;--card:#fff;--ink:#111418;--muted:#5B6475;--line:#E3E5E8;--blue:#2563EB;--blue2:#1D4ED8;--green:#1E8E3E;--red:#D93025;--amber:#B45309;--soft:#EEF4FF}
+:root{--bar:#E8F0FB;--bg:#F2F2F7;--card:#fff;--ink:#111418;--muted:#4B5563;--line:#E3E5E8;--blue:#2563EB;--green:#1E8E3E;--red:#C62828;--amber:#B45309;--soft:#EEF4FF;--note:#F8FAFC}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;padding-bottom:calc(130px + env(safe-area-inset-bottom))}
 .wrap{max-width:640px;margin:0 auto;padding:0 16px}
-.banner{position:sticky;top:0;z-index:20;background:#FEF3C7;color:#7C2D12;border-bottom:1px solid #FCD34D;text-align:center;font-weight:800;font-size:14px;letter-spacing:.02em;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
-header{padding:18px 0 6px}
-h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
-.sub{margin:4px 0 0;color:var(--muted);font-size:17px}
-h2.sec{margin:22px 4px 8px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.pad{padding:14px}
-.presets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.preset{min-height:64px;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:10px 12px;text-align:left;font:inherit;color:inherit;cursor:pointer}
-.preset b{display:block;font-size:16px}
-.preset span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
-.preset.on{border-color:var(--blue);background:var(--soft)}
-.preset.custom{grid-column:1/-1}
-details.grp{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 10px;overflow:hidden}
-details.grp>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:58px;padding:12px 14px;cursor:pointer;font-weight:800;font-size:17px;text-transform:uppercase;letter-spacing:.02em;background:var(--bar)}
-summary .sm{text-transform:none;letter-spacing:0}
-details.grp>summary::-webkit-details-marker{display:none}
-summary .ic{font-size:22px;width:28px;text-align:center}
-summary .t{flex:1;min-width:0}
-summary .sm{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:1px;overflow-wrap:anywhere}
-summary .chev{color:#9AA3B2;font-size:20px;transition:transform .2s}
-details[open]>summary .chev{transform:rotate(90deg)}
-.body{border-top:1px solid var(--line);padding:4px 14px 12px}
-.row{padding:12px 0;border-bottom:1px solid var(--line)}
-.row:last-child{border-bottom:0}
-.lbl{font-weight:700;font-size:17px}
-.help{color:var(--muted);font-size:14px;margin-top:3px}
-.tw{display:flex;align-items:center;gap:12px}
-.tw .grow{flex:1;min-width:0}
-.sw{position:relative;flex:0 0 56px;width:56px;height:34px}
-.sw input{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer;z-index:2}
-.sw i{position:absolute;inset:0;border-radius:34px;background:#D1D5DB;transition:background .2s}
-.sw i::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
-.sw input:checked+i{background:#34C759}
-.sw input:checked+i::after{transform:translateX(22px)}
-select{width:100%;min-height:48px;margin-top:8px;font:inherit;font-size:17px;padding:0 40px 0 12px;border:1px solid #CBD2DE;border-radius:12px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%235B6475' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;-webkit-appearance:none;appearance:none;color:var(--ink)}
-.methods{display:grid;gap:8px;margin-top:10px}
-.mth{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-height:56px;cursor:pointer}
-.mth input{flex:0 0 auto;width:24px;height:24px;margin:2px 0 0;accent-color:var(--blue)}
-.mth b{display:block;font-size:17px}
-.mth span{display:block;font-size:14px;color:var(--muted)}
-.mth em{display:block;font-style:normal;font-size:13px;color:var(--blue2);margin-top:3px}
-.mth.on{border-color:var(--blue);background:var(--soft)}
-.radios{margin-top:6px}
-.rad{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 2px;border-bottom:1px solid var(--line);cursor:pointer;font-size:17px}
-.rad:last-child{border-bottom:0}
-.rad input{flex:0 0 26px;width:26px;height:26px;margin:0;accent-color:var(--blue)}
-.ex{display:inline-block;min-height:44px;padding:10px 4px;border:0;background:none;color:var(--blue);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
-.exb{margin:0 0 6px;padding:10px 12px;border-radius:10px;background:var(--soft);font-size:15px;color:var(--ink)}
-.inuse{margin:14px 0 0;padding:14px 16px;border:1px solid #2F9E74;border-radius:14px;background:rgba(47,158,116,.08)}
-.inuse b{display:block;font-size:18px;margin-bottom:6px}
-.inuse ul{margin:0;padding-left:20px}
-.inuse li{margin:3px 0;font-size:16px}
-.reco{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0 0}
-.reco .btn{min-height:48px;padding:8px 16px;font-size:16px}
-.num{display:flex;align-items:center;gap:10px;margin-top:8px}
-.num button{flex:0 0 48px;height:48px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font-size:24px;font-weight:700;color:var(--blue);cursor:pointer}
-.num output{flex:1;text-align:center;font-size:20px;font-weight:800}
-/* simulator */
-.techs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tech{border:2px solid var(--line);border-radius:14px;padding:10px;background:#fff;min-width:0}
-.tech.next{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,142,62,.18)}
-.tech .nm{display:flex;align-items:center;gap:6px;font-weight:800;font-size:18px}
-.tech .st{font-size:13px;font-weight:700;border-radius:999px;padding:2px 8px;background:#E5E7EB;color:#374151;margin-left:auto;white-space:nowrap}
-.tech .st.free{background:#DCFCE7;color:#166534}.tech .st.busy{background:#DBEAFE;color:#1E40AF}.tech .st.brk{background:#FEF3C7;color:#92400E}
-.tech .stats{font-size:13px;color:var(--muted);margin:6px 0 8px;line-height:1.35}
-.tech .stats b{color:var(--ink)}
-.tech .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.btn{min-height:44px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font:inherit;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;padding:6px 8px}
-.btn:disabled{opacity:.4}
-.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn.grn{background:var(--green);border-color:var(--green);color:#fff}
-.btn.red{color:var(--red);border-color:rgba(217,48,37,.4)}
-.btn.blk{width:100%;min-height:52px;font-size:17px}
-.simbar{display:grid;gap:8px;margin-top:12px}
-.simbar .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.nextline{margin:12px 0 0;padding:12px;border-radius:12px;background:#ECFDF5;color:#065F46;font-weight:700;font-size:16px}
-.log{margin:10px 0 0;padding:0;list-style:none;max-height:300px;overflow:auto;border-top:1px solid var(--line)}
-.log li{padding:8px 2px;border-bottom:1px solid var(--line);font-size:14px}
-.log li b{font-size:15px}
-.log li small{display:block;color:var(--muted)}
-.rot{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
-.rot th,.rot td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
-.rot th{color:var(--muted);font-size:12px;text-transform:uppercase}
-.foot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
-.foot .in{max-width:640px;margin:0 auto;display:grid;gap:4px}
+.banner{position:sticky;top:0;z-index:20;background:#FEF3C7;color:#7C2D12;border-bottom:1px solid #FCD34D;text-align:center;font-weight:800;font-size:14px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+header{padding:18px 0 4px}
+h1{margin:0;font-size:28px;line-height:1.2;font-weight:800}
+.lead{margin:8px 0 0;font-size:18px}
 .lang{display:inline-grid;grid-template-columns:1fr 1fr;gap:4px;margin:12px 0 0;padding:4px;border-radius:14px;background:#E5E7EB}
 .lang button{min-height:44px;min-width:120px;border:0;border-radius:10px;background:transparent;font:inherit;font-size:16px;font-weight:700;color:var(--muted);cursor:pointer}
 .lang button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
-.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}
-.foot .save{grid-column:1/-1;min-height:54px;font-size:18px}
-.foot small{grid-column:1/-1;text-align:center;color:var(--amber);font-weight:800;font-size:12px;letter-spacing:.03em}
-.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:#111827;color:#fff;font-weight:700;padding:12px 18px;border-radius:999px;font-size:16px;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+.words{margin:14px 0 0;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line)}
+.words b.h{display:block;font-size:17px;margin-bottom:4px}
+.words dl{margin:0}.words dt{font-weight:700;margin-top:6px}.words dd{margin:0;color:var(--muted);font-size:16px}
+.sample{margin:14px 0 0;display:grid;gap:6px}
+.sample small{color:var(--muted);font-size:15px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:16px 0 0;overflow:hidden}
+.sec>h2{margin:0;padding:14px;background:var(--bar);font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.01em;line-height:1.3}
+.sec .in{padding:4px 14px 14px}
+.q{font-weight:800;font-size:18px;margin:14px 0 4px}
+.qn{color:var(--muted);font-size:15px;margin:0 0 6px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer}
+.opt:last-of-type{border-bottom:0}
+.opt input{flex:0 0 26px;width:26px;height:26px;margin:1px 0 0;accent-color:var(--blue)}
+.opt b{display:block;font-size:18px;font-weight:700}
+.opt span{display:block;font-size:15px;color:var(--muted);margin-top:2px}
+.ex{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:var(--soft);font-size:16px}
+.ex b{display:block;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--blue);margin-bottom:2px}
+.now{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#ECFDF5;color:#065F46;font-size:16px;font-weight:600}
+.na{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--note);border:1px dashed #CBD2DE;color:var(--muted);font-size:15px}
+.must{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:#FFF7ED;border:1px solid #FDBA74;font-size:15px}
+.num{display:flex;align-items:center;gap:10px;margin:6px 0}
+.num button{flex:0 0 52px;height:52px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font-size:26px;font-weight:700;color:var(--blue);cursor:pointer}
+.num output{flex:1;text-align:center;font-size:22px;font-weight:800}
+details.more{margin:12px 0 0}
+details.more>summary{min-height:48px;display:flex;align-items:center;font-weight:700;color:var(--blue);cursor:pointer;list-style:none}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"▸";display:inline-block;width:20px;transition:transform .2s}
+details.more[open]>summary::before{transform:rotate(90deg)}
+.adv>summary{padding:14px;background:var(--bar);font-size:17px;font-weight:800;text-transform:uppercase;color:var(--ink)}
+.adv .in{padding:4px 14px 14px}
+.tag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#E5E7EB;color:#374151;font-size:12px;font-weight:700;vertical-align:middle}
+.sum{margin:16px 0 0;padding:14px 16px;border:2px solid #2F9E74;border-radius:14px;background:rgba(47,158,116,.08)}
+.sum b{display:block;font-size:19px;margin-bottom:6px}
+.sum p{margin:6px 0;font-size:17px}
+/* try it */
+.queue{display:grid;gap:8px;margin:10px 0 0}
+.tq{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px;border:2px solid var(--line);border-radius:12px;background:#fff}
+.tq.next{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,142,62,.18)}
+.tq .pos{font-size:20px;font-weight:800;text-align:center;color:var(--muted)}
+.tq .nm{font-weight:800;font-size:19px}
+.tq .st{font-size:13px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;background:#E5E7EB;color:#374151}
+.st.free{background:#DCFCE7;color:#166534}.st.busy{background:#DBEAFE;color:#1E40AF}.st.brk{background:#FEF3C7;color:#92400E}.st.out{background:#F3F4F6;color:#6B7280}.st.pen{background:#FEE2E2;color:#991B1B}
+.tq .stats{font-size:14px;color:var(--muted);margin-top:2px}
+.tq .acts{display:grid;gap:6px}
+.btn{min-height:44px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;padding:6px 10px}
+.btn:disabled{opacity:.35}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.grn{background:var(--green);border-color:var(--green);color:#fff}
+.btn.red{color:var(--red);border-color:rgba(198,40,40,.4)}
+.btn.blk{width:100%;min-height:52px;font-size:17px}
+.acts2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.acts2 .wide{grid-column:1/-1}
+.nextline{margin:12px 0 0;padding:12px;border-radius:12px;background:#ECFDF5;color:#065F46;font-weight:700}
+.log{margin:10px 0 0;padding:0;list-style:none;max-height:340px;overflow:auto;border-top:1px solid var(--line)}
+.log li{padding:8px 2px;border-bottom:1px solid var(--line);font-size:15px}
+.log li b{display:block;font-size:16px}
+.log li small{display:block;color:var(--muted)}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.foot .fi{max-width:640px;margin:0 auto;display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.foot .btn{min-height:52px;font-size:17px}
+.foot small{grid-column:1/-1;text-align:center;color:var(--amber);font-weight:700;font-size:13px}
+.toast{position:fixed;left:50%;bottom:calc(130px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:#111827;color:#fff;font-weight:700;padding:12px 18px;border-radius:999px;font-size:16px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;text-align:center}
 .toast.show{opacity:1}
 .sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}
 .sheet[hidden]{display:none}
 .sheet .box{background:#fff;width:100%;max-width:640px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
-.sheet h3{margin:0 0 6px;font-size:22px}
+.sheet h3{margin:0 0 6px;font-size:21px}
 .choices{display:grid;gap:8px;margin:10px 0}
 @media (prefers-color-scheme:dark){
- :root{--bar:#1E2A44;--bg:#0F141E;--card:#1A2132;--ink:#E6EAF2;--muted:#A3ACBD;--line:#2C3546;--soft:#1E2A44}
- select,.num button,.btn,.tech,.preset{background-color:#1A2132;color:var(--ink);border-color:#3F4D64}
+ :root{--bar:#1E2A44;--bg:#0F141E;--card:#1A2132;--ink:#E6EAF2;--muted:#A3ACBD;--line:#2C3546;--soft:#1E2A44;--note:#141B29}
+ .btn,.num button,.tq{background:#1A2132;color:var(--ink);border-color:#3F4D64}
  .btn.pri{background:var(--blue);color:#fff}.btn.grn{background:var(--green);color:#fff}
- .foot{background:rgba(26,33,50,.96)}.sheet .box{background:#1A2132}
- .nextline{background:#0B3B2A;color:#A7F3D0}
+ .foot{background:rgba(26,33,50,.97)}.sheet .box{background:#1A2132}
+ .now,.nextline{background:#0B3B2A;color:#A7F3D0}
  .banner{background:#3B2A08;color:#FCD34D;border-color:#7C5A10}
- .tech .st{background:#2C3546;color:#D1D5DB}
- .lang{background:#0F141E}
+ .must{background:#2A1D0E;border-color:#7C5A10}
+ .lang{background:#0F141E}.tag,.tq .st{background:#2C3546;color:#D1D5DB}
 }
 </style>
 </head>
 <body>
-<div class="banner" data-t>PREVIEW ONLY – NOT SAVED TO SALON</div>
+<div class="banner" id="banner"></div>
 <div class="wrap">
 <header>
-  <h1 data-t>Turn Rules Settings</h1>
-  <p class="sub" data-t>Customize how technicians receive customers.</p>
-  <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en">English</button><button type="button" data-lang="vi">Tiếng Việt</button></div>
+  <h1 id="h1"></h1>
+  <p class="lead" id="lead"></p>
+  <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="vi">Tiếng Việt</button><button type="button" data-lang="en">English</button></div>
 </header>
-
-<div class="inuse" id="inuse"></div>
-<div class="reco"><span data-t>⭐ = Recommended.</span><button class="btn pri" id="bReco" data-t>⭐ Use the recommended rules</button></div>
-<div class="tools"><button class="btn" id="bReset" data-t>↺ Reset Demo</button><button class="btn" id="bRot" data-t>▶ Preview Turn Rotation</button></div>
-<h2 class="sec" data-t>Quick start</h2>
-<div class="presets" id="presets"></div>
-
-<h2 class="sec" data-t>Rules</h2>
-<div id="groups"></div>
-
-<h2 class="sec" id="simTop" data-t>Try it – 4 technicians</h2>
-<div class="card pad">
-  <div class="help" style="margin:0 0 10px" data-t>Sample techs only. Tap the buttons to see who gets the next customer with your rules.</div>
-  <div class="techs" id="techs"></div>
-  <div class="nextline" id="nextLine"></div>
-  <div class="simbar">
-    <button class="btn pri blk" id="bWalk" data-t>🚶 Walk-in customer arrives</button>
-    <div class="two">
-      <button class="btn" id="bReq" data-t>⭐ Customer requests a tech</button>
-      <button class="btn" id="bAppt" data-t>📅 Appointment arrives</button>
-    </div>
-    <div class="two">
-      <button class="btn red" id="bRefuse" data-t>✋ Next tech refuses</button>
-      <button class="btn" id="bClear" data-t>↺ Start the day over</button>
-    </div>
-  </div>
-  <ul class="log" id="log"></ul>
+<div class="words" id="words"></div>
+<div class="sample"><button type="button" class="btn pri blk" id="bSample"></button><small id="sampleNote"></small></div>
+<div id="parts"></div>
+<details class="sec adv" id="adv"><summary id="advT"></summary><div class="in" id="advBody"></div></details>
+<div class="sum" id="sum"></div>
+<section class="sec" id="try"><h2 id="tryT"></h2><div class="in" id="tryBody"></div></section>
+<div style="height:16px"></div>
 </div>
-
-<h2 class="sec" id="rotTop" data-t>Turn rotation preview</h2>
-<div class="card pad">
-  <div class="help" style="margin:0" data-t>The same 11 customers with your rules: walk-ins, 1 request for Lisa, 1 appointment for Kim. Jenny takes a break after customer 4 and comes back after customer 9.</div>
-  <div id="rot"></div>
-</div>
-<div style="height:20px"></div>
-</div>
-
-<div class="foot"><div class="in">
-  <button class="btn grn save" id="bSave" data-t>Save Settings (Demo)</button>
-  <small data-t>PREVIEW ONLY – NOT SAVED TO SALON</small>
+<div class="foot"><div class="fi">
+  <button type="button" class="btn grn" id="bSave"></button>
+  <button type="button" class="btn" id="bReset"></button>
+  <small id="saveNote"></small>
 </div></div>
 <div class="toast" id="toast"></div>
 <div class="sheet" id="sheet" hidden><div class="box" id="sheetBox"></div></div>
-
 <script>
 (function () {
 'use strict';
-var KEY = 'nf_turn_rules_preview_v1', LKEY = 'nf_turn_rules_preview_lang';
-var LANG = (function () { try { return localStorage.getItem(LKEY) === 'vi' ? 'vi' : 'en'; } catch (e) { return 'en'; } })();
-function T(k) { var t = (LANG === 'vi' && VI[k]) || k; for (var i = 1; i < arguments.length; i++) t = t.split('{' + (i - 1) + '}').join(String(arguments[i])); return t; }
-var TECHS = ['Anna', 'Jenny', 'Lisa', 'Kim'];
-var SERVICES = [
-  { id: 'mani', name: 'Manicure', price: 25, min: 30 },
-  { id: 'pedi', name: 'Pedicure', price: 40, min: 45 },
-  { id: 'fill', name: 'Acrylic Fill', price: 40, min: 45 },
-  { id: 'full', name: 'Full Set', price: 55, min: 60 },
-  { id: 'combo', name: 'Mani + Pedi', price: 65, min: 75, two: true },
-  { id: 'repair', name: 'Nail Repair', price: 10, min: 15, repair: true },
-  { id: 'polish', name: 'Polish Change', price: 15, min: 15 }
-];
-var METHODS = [
-  { v: 'round', t: 'Round Robin', d: 'Everyone takes turns in order. The next free tech in line gets the customer.', e: 'Anna → Jenny → Lisa → Kim → Anna …' },
-  { v: 'dollar', t: 'Dollar Turn', d: 'The tech with the lowest dollar total today gets the next customer.', e: 'Anna $65, Jenny $25 → Jenny is next.' },
-  { v: 'count', t: 'Customer Count', d: 'The tech who has served the fewest customers today is next.', e: 'Lisa 2 customers, Kim 1 → Kim is next.' },
-  { v: 'time', t: 'Service Time', d: 'The tech with the fewest service minutes today is next.', e: 'Anna 90 min, Lisa 45 min → Lisa is next.' },
-  { v: 'points', t: 'Point-Based Turn', d: 'Each service gives points (small = ½, normal = 1, big = 1½). Fewest points is next.', e: 'Repair = ½ point, Full Set = 1½ points.' },
-  { v: 'manual', t: 'Manual Turn', d: 'The owner or front desk picks the tech every time. The app only shows the list.', e: 'Good for very small salons.' },
-  { v: 'hybrid', t: 'Hybrid Turn', d: 'Customer count first; when two techs are tied, the lower dollar total goes first.', e: 'Anna and Kim both 2 → Kim $50 vs Anna $80 → Kim.' }
-];
-var GROUPS = [
-  { k: 'method', ic: '🔄', t: 'Turn Distribution Method', custom: true },
-  { k: 'req', ic: '⭐', t: 'Requested Customers', rows: [
-    { k: 'reqCounts', x: "Lan does a customer who asked for her: with 'No turn' Lan keeps her turns and her place.", s: 'Request', type: 'sel', l: 'A requested customer counts as', h: 'When a customer asks for a tech by name.', o: [['none', 'No turn (bonus for the tech)'], ['half', 'Half a turn'], ['full', 'A full turn']] },
-    { k: 'reqKeepPlace', s: 'Keeps place', type: 'sw', l: 'Tech keeps their place in line', h: 'On: a request does not move the tech to the end of the line.' } ] },
-  { k: 'walk', ic: '🚶', t: 'Walk-In Rules', rows: [
-    { k: 'skipBusy', s: 'Skip busy', type: 'sw', l: 'Skip techs who are busy', h: 'A busy tech keeps their place and gets the next customer when free.' },
-    { k: 'smallUnder', s: 'Small under', type: 'num', l: 'Small service under ($)', h: 'Services below this price count as a small turn.', min: 0, max: 60, step: 5 },
-    { k: 'smallCounts', x: "Line is $20. A $15 polish change with 'Half a turn' = ½ turn.", s: 'Small', type: 'sel', l: 'A small service counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] } ] },
-  { k: 'appt', ic: '📅', t: 'Appointment Rules', rows: [
-    { k: 'apptCounts', x: "Kim does her 2 PM appointment: with 'No turn' Kim is still next for walk-ins.", s: 'Appointment', type: 'sel', l: 'An appointment counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] },
-    { k: 'apptHold', s: 'Hold', type: 'sel', l: 'Hold the tech before the appointment', h: 'The tech is not offered walk-ins this long before an appointment.', o: [['0', 'No hold'], ['15', '15 minutes'], ['30', '30 minutes']] } ] },
-  { k: 'refuse', ic: '✋', t: 'Technician Refusal', rows: [
-    { k: 'refuseRule', x: "Anna says no to a pedicure: with 'Moves to the end of the line' Jenny, Lisa and Kim go before her.", s: '', type: 'sel', l: 'When a tech says no to a customer', o: [['keep', 'No change – keeps their place'], ['end', 'Moves to the end of the line'], ['lose', 'Loses the turn (counts as served)']] },
-    { k: 'refuseMax', s: 'Max per day', type: 'num', l: 'Refusals allowed per day', h: 'After this many, the tech goes to the end of the line.', min: 0, max: 5, step: 1 } ] },
-  { k: 'break', ic: '☕', t: 'Break & Late Arrival', rows: [
-    { k: 'breakBack', x: "Jenny takes 20 minutes for lunch: with 'Keeps their place' she is next again when she is back.", s: '', type: 'sel', l: 'Coming back from a break', o: [['keep', 'Keeps their place'], ['end', 'Goes to the end of the line']] },
-    { k: 'lateJoin', s: 'Late', type: 'sel', l: 'A tech who clocks in late', o: [['end', 'Starts at the end of the line'], ['avg', 'Starts with the average turns']] } ] },
-  { k: 'multi', ic: '💅', t: 'Multiple Services', rows: [
-    { k: 'multiSvc', x: "Mani + Pedi with one tech: 'One turn per customer' = 1 turn, 'One turn per service' = 2 turns.", s: '', type: 'sel', l: 'One customer, several services (Mani + Pedi)', o: [['one', 'One turn per customer'], ['each', 'One turn per service']] } ] },
-  { k: 'multitech', ic: '👯', t: 'Multiple Technicians', rows: [
-    { k: 'multiTech', s: '', type: 'sel', l: 'Two techs work on one customer', o: [['each', 'Each tech gets a full turn'], ['half', 'Each tech gets half a turn'], ['main', 'Only the main tech gets the turn']] } ] },
-  { k: 'cancel', ic: '🚫', t: 'Cancellations & No-Shows', rows: [
-    { k: 'cancelGive', s: 'Give back', type: 'sw', l: 'Give the turn back on a cancel or no-show', h: 'On: the tech gets their place back if the customer leaves or never comes.' },
-    { k: 'cancelWithin', s: 'Within', type: 'sel', l: 'Only if cancelled within', o: [['5', '5 minutes'], ['10', '10 minutes'], ['any', 'Any time']] } ] },
-  { k: 'repair', ic: '🔧', t: 'Repair Customers', rows: [
-    { k: 'repairCounts', s: 'Repair', type: 'sel', l: 'A repair (fix one nail) counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] },
-    { k: 'repairSame', s: 'Same tech', type: 'sw', l: 'Send repairs to the tech who did the set', h: 'If the customer comes back within 7 days.' } ] },
-  { k: 'queues', ic: '🧾', t: 'Separate Turn Queues', rows: [
-    { k: 'queues', s: '', type: 'sel', l: 'Turn lines', o: [['one', 'One line for everyone'], ['handsfeet', 'Hands and Feet separate'], ['acrylic', 'Acrylic techs separate']] } ] },
-  { k: 'reset', ic: '🌙', t: 'End-of-Day Reset', rows: [
-    { k: 'resetWhen', s: '', type: 'sel', l: 'Start the turns fresh', o: [['day', 'Every day'], ['week', 'Every week (Monday)'], ['never', 'Never (carry over)']] },
-    { k: 'resetOrder', s: 'First', type: 'sel', l: 'First in line the next morning', o: [['clock', 'Who clocks in first'], ['last', 'Who had the fewest turns yesterday']] } ] },
-  { k: 'owner', ic: '👑', t: 'Owner Override Permissions', rows: [
-    { k: 'ownerMove', s: 'Owner moves', type: 'sw', l: 'Owner can move a tech in the line', h: 'Drag a tech up or down by hand.' },
-    { k: 'ownerReason', s: 'Reason', type: 'sw', l: 'Ask for a reason when moving', h: 'The reason is saved in the turn history.' },
-    { k: 'deskMove', type: 'sw', l: 'Front desk can move techs too' } ] },
-  { k: 'adv', ic: '⚙️', t: 'Advanced Turn Rules', rows: [
-    { k: 'tie', x: "Lan and Mai both have 2 turns. Lan clocked in at 9:30, Mai at 9:45 → the next customer goes to Lan.", s: 'Tie', type: 'sel', l: 'When two techs are tied', o: [['clock', 'Who clocked in first'], ['dollar', 'Lower dollar total'], ['wait', 'Who waited longest']] },
-    { k: 'minDone', s: 'Min. minutes', type: 'num', l: 'Minimum minutes before "Done" counts', h: 'Finished faster than this? The app asks before giving a turn.', min: 0, max: 20, step: 5 },
-    { k: 'bigOver', type: 'num', l: 'Big service over ($)', h: 'Point-Based: services above this give 1½ points.', min: 30, max: 120, step: 5 } ] }
-];
-var BASE = { method: 'round', reqCounts: 'none', reqKeepPlace: true, skipBusy: true, smallUnder: 20, smallCounts: 'half', apptCounts: 'none', apptHold: '15',
-  refuseRule: 'end', refuseMax: 2, breakBack: 'keep', lateJoin: 'end', multiSvc: 'one', multiTech: 'half', cancelGive: true, cancelWithin: '10',
-  repairCounts: 'none', repairSame: true, queues: 'one', resetWhen: 'day', resetOrder: 'clock', ownerMove: true, ownerReason: false, deskMove: false,
-  tie: 'clock', minDone: 5, bigOver: 50 };
-var PRESETS = [
-  { k: 'traditional', t: 'Traditional Salon', d: 'Simple round robin, requests are a bonus.', s: { method: 'round', reqCounts: 'none', apptCounts: 'none', refuseRule: 'end', smallCounts: 'half', multiSvc: 'one' } },
-  { k: 'dollar', t: 'Dollar Fairness', d: 'Lowest dollars today goes next.', s: { method: 'dollar', reqCounts: 'full', apptCounts: 'full', refuseRule: 'lose', smallCounts: 'full', multiSvc: 'one', tie: 'clock' } },
-  { k: 'apptprio', t: 'Appointment Priority', d: 'Appointments first, walk-ins fill in.', s: { method: 'count', apptCounts: 'none', apptHold: '30', reqCounts: 'half', refuseRule: 'end' } },
-  { k: 'mix', t: 'Walk-In + Appointment', d: 'Hybrid: customers first, then dollars.', s: { method: 'hybrid', apptCounts: 'half', reqCounts: 'half', apptHold: '15', refuseRule: 'end', smallCounts: 'half' } },
-  { k: 'custom', t: 'Custom Rules', d: 'Start from your own choices.', s: {} }
-];
-
-var VI = {"PREVIEW ONLY – NOT SAVED TO SALON": "CHỈ XEM THỬ – KHÔNG LƯU VÀO TIỆM", "Turn Rules Settings": "Cài đặt luật turn", "Customize how technicians receive customers.": "Chỉnh cách thợ nhận khách.", "⭐ = Recommended.": "⭐ = Khuyên dùng.", "⭐ Use the recommended rules": "⭐ Chọn sẵn theo khuyên dùng", "Recommended rules selected": "Đã chọn luật khuyên dùng", "Rules in use": "Luật đang dùng", "Example": "Ví dụ", "Method: {0}": "Cách chia: {0}", "${0}+ = 1 turn · under ${0} = {1}": "${0}+ = 1 lượt · dưới ${0} = {1}", "Asked by name: {0} · appointment: {1}": "Gọi đích danh: {0} · khách hẹn: {1}", "Tech says no: {0}": "Thợ không nhận: {0}", "Same turns: {0}": "Bằng turn: {0}", "1 turn": "1 lượt", "↺ Reset Demo": "↺ Xoá thử, làm lại", "▶ Preview Turn Rotation": "▶ Xem thử chia lượt", "Quick start": "Chọn nhanh", "Rules": "Luật", "Try it – 4 technicians": "Thử với 4 thợ", "Sample techs only. Tap the buttons to see who gets the next customer with your rules.": "Thợ mẫu. Bấm các nút để xem khách kế tiếp vào ai theo luật đang chọn.", "🚶 Walk-in customer arrives": "🚶 Khách walk-in vào", "⭐ Customer requests a tech": "⭐ Khách gọi tên thợ", "📅 Appointment arrives": "📅 Khách có hẹn tới", "✋ Next tech refuses": "✋ Thợ kế tiếp không nhận", "↺ Start the day over": "↺ Bắt đầu lại ngày", "Turn rotation preview": "Xem thử chia lượt", "The same 11 customers with your rules: walk-ins, 1 request for Lisa, 1 appointment for Kim. Jenny takes a break after customer 4 and comes back after customer 9.": "Cùng 11 khách theo luật đang chọn: khách walk-in, 1 khách gọi Lisa, 1 khách hẹn với Kim. Jenny nghỉ sau khách thứ 4 và quay lại sau khách thứ 9.", "Save Settings (Demo)": "Lưu cài đặt (thử)", "{0} selected": "Đã chọn {0}", "Round Robin": "Xoay vòng", "Dollar Turn": "Theo tiền", "Customer Count": "Theo số khách", "Service Time": "Theo thời gian làm", "Point-Based Turn": "Theo điểm", "Manual Turn": "Chủ tiệm tự chia", "Hybrid Turn": "Kết hợp", "Everyone takes turns in order. The next free tech in line gets the customer.": "Mọi người lần lượt theo thứ tự. Thợ rảnh kế tiếp trong hàng nhận khách.", "The tech with the lowest dollar total today gets the next customer.": "Thợ có tổng tiền hôm nay thấp nhất nhận khách kế tiếp.", "The tech who has served the fewest customers today is next.": "Thợ làm ít khách nhất hôm nay được nhận kế tiếp.", "The tech with the fewest service minutes today is next.": "Thợ có ít phút làm nhất hôm nay được nhận kế tiếp.", "Each service gives points (small = ½, normal = 1, big = 1½). Fewest points is next.": "Mỗi dịch vụ tính điểm (nhỏ = ½, thường = 1, lớn = 1½). Ít điểm nhất được nhận kế tiếp.", "The owner or front desk picks the tech every time. The app only shows the list.": "Chủ tiệm hoặc quầy chọn thợ mỗi lần. App chỉ hiện danh sách.", "Customer count first; when two techs are tied, the lower dollar total goes first.": "Xét số khách trước; hai thợ bằng nhau thì ai ít tiền hơn được trước.", "Anna → Jenny → Lisa → Kim → Anna …": "Anna → Jenny → Lisa → Kim → Anna …", "Anna $65, Jenny $25 → Jenny is next.": "Anna $65, Jenny $25 → Jenny nhận kế tiếp.", "Lisa 2 customers, Kim 1 → Kim is next.": "Lisa 2 khách, Kim 1 khách → Kim nhận kế tiếp.", "Anna 90 min, Lisa 45 min → Lisa is next.": "Anna 90 phút, Lisa 45 phút → Lisa nhận kế tiếp.", "Repair = ½ point, Full Set = 1½ points.": "Sửa móng = ½ điểm, Full Set = 1½ điểm.", "Good for very small salons.": "Hợp với tiệm rất nhỏ.", "Anna and Kim both 2 → Kim $50 vs Anna $80 → Kim.": "Anna và Kim đều 2 khách → Kim $50, Anna $80 → Kim.", "Turn Distribution Method": "Cách chia turn", "Requested Customers": "Khách gọi tên thợ", "Walk-In Rules": "Khách walk-in", "Appointment Rules": "Khách có hẹn", "Technician Refusal": "Thợ không nhận khách", "Break & Late Arrival": "Nghỉ giải lao & vào trễ", "Multiple Services": "Nhiều dịch vụ", "Multiple Technicians": "Nhiều thợ cùng làm", "Cancellations & No-Shows": "Huỷ hẹn & không tới", "Repair Customers": "Khách sửa móng", "Separate Turn Queues": "Hàng turn riêng", "End-of-Day Reset": "Làm lại turn cuối ngày", "Owner Override Permissions": "Quyền chủ tiệm chỉnh turn", "Advanced Turn Rules": "Luật nâng cao", "Choose how the app decides who gets the next walk-in customer.": "Chọn cách app quyết định ai nhận khách walk-in kế tiếp.", "Example: {0}": "Ví dụ: {0}", "A requested customer counts as": "Khách gọi đích danh thợ tính sao?", "When a customer asks for a tech by name.": "Khi khách gọi đúng tên thợ.", "No turn (bonus for the tech)": "Không tính turn (thưởng cho thợ)", "Half a turn": "Nửa lượt", "A full turn": "Một lượt", "No turn": "Không tính", "Tech keeps their place in line": "Thợ giữ chỗ trong hàng", "On: a request does not move the tech to the end of the line.": "Bật: khách gọi tên không làm thợ xuống cuối hàng.", "Skip techs who are busy": "Bỏ qua thợ đang bận", "A busy tech keeps their place and gets the next customer when free.": "Thợ đang bận giữ chỗ, rảnh thì nhận khách kế tiếp.", "Small service under ($)": "Dịch vụ nhỏ dưới ($)", "Services below this price count as a small turn.": "Dịch vụ dưới giá này tính là lượt nhỏ.", "A small service counts as": "Dịch vụ nhỏ tính sao?", "An appointment counts as": "Khách có hẹn tính sao?", "Hold the tech before the appointment": "Giữ thợ trước giờ hẹn", "The tech is not offered walk-ins this long before an appointment.": "Trước giờ hẹn chừng này, thợ không nhận khách walk-in.", "No hold": "Không giữ", "15 minutes": "15 phút", "30 minutes": "30 phút", "5 minutes": "5 phút", "10 minutes": "10 phút", "Any time": "Bất cứ lúc nào", "When a tech says no to a customer": "Thợ không nhận khách thì sao?", "No change – keeps their place": "Không đổi – giữ chỗ", "Moves to the end of the line": "Xuống cuối hàng", "Loses the turn (counts as served)": "Mất lượt (tính như đã làm)", "Refusals allowed per day": "Số lần được từ chối mỗi ngày", "After this many, the tech goes to the end of the line.": "Quá số lần này, thợ xuống cuối hàng.", "Coming back from a break": "Nghỉ xong quay lại thì sao?", "Keeps their place": "Giữ chỗ", "Goes to the end of the line": "Xuống cuối hàng", "A tech who clocks in late": "Thợ vào ca trễ", "Starts at the end of the line": "Bắt đầu ở cuối hàng", "Starts with the average turns": "Bắt đầu với số lượt trung bình", "One customer, several services (Mani + Pedi)": "Khách làm nhiều dịch vụ với 1 thợ tính sao? (Mani + Pedi)", "One turn per customer": "Cả khách = 1 lượt", "One turn per service": "Mỗi dịch vụ = 1 lượt", "Two techs work on one customer": "Hai thợ cùng làm một khách", "Each tech gets a full turn": "Mỗi thợ được một lượt", "Each tech gets half a turn": "Mỗi thợ được nửa lượt", "Only the main tech gets the turn": "Chỉ thợ chính được lượt", "Give the turn back on a cancel or no-show": "Trả lại lượt khi khách huỷ hoặc không tới", "On: the tech gets their place back if the customer leaves or never comes.": "Bật: thợ được trả lại chỗ nếu khách bỏ đi hoặc không tới.", "Only if cancelled within": "Chỉ khi huỷ trong vòng", "A repair (fix one nail) counts as": "Khách sửa móng (sửa 1 móng) tính sao?", "Send repairs to the tech who did the set": "Khách sửa móng về lại thợ đã làm bộ móng", "If the customer comes back within 7 days.": "Nếu khách quay lại trong 7 ngày.", "Turn lines": "Hàng turn", "One line for everyone": "Một hàng chung", "Hands and Feet separate": "Tay và chân riêng", "Acrylic techs separate": "Thợ bột riêng", "Start the turns fresh": "Làm lại turn từ đầu", "Every day": "Mỗi ngày", "Every week (Monday)": "Mỗi tuần (thứ Hai)", "Never (carry over)": "Không bao giờ (giữ tiếp)", "First in line the next morning": "Người đầu hàng sáng hôm sau", "Who clocks in first": "Ai clock in trước", "Who had the fewest turns yesterday": "Ai ít lượt nhất hôm qua", "Owner can move a tech in the line": "Chủ tiệm được đổi chỗ thợ trong hàng", "Drag a tech up or down by hand.": "Kéo thợ lên hoặc xuống bằng tay.", "Ask for a reason when moving": "Hỏi lý do khi đổi chỗ", "The reason is saved in the turn history.": "Lý do được lưu trong lịch sử turn.", "Front desk can move techs too": "Quầy tiếp tân cũng được đổi chỗ thợ", "When two techs are tied": "Bằng turn thì ai trước?", "Who clocked in first": "Ai clock in trước", "Lower dollar total": "Ai ít tiền hơn", "Who waited longest": "Ai chờ lâu nhất", "Minimum minutes before \"Done\" counts": "Số phút tối thiểu trước khi bấm \"Done\" được tính", "Finished faster than this? The app asks before giving a turn.": "Xong nhanh hơn số phút này? App hỏi lại trước khi tính lượt.", "Big service over ($)": "Dịch vụ lớn trên ($)", "Point-Based: services above this give 1½ points.": "Theo điểm: dịch vụ trên giá này được 1½ điểm.", "Lan does a customer who asked for her: with 'No turn' Lan keeps her turns and her place.": "Lan làm khách gọi tên mình: chọn 'Không tính turn' thì Lan giữ nguyên lượt và chỗ trong hàng.", "Line is $20. A $15 polish change with 'Half a turn' = ½ turn.": "Mức là $20. Khách sơn lại $15, chọn 'Nửa lượt' = ½ lượt.", "Kim does her 2 PM appointment: with 'No turn' Kim is still next for walk-ins.": "Kim làm khách hẹn 2 giờ: chọn 'Không tính' thì Kim vẫn được nhận walk-in kế tiếp.", "Anna says no to a pedicure: with 'Moves to the end of the line' Jenny, Lisa and Kim go before her.": "Anna không nhận khách pedicure: chọn 'Xuống cuối hàng' thì Jenny, Lisa, Kim được trước Anna.", "Jenny takes 20 minutes for lunch: with 'Keeps their place' she is next again when she is back.": "Jenny nghỉ ăn trưa 20 phút: chọn 'Giữ chỗ' thì quay lại Jenny vẫn được nhận kế tiếp.", "Mani + Pedi with one tech: 'One turn per customer' = 1 turn, 'One turn per service' = 2 turns.": "Mani + Pedi với 1 thợ: 'Cả khách = 1 lượt' = 1 lượt, 'Mỗi dịch vụ = 1 lượt' = 2 lượt.", "Lan and Mai both have 2 turns. Lan clocked in at 9:30, Mai at 9:45 → the next customer goes to Lan.": "Lan và Mai đều có 2 lượt. Lan clock in 9:30, Mai clock in 9:45 → khách kế giao cho Lan.", "Traditional Salon": "Tiệm truyền thống", "Simple round robin, requests are a bonus.": "Xoay vòng đơn giản, khách gọi tên là thưởng.", "Dollar Fairness": "Công bằng theo tiền", "Lowest dollars today goes next.": "Ai ít tiền nhất hôm nay được nhận kế tiếp.", "Appointment Priority": "Ưu tiên khách hẹn", "Appointments first, walk-ins fill in.": "Khách hẹn trước, walk-in xếp vào chỗ trống.", "Walk-In + Appointment": "Walk-in + khách hẹn", "Hybrid: customers first, then dollars.": "Kết hợp: xét số khách trước, rồi tới tiền.", "Custom Rules": "Luật riêng", "Start from your own choices.": "Tự chọn từng luật.", "Request": "Gọi tên", "Keeps place": "Giữ chỗ", "Skip busy": "Bỏ qua thợ bận", "Small under": "Nhỏ dưới", "Small": "Nhỏ", "Appointment": "Khách hẹn", "Hold": "Giữ", "Max per day": "Tối đa/ngày", "Late": "Trễ", "Give back": "Trả lượt", "Within": "Trong vòng", "Repair": "Sửa móng", "Same tech": "Cùng thợ", "First": "Đầu hàng", "Owner moves": "Chủ đổi chỗ", "Reason": "Lý do", "Tie": "Bằng turn", "Min. minutes": "Phút tối thiểu", "On": "Bật", "Off": "Tắt", "walk-in": "walk-in", "requested": "gọi tên", "appointment": "khách hẹn", "request": "gọi tên", "appt": "hẹn", "counts as {0}": "tính {0}", "no turn": "không tính", "½ turn": "nửa lượt", "{0} turn": "{0} lượt", "{0} turns": "{0} lượt", "loses the turn (counts as served)": "mất lượt (tính như đã làm)", "moves to the end of the line": "xuống cuối hàng", "refused {0} times (limit {1}) → end of the line": "đã từ chối {0} lần (tối đa {1}) → xuống cuối hàng", "keeps the place ({0} of {1} refusals today)": "giữ chỗ (từ chối {0}/{1} lần hôm nay)", "{0} is back – goes to the end of the line": "{0} quay lại – xuống cuối hàng", "{0} is on a break": "{0} đang nghỉ", "{0} is back – keeps the place": "{0} quay lại – giữ chỗ", "On break": "Đang nghỉ", "Busy": "Đang bận", "Free": "Rảnh", "Turns": "Lượt", "{0} cust · {1} min": "{0} khách · {1} phút", "{0} pts": "{0} điểm", "Doing: {0}": "Đang làm: {0}", "Done": "Xong", "Back": "Quay lại", "Break": "Nghỉ", "{0} finished": "{0} làm xong", "free again": "rảnh lại", "Break rule: end of the line": "Luật nghỉ: xuống cuối hàng", "Break rule: keeps the place": "Luật nghỉ: giữ chỗ", "Manual Turn: the owner picks the tech for each customer.": "Chủ tiệm tự chia: chủ tiệm chọn thợ cho từng khách.", "Next walk-in goes to {0}": "Khách walk-in kế tiếp vào {0}", "then {0}": "sau đó {0}", "Nobody is free right now (busy techs are skipped).": "Hiện không ai rảnh (bỏ qua thợ đang bận).", "Nobody is free right now.": "Hiện không ai rảnh.", "Cancel": "Huỷ", "{0} min": "{0} phút", "on break": "đang nghỉ", "busy – customer waits": "đang bận – khách chờ", "Manual Turn – who takes the {0}?": "Chủ tiệm tự chia – ai làm {0}?", "picked by the owner": "chủ tiệm chọn", "{0} customer waits": "Khách {0} chờ", "no tech is free": "không thợ nào rảnh", "{0} takes a break": "{0} nghỉ giải lao", "{0} is back": "{0} quay lại", "Owner picks": "Chủ tiệm chọn", "Customer": "Khách", "Goes to": "Vào thợ", "Type": "Loại", "End: {0}": "Cuối: {0}", "Walk-in – which service?": "Khách walk-in – làm dịch vụ gì?", "Which tech did the customer ask for?": "Khách gọi tên thợ nào?", "Service for {0}?": "Dịch vụ cho {0}?", "keeps place in line": "giữ chỗ trong hàng", "Appointment with which tech?": "Khách hẹn với thợ nào?", "Appointment service?": "Dịch vụ của khách hẹn?", "Manual Turn – nobody is offered": "Chủ tiệm tự chia – app không chia ai", "Nobody is free": "Không ai rảnh", "{0} refused the next customer": "{0} không nhận khách kế tiếp", "after {0} refused": "sau khi {0} không nhận", "no other tech is free – the customer goes to the next free tech": "không thợ nào khác rảnh – khách vào thợ rảnh kế tiếp", "New day started": "Đã bắt đầu ngày mới", "Demo settings saved": "Đã lưu cài đặt thử", "This browser cannot keep demo settings": "Trình duyệt này không lưu được cài đặt thử", "Demo reset": "Đã xoá cài đặt thử"};
-var cfg = load();
-var sim;
-
+var KEY = 'nf_turn_rules_preview_v3', LKEY = 'nf_turn_rules_preview_lang';
+var LANG = 'vi'; try { if (localStorage.getItem(LKEY) === 'en') LANG = 'en'; } catch (e) {}
+function L(vi, en) { return LANG === 'en' ? en : vi; }
 function $(s, r) { return (r || document).querySelector(s); }
-function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 function copy(o) { return JSON.parse(JSON.stringify(o)); }
-function load() {
-  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); var c = copy(BASE); c.preset = 'traditional'; for (var k in o) if (k in c || k === 'preset') c[k] = o[k]; return c; } } catch (e) {}
-  var c2 = copy(BASE); c2.preset = 'traditional'; return c2;
-}
-function toast(t) { var x = $('#toast'); x.textContent = t; x.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function () { x.classList.remove('show'); }, 1800); }
-function label(row, v) { for (var i = 0; i < row.o.length; i++) if (row.o[i][0] === String(v)) return row.o[i][1]; return ''; }
+function fmt(n) { n = Math.round(n * 10) / 10; return LANG === 'vi' ? String(n).replace('.', ',') : String(n); }
+function toast(t) { var x = $('#toast'); x.textContent = t; x.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function () { x.classList.remove('show'); }, 2000); }
 
-/* ---------- settings UI ---------- */
-function drawPresets() {
-  var box = $('#presets'); box.innerHTML = '';
-  PRESETS.forEach(function (p) {
-    var b = el('button', 'preset' + (p.k === 'custom' ? ' custom' : '') + (cfg.preset === p.k ? ' on' : ''), '<b>' + esc(T(p.t)) + '</b><span>' + esc(T(p.d)) + '</span>');
-    b.type = 'button'; b.setAttribute('aria-pressed', cfg.preset === p.k ? 'true' : 'false'); b.dataset.preset = p.k;
-    b.addEventListener('click', function () {
-      if (p.k !== 'custom') { var c = copy(BASE); for (var k in p.s) c[k] = p.s[k]; cfg = c; }
-      cfg.preset = p.k; drawAll(); toast(T('{0} selected', T(p.t)));
-    });
-    box.appendChild(b);
-  });
+var TECHS = ['Lan', 'Mai', 'Nhân', 'Dân'];
+var SVC = [
+  { id: 'mani', vi: 'Làm tay (manicure)', en: 'Manicure', price: 25, min: 30 },
+  { id: 'pedi', vi: 'Làm chân (pedicure)', en: 'Pedicure', price: 40, min: 45 },
+  { id: 'full', vi: 'Bộ bột mới (full set)', en: 'Full set', price: 55, min: 60 },
+  { id: 'combo', vi: 'Tay + chân (1 thợ)', en: 'Mani + Pedi (one tech)', price: 65, min: 75, combo: true },
+  { id: 'polish', vi: 'Sơn lại', en: 'Polish change', price: 15, min: 15 },
+  { id: 'repair', vi: 'Sửa 1 móng (có thu tiền)', en: 'Fix one nail (paid)', price: 10, min: 15 }
+];
+function sname(s) { return L(s.vi, s.en); }
+/* the choices – blank page = the sample values */
+var SAMPLE = { method: 'line', dollarScope: 'all', reqW: '0', reqPos: 'keep', apptW: '1', hold: '15', smallUnder: 20, smallW: '0.5', combo: 'one', twoTech: 'half',
+  breakBack: 'keep', late: 'end', refuse: 'end', queues: 'one', whoMoves: 'owner', reason: 'yes', startDay: 'clock', tie: 'clock', bigOver: 50 };
+var cfg = load();
+function load() { try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { var c = copy(SAMPLE); for (var k in o) if (k in c) c[k] = o[k]; return c; } } catch (e) {} return copy(SAMPLE); }
+var isLine = function () { return cfg.method === 'line'; }, isManual = function () { return cfg.method === 'manual'; };
+var MAIN = ['line', 'dollar', 'manual'], OTHER = ['count', 'time', 'points'];
+function wText(w) { w = String(w); return w === '0' ? L('không cộng lượt', 'adds no turn') : w === '0.5' ? L('cộng nửa lượt', 'adds half a turn') : L('cộng một lượt', 'adds one turn'); }
+function mName(m) { return { line: L('Lần lượt theo hàng', 'Take turns in line'), dollar: L('Ưu tiên thợ có ít tiền dịch vụ hơn', 'Lowest service money first'), manual: L('Chủ tiệm / lễ tân tự chọn thợ', 'Owner / front desk picks'), count: L('Ưu tiên thợ làm ít khách hơn', 'Fewest customers first'), time: L('Ưu tiên thợ có ít phút làm hơn', 'Fewest service minutes first'), points: L('Ưu tiên thợ có ít điểm hơn', 'Fewest points first') }[m]; }
+
+/* ---------- building blocks ---------- */
+function opt(name, val, title, note) { return '<label class="opt"><input type="radio" name="' + name + '" value="' + val + '"' + (String(cfg[name]) === String(val) ? ' checked' : '') + '><div><b>' + esc(title) + '</b>' + (note ? '<span>' + esc(note) + '</span>' : '') + '</div></label>'; }
+function q(t, n) { return '<div class="q">' + esc(t) + '</div>' + (n ? '<div class="qn">' + esc(n) + '</div>' : ''); }
+function ex(t) { return '<div class="ex"><b>' + esc(L('Ví dụ', 'Example')) + '</b>' + esc(t) + '</div>'; }
+function now(t) { return '<div class="now">' + esc(L('Với lựa chọn hiện tại, hệ thống sẽ ', 'With the current choice, the system will ')) + esc(t) + '</div>'; }
+function na(t) { return '<div class="na">' + esc(t) + '</div>'; }
+function sec(n, t, body) { return '<section class="sec"><h2>' + esc(L('Phần ', 'Part ') + n + ' — ' + t) + '</h2><div class="in">' + body + '</div></section>'; }
+function num(k, min, max, step) { return '<div class="num"><button type="button" data-dn="' + k + '" data-step="' + (-step) + '" data-min="' + min + '" data-max="' + max + '" aria-label="' + esc(L('Bớt', 'Less')) + '">−</button><output>$' + cfg[k] + '</output><button type="button" data-dn="' + k + '" data-step="' + step + '" data-min="' + min + '" data-max="' + max + '" aria-label="' + esc(L('Thêm', 'More')) + '">+</button></div>'; }
+var POS_ONLY_LINE = function () { return na(L('Cách chia đang chọn không dùng vị trí trong hàng, nên phần vị trí không hiện.', 'The chosen way does not use places in line, so the place question is hidden.')); };
+
+/* ---------- the 7 parts ---------- */
+function part1() {
+  var b = q(L('Khách không hẹn tiếp theo giao cho ai?', 'Who gets the next walk-in customer?'));
+  b += opt('method', 'line', L('A. Lần lượt theo hàng', 'A. Take turns in line'), L('Thợ đứng đầu hàng mà đang rảnh được đề nghị nhận khách. Nhận khách có cộng lượt thì thợ xuống cuối hàng. Không cộng lượt thì giữ vị trí. Nửa lượt: giữ vị trí, đủ hai lần nửa lượt thì xuống cuối hàng.', 'The first free tech in line is offered the customer. A customer that adds a turn sends the tech to the end of the line. No turn = keeps the place. Half a turn: keeps the place; after two halves the tech goes to the end.'));
+  b += opt('method', 'dollar', L('B. Ưu tiên thợ có ít tiền dịch vụ hơn trong ngày', 'B. The tech with less service money today first'), L('Tiền so sánh = giá dịch vụ trên phiếu, chưa trừ giảm giá, không gồm tip, không gồm thuế.', 'Money compared = the service price on the ticket, before discounts, no tip, no tax.'));
+  b += opt('method', 'manual', L('C. Chủ tiệm hoặc lễ tân tự chọn thợ', 'C. The owner or front desk picks the tech'), L('Hệ thống chỉ hiển thị số lượt, tiền và ai đang rảnh để hỗ trợ chia khách.', 'The system only shows turns, money and who is free to help.'));
+  var other = OTHER.indexOf(cfg.method) >= 0;
+  b += '<details class="more"' + (other ? ' open' : '') + '><summary>' + esc(L('Xem các cách chia khác', 'See other ways')) + '</summary>'
+    + opt('method', 'count', L('Ưu tiên thợ làm ít khách hơn', 'Fewest customers first'), L('Đếm số khách thợ đã làm hôm nay (mỗi khách là 1, không xét nửa lượt). Sửa móng miễn phí không đếm.', 'Counts customers served today (each customer = 1, no halves). Free fixes do not count.'))
+    + opt('method', 'time', L('Ưu tiên thợ có ít phút làm hơn', 'Fewest service minutes first'), L('Cộng số phút của các dịch vụ thợ đã làm hôm nay.', 'Adds up the minutes of the services done today.'))
+    + opt('method', 'points', L('Ưu tiên thợ có ít điểm hơn', 'Fewest points first'), L('Dịch vụ nhỏ = ½ điểm, dịch vụ thường = 1 điểm, dịch vụ lớn = 1½ điểm (mức tiền chỉnh ở Cài đặt thêm).', 'Small service = ½ point, normal = 1, big = 1½ (the $ line is in More settings).'))
+    + '</details>';
+  if (cfg.method === 'dollar') {
+    b += q(L('Tiền của khách nào được tính để so sánh?', 'Whose money is compared?'));
+    b += opt('dollarScope', 'all', L('Mọi khách thợ đã làm', 'Every customer the tech did'), L('Gồm cả khách yêu cầu thợ và khách hẹn.', 'Includes requested and booked customers.'));
+    b += opt('dollarScope', 'walk', L('Chỉ khách không hẹn', 'Walk-ins only'), L('Khách yêu cầu thợ và khách hẹn không cộng vào tiền so sánh.', 'Requested and booked customers are not added.'));
+  }
+  if (isLine()) b += ex(L('Hàng: Lan → Mai → Nhân → Dân. Lan nhận bộ bột $55 (cộng một lượt) → hàng thành Mai → Nhân → Dân → Lan.', 'Line: Lan → Mai → Nhân → Dân. Lan takes a $55 full set (one turn) → the line becomes Mai → Nhân → Dân → Lan.'));
+  else if (cfg.method === 'dollar') b += ex(L('Lan $80, Mai $40, cả hai đang rảnh → Mai được đề nghị nhận khách. Bằng tiền nhau thì theo cách ở Cài đặt thêm.', 'Lan $80, Mai $40, both free → Mai is offered the customer. Same money → see More settings.'));
+  else if (isManual()) b += ex(L('Khách tới, lễ tân thấy Mai rảnh và có 1 lượt, Lan có 2 lượt → lễ tân tự bấm chọn Mai.', 'A customer comes; the desk sees Mai is free with 1 turn, Lan has 2 → the desk picks Mai.'));
+  else if (cfg.method === 'count') b += ex(L('Lan đã làm 3 khách, Nhân 2 khách → Nhân được đề nghị.', 'Lan has 3 customers, Nhân 2 → Nhân is offered.'));
+  else if (cfg.method === 'time') b += ex(L('Lan đã làm 90 phút, Dân 45 phút → Dân được đề nghị.', 'Lan 90 minutes, Dân 45 → Dân is offered.'));
+  else b += ex(L('Lan 2 điểm, Mai 1½ điểm → Mai được đề nghị.', 'Lan 2 points, Mai 1½ → Mai is offered.'));
+  b += now(isLine() ? L('đề nghị thợ rảnh đứng đầu hàng; thợ đang bận được bỏ qua nhưng giữ vị trí.', 'offer the first free tech in line; busy techs are skipped but keep their place.')
+    : isManual() ? L('không tự chia; chủ tiệm hoặc lễ tân chọn thợ cho từng khách.', 'not pick anyone; the owner or desk picks for each customer.')
+    : L('đề nghị thợ rảnh có ', 'offer the free tech with ') + { dollar: L('ít tiền dịch vụ nhất', 'the least service money'), count: L('ít khách nhất', 'the fewest customers'), time: L('ít phút làm nhất', 'the fewest minutes'), points: L('ít điểm nhất', 'the fewest points') }[cfg.method] + (cfg.method === 'dollar' ? L(' (', ' (') + (cfg.dollarScope === 'all' ? L('tính mọi khách', 'all customers') : L('chỉ khách không hẹn', 'walk-ins only')) + ').' : '.'));
+  return sec(1, L('Khách không hẹn tiếp theo giao cho ai?', 'Who gets the next walk-in?'), b);
 }
-function summaryOf(g) {
-  if (g.custom) { var m = METHODS.filter(function (x) { return x.v === cfg.method; })[0]; return m ? T(m.t) : ''; }
-  return g.rows.slice(0, 2).map(function (r) { var v = cfg[r.k]; var sh = r.s ? T(r.s) : ''; return r.type === 'sw' ? sh + ': ' + T(v ? 'On' : 'Off') : r.type === 'num' ? sh + ' ' + (r.k === 'smallUnder' || r.k === 'bigOver' ? '$' + v : v) : (sh ? sh + ': ' : '') + T(label(r, v)); }).join(' · ');
+function usesTurns() { return isLine() || isManual(); }
+function part2() {
+  var b = '';
+  if (usesTurns()) {
+    b += q(L('Khách yêu cầu đúng tên thợ có tính lượt không?', 'Does a customer who asks for a tech by name add a turn?'));
+    b += opt('reqW', '0', L('Không cộng lượt', 'No turn'), L('Số lượt của thợ không đổi.', 'The tech\'s turns do not change.'));
+    b += opt('reqW', '0.5', L('Cộng nửa lượt', 'Half a turn'), L('Cộng 0,5 vào số lượt của thợ.', 'Adds 0.5 to the tech\'s turns.'));
+    b += opt('reqW', '1', L('Cộng một lượt', 'One turn'), L('Tính như một khách bình thường.', 'Counts like a normal customer.'));
+  } else b += na(L('Cách chia đang chọn không dùng số lượt. ', 'The chosen way does not use turns. ') + (cfg.method === 'dollar' ? (cfg.dollarScope === 'all' ? L('Tiền của khách yêu cầu vẫn được cộng vào tiền so sánh (Phần 1).', 'The requested customer\'s money is still added (Part 1).') : L('Tiền của khách yêu cầu không cộng vào tiền so sánh (Phần 1).', 'The requested customer\'s money is not added (Part 1).')) : L('Khách yêu cầu vẫn được tính như mọi khách khác.', 'Requested customers count like any other.')));
+  if (isLine()) {
+    b += q(L('Sau khi làm khách yêu cầu, thợ đứng ở đâu trong hàng?', 'After a requested customer, where does the tech stand in line?'));
+    b += opt('reqPos', 'keep', L('Giữ vị trí trước đó', 'Keeps the same place'), L('Thợ đứng ở đâu thì vẫn đứng đó.', 'The tech stays where they were.'));
+    b += opt('reqPos', 'end', L('Chuyển xuống cuối hàng', 'Goes to the end of the line'), L('Các thợ còn lại được nhận khách không hẹn trước.', 'The other techs get walk-ins first.'));
+    b += ex(L('Hàng: Lan → Mai → Nhân → Dân, Lan 1 lượt. Khách gọi Nhân. ', 'Line: Lan → Mai → Nhân → Dân, Lan 1 turn. A customer asks for Nhân. ') + (cfg.reqPos === 'keep' ? L('Giữ vị trí → hàng vẫn Lan → Mai → Nhân → Dân', 'Keeps place → still Lan → Mai → Nhân → Dân') : L('Xuống cuối → Lan → Mai → Dân → Nhân', 'To the end → Lan → Mai → Dân → Nhân')) + L('; Nhân ', '; Nhân ') + wText(cfg.reqW) + '.');
+    b += now(L('cho khách yêu cầu ', 'make a requested customer ') + wText(cfg.reqW) + L(' và thợ ', ' and the tech ') + (cfg.reqPos === 'keep' ? L('giữ vị trí.', 'keeps the place.') : L('xuống cuối hàng.', 'goes to the end.')));
+  } else if (isManual()) b += now(L('ghi khách yêu cầu ', 'record a requested customer as ') + wText(cfg.reqW) + L(' để chủ tiệm xem khi chia.', ' for the owner to see.'));
+  return sec(2, L('Khách yêu cầu đúng tên thợ', 'Customer asks for a tech by name'), b);
 }
-function drawGroups() {
-  var box = $('#groups'); var open = {}; box.querySelectorAll('details[open]').forEach(function (d) { open[d.dataset.g] = 1; }); box.innerHTML = '';
-  GROUPS.forEach(function (g, gi) {
-    var d = el('details', 'grp'); d.dataset.g = g.k; if (open[g.k] || (gi === 0 && !box.dataset.init)) d.open = true;
-    d.appendChild(el('summary', '', '<span class="ic">' + g.ic + '</span><span class="t">' + 'ABCDEFGHIJKLMN'.charAt(gi) + '. ' + esc(T(g.t)) + '<span class="sm">' + esc(summaryOf(g)) + '</span></span><span class="chev">›</span>'));
-    var b = el('div', 'body');
-    if (g.custom) {
-      b.appendChild(el('div', 'help', esc(T('Choose how the app decides who gets the next walk-in customer.'))));
-      var ms = el('div', 'methods');
-      METHODS.forEach(function (m) {
-        var lab = el('label', 'mth' + (cfg.method === m.v ? ' on' : ''), '<input type="radio" name="method" value="' + m.v + '"' + (cfg.method === m.v ? ' checked' : '') + '><div><b>' + (m.v === BASE.method ? '⭐ ' : '') + esc(T(m.t)) + '</b><span>' + esc(T(m.d)) + '</span><em>' + esc(T('Example: {0}', T(m.e))) + '</em></div>');
-        lab.querySelector('input').addEventListener('change', function () { cfg.method = m.v; changed(); });
-        ms.appendChild(lab);
-      });
-      b.appendChild(ms);
-    } else g.rows.forEach(function (r) { b.appendChild(rowEl(r)); });
-    d.appendChild(b); box.appendChild(d);
-  });
-  box.dataset.init = '1';
+function part3() {
+  var b = '';
+  if (usesTurns()) {
+    b += q(L('Khách đặt hẹn có tính lượt không?', 'Does a booked customer add a turn?'), L('Áp dụng cho khách đã được phân công thợ trong lịch hẹn. Khách hẹn chưa chọn thợ cần được phân thợ trước khi tính lượt.', 'For booked customers who already have a tech. A booking without a tech must get one before turns count.'));
+    b += opt('apptW', '0', L('Không cộng lượt', 'No turn'), isLine() ? L('Thợ giữ vị trí trong hàng.', 'The tech keeps the place.') : '');
+    b += opt('apptW', '0.5', L('Cộng nửa lượt', 'Half a turn'), isLine() ? L('Giữ vị trí; đủ hai lần nửa lượt thì xuống cuối hàng.', 'Keeps the place; after two halves goes to the end.') : '');
+    b += opt('apptW', '1', L('Cộng một lượt', 'One turn'), isLine() ? L('Thợ xuống cuối hàng như nhận khách thường.', 'The tech goes to the end like a normal customer.') : '');
+  } else b += na(L('Cách chia đang chọn không dùng số lượt. ', 'The chosen way does not use turns. ') + (cfg.method === 'dollar' && cfg.dollarScope === 'walk' ? L('Tiền khách hẹn không cộng vào tiền so sánh.', 'Booked money is not added.') : L('Khách hẹn được tính như mọi khách khác.', 'Booked customers count like any other.')));
+  b += q(L('Trước giờ hẹn, khi nào ngừng giao thêm khách cho thợ?', 'Before an appointment, when does the tech stop getting walk-ins?'));
+  b += opt('hold', '0', L('Không dành thời gian riêng', 'No time kept'), L('Thợ vẫn được giao khách tới sát giờ hẹn.', 'The tech still gets walk-ins right up to the appointment.'));
+  b += opt('hold', '15', L('Trước 15 phút', '15 minutes before'), '');
+  b += opt('hold', '30', L('Trước 30 phút', '30 minutes before'), '');
+  b += ex(L('Hẹn 2:00, chọn 15 phút → từ 1:45 không giao thêm khách cho thợ đó.', 'Appointment at 2:00, 15 minutes → from 1:45 no more walk-ins for that tech.'));
+  b += '<div class="must">' + esc(L('Đây là khoảng giữ lịch. Không bảo đảm mọi dịch vụ bắt đầu trước đó đều làm xong kịp giờ hẹn. Phần thử bên dưới chưa mô phỏng giờ hẹn.', 'This only keeps time free. It does not promise that a service started earlier ends in time. The try-it part below does not simulate clock times.')) + '</div>';
+  b += now((usesTurns() ? L('cho khách hẹn ', 'make a booked customer ') + wText(cfg.apptW) + L(', và ', ', and ') : '') + (cfg.hold === '0' ? L('không giữ thời gian trước giờ hẹn.', 'keep no time before appointments.') : L('ngừng giao khách không hẹn cho thợ ', 'stop walk-ins for the tech ') + cfg.hold + L(' phút trước giờ hẹn.', ' minutes before the appointment.')));
+  return sec(3, L('Khách đặt hẹn', 'Booked customers'), b);
 }
-function rowEl(r) {
-  var row = el('div', 'row'); var id = 'f_' + r.k;
-  if (r.type === 'sw') {
-    row.innerHTML = '<div class="tw"><div class="grow"><label class="lbl" for="' + id + '">' + esc(T(r.l)) + '</label>' + (r.h ? '<div class="help">' + esc(T(r.h)) + '</div>' : '') + '</div><span class="sw"><input type="checkbox" role="switch" id="' + id + '"' + (cfg[r.k] ? ' checked' : '') + '><i></i></span></div>';
-    row.querySelector('input').addEventListener('change', function (e) { cfg[r.k] = e.target.checked; changed(); });
-  } else if (r.type === 'sel') {
-    row.innerHTML = '<div class="lbl" id="' + id + '_l">' + esc(T(r.l)) + '</div>' + (r.h ? '<div class="help">' + esc(T(r.h)) + '</div>' : '') + '<div class="radios" role="radiogroup" aria-labelledby="' + id + '_l">' + r.o.map(function (o) { return '<label class="rad"><input type="radio" name="' + id + '" value="' + o[0] + '"' + (String(cfg[r.k]) === o[0] ? ' checked' : '') + '><span>' + (String(BASE[r.k]) === o[0] ? '⭐ ' : '') + esc(T(o[1])) + '</span></label>'; }).join('') + '</div>' + exEl(r.x);
-    row.querySelectorAll('input[type=radio]').forEach(function (inp) { inp.addEventListener('change', function () { cfg[r.k] = inp.value; changed(); }); });
+function part4() {
+  var b = '';
+  if (usesTurns() || cfg.method === 'points') {
+    b += q(L('A. Dịch vụ nhỏ được tính thế nào?', 'A. How does a small service count?'), L('Dịch vụ có giá dưới mức này. Đúng bằng mức này được tính như dịch vụ thường.', 'Services priced below this line. Exactly this amount counts as a normal service.'));
+    b += num('smallUnder', 5, 60, 5);
+  }
+  if (usesTurns()) {
+    b += opt('smallW', '0', L('Không cộng lượt', 'No turn'), '');
+    b += opt('smallW', '0.5', L('Cộng nửa lượt', 'Half a turn'), '');
+    b += opt('smallW', '1', L('Cộng một lượt', 'One turn'), '');
+    b += ex(L('Mức dưới $', 'Line under $') + cfg.smallUnder + L(': sơn lại $15 → ', ': a $15 polish change → ') + (15 < cfg.smallUnder ? wText(cfg.smallW) : wText(1)) + L('; khách đúng $', '; a customer at exactly $') + cfg.smallUnder + L(' → cộng một lượt.', ' → one turn.'));
+    b += q(L('B. Một thợ làm cả tay và chân cho một khách', 'B. One tech does hands and feet for one customer'));
+    b += opt('combo', 'one', L('Tổng cộng một lượt', 'One turn in total'), L('Cả khách tính là một lượt.', 'The whole customer is one turn.'));
+    b += opt('combo', 'each', L('Mỗi dịch vụ một lượt', 'One turn per service'), L('Tay + chân = hai lượt.', 'Hands + feet = two turns.'));
+    b += q(L('C. Hai thợ chia nhau làm một khách', 'C. Two techs share one customer'), L('Chỉ dùng khi hai thợ khác nhau cùng làm. Một thợ làm combo xem câu B.', 'Only when two different techs work. One tech doing a combo: see B.'));
+    b += opt('twoTech', 'one', L('Mỗi thợ một lượt', 'One turn each'), '');
+    b += opt('twoTech', 'half', L('Mỗi thợ nửa lượt', 'Half a turn each'), '');
+    b += ex(L('Lan làm chân, Mai làm tay cho cùng một khách → ', 'Lan does feet, Mai does hands for one customer → ') + (cfg.twoTech === 'one' ? L('Lan và Mai mỗi người cộng một lượt.', 'Lan and Mai add one turn each.') : L('Lan và Mai mỗi người cộng nửa lượt.', 'Lan and Mai add half a turn each.')));
+    b += now(L('tính dịch vụ dưới $', 'count a service under $') + cfg.smallUnder + ' ' + wText(cfg.smallW) + L('; một thợ làm tay + chân ', '; one tech doing hands + feet ') + (cfg.combo === 'one' ? L('cộng một lượt', 'adds one turn') : L('cộng hai lượt', 'adds two turns')) + L('; hai thợ chia khách thì mỗi thợ ', '; two techs sharing each ') + (cfg.twoTech === 'one' ? L('cộng một lượt.', 'add one turn.') : L('cộng nửa lượt.', 'add half a turn.')));
+  } else if (cfg.method === 'points') {
+    b += na(L('Cách chia theo điểm: dịch vụ dưới mức này = ½ điểm. Hai thợ chia một khách: mỗi thợ nhận nửa số điểm.', 'Points: a service under this line = ½ point. Two techs sharing: each gets half the points.'));
   } else {
-    var money = r.k === 'smallUnder' || r.k === 'bigOver';
-    row.innerHTML = '<div class="lbl">' + esc(T(r.l)) + '</div>' + (r.h ? '<div class="help">' + esc(T(r.h)) + '</div>' : '') + '<div class="num"><button type="button" aria-label="Less">−</button><output id="' + id + '">' + (money ? '$' : '') + cfg[r.k] + '</output><button type="button" aria-label="More">+</button></div>';
-    var bs = row.querySelectorAll('button');
-    bs[0].addEventListener('click', function () { cfg[r.k] = Math.max(r.min, +cfg[r.k] - r.step); changed(); });
-    bs[1].addEventListener('click', function () { cfg[r.k] = Math.min(r.max, +cfg[r.k] + r.step); changed(); });
+    b += na(L('Cách chia đang chọn không dùng số lượt. ', 'The chosen way does not use turns. ') + (cfg.method === 'dollar' ? L('Mỗi dịch vụ cộng đúng giá của nó vào tiền so sánh. Hai thợ chia một khách: mỗi thợ được cộng nửa giá.', 'Each service adds its own price. Two techs sharing: each adds half the price.') : cfg.method === 'count' ? L('Mỗi khách đếm là 1, dù làm mấy dịch vụ. Hai thợ chia một khách: mỗi thợ đếm 1 khách.', 'Each customer = 1, however many services. Two techs sharing: each counts 1 customer.') : L('Cộng số phút thật của dịch vụ. Hai thợ chia một khách: mỗi thợ cộng phút mình làm.', 'Adds the real minutes. Two techs sharing: each adds their own minutes.')));
   }
-  return row;
+  return sec(4, L('Dịch vụ nhỏ và khách làm nhiều dịch vụ', 'Small services and several services'), b);
 }
-function exEl(x) { return x ? '<button type="button" class="ex" aria-expanded="false">ⓘ ' + esc(T('Example')) + '</button><div class="exb" hidden>' + esc(T(x)) + '</div>' : ''; }
-function drawInUse() {
-  var m = METHODS.filter(function (x) { return x.v === cfg.method; })[0];
-  var w = function (v) { return T(v === 'none' ? 'no turn' : v === 'half' ? '½ turn' : '1 turn'); };
-  var li = [T('Method: {0}', T(m.t)), T('${0}+ = 1 turn · under ${0} = {1}', cfg.smallUnder, w(cfg.smallCounts)), T('Asked by name: {0} · appointment: {1}', w(cfg.reqCounts), w(cfg.apptCounts)),
-    T('Tech says no: {0}', T(label(GROUPS[4].rows[0], cfg.refuseRule))), T('Same turns: {0}', T(label(GROUPS[13].rows[0], cfg.tie)))];
-  $('#inuse').innerHTML = '<b>' + esc(T('Rules in use')) + '</b><ul>' + li.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+function part5() {
+  var b = q(L('Thợ đang bận', 'A busy tech'));
+  b += '<div class="qn">' + esc(L('Hệ thống đề nghị thợ khác đang rảnh và làm được dịch vụ. Không giao chồng khách cho thợ đang bận. ', 'The system offers another free tech who can do the service. A busy tech never gets a second customer at the same time. ') + (isLine() ? L('Thợ bận vẫn giữ vị trí trong hàng; làm xong mà vẫn đứng đầu hàng thì được đề nghị khách kế.', 'A busy tech keeps the place; if still first when free, they get the next customer.') : isManual() ? '' : L('Cách chia đang chọn không dùng vị trí; làm xong thì thợ được so sánh lại như mọi người.', 'The chosen way has no places; when free the tech is compared again like everyone.'))) + '</div>';
+  if (!isManual()) {
+    b += q(L('Nghỉ giải lao xong quay lại', 'Back from a break'));
+    b += opt('breakBack', 'keep', isLine() ? L('Giữ vị trí trước khi nghỉ', 'Keeps the place from before the break') : L('Được so sánh lại như bình thường', 'Compared again as usual'), isLine() ? L('Giữ vị trí không có nghĩa là luôn đứng đầu hàng: ai đứng trước vẫn đứng trước.', 'Keeping the place does not mean first in line: whoever was ahead stays ahead.') : '');
+    b += opt('breakBack', 'end', L('Xuống cuối hàng', 'Goes to the end of the line'), isLine() ? '' : L('Đứng sau các thợ khác cho tới khi nhận khách kế tiếp.', 'Stands after the others until they take the next customer.'));
+    b += ex(L('Hàng: Lan → Mai → Nhân → Dân. Mai nghỉ 20 phút rồi quay lại → ', 'Line: Lan → Mai → Nhân → Dân. Mai takes 20 minutes off and comes back → ') + (cfg.breakBack === 'keep' ? L('vẫn Lan → Mai → Nhân → Dân.', 'still Lan → Mai → Nhân → Dân.') : L('Lan → Nhân → Dân → Mai.', 'Lan → Nhân → Dân → Mai.')));
+    b += q(L('Thợ bấm vào ca sau', 'A tech who starts later'));
+    b += '<div class="qn">' + esc(isLine() ? L('Xếp cuối hàng hiện tại.', 'Placed at the end of the current line.') : cfg.late === 'avg' ? L('Bắt đầu bằng mức trung bình của các thợ đang làm (chỉnh ở Cài đặt thêm).', 'Starts at the average of the others (see More settings).') : L('Bắt đầu từ 0 nên sẽ được đề nghị nhiều khách trước (chỉnh ở Cài đặt thêm).', 'Starts at 0, so they are offered customers first (see More settings).')) + '</div>';
+    b += now(L('bỏ qua thợ bận, ', 'skip busy techs, ') + (cfg.breakBack === 'keep' ? L('cho thợ nghỉ xong giữ vị trí, ', 'let a tech back from a break keep the place, ') : L('cho thợ nghỉ xong xuống cuối hàng, ', 'send a tech back from a break to the end, ')) + L('và xếp thợ vào ca sau ', 'and place a later tech ') + (isLine() || cfg.late === 'end' ? L('ở cuối hàng.', 'at the end.') : L('ở mức trung bình.', 'at the average.')));
+  } else b += na(L('Chủ tiệm tự chọn thợ nên không cần luật nghỉ và vào ca.', 'The owner picks, so break and start rules are not needed.'));
+  return sec(5, L('Thợ bận, nghỉ hoặc vào ca muộn', 'Busy, on a break or starting late'), b);
 }
-function changed() { cfg.preset = 'custom'; drawAll(); }
-function drawAll() { drawInUse(); drawPresets(); drawGroups(); recompute(); }
-
-/* ---------- the turn engine (preview only) ---------- */
-function freshSim() {
-  return { techs: TECHS.map(function (n, i) { return { name: n, order: i, turns: 0, dollars: 0, minutes: 0, customers: 0, points: 0, busy: null, brk: false, refusals: 0, line: i }; }), log: [], lineSeq: TECHS.length, n: 0 };
-}
-function weight(kind, svc) {
-  var w;
-  if (svc.repair) w = cfg.repairCounts;
-  else if (kind === 'request') w = cfg.reqCounts;
-  else if (kind === 'appt') w = cfg.apptCounts;
-  else if (svc.price < +cfg.smallUnder) w = cfg.smallCounts;
-  else w = 'full';
-  var v = w === 'none' ? 0 : w === 'half' ? 0.5 : 1;
-  if (svc.two && cfg.multiSvc === 'each' && v > 0) v = v * 2;
-  return v;
-}
-function pointsOf(svc) { return svc.repair || svc.price < +cfg.smallUnder ? 0.5 : svc.price > +cfg.bigOver ? 1.5 : 1; }
-function avail(s) { return s.techs.filter(function (t) { return !t.brk && (!cfg.skipBusy || !t.busy); }); }
-function tieKey(t) { return cfg.tie === 'dollar' ? t.dollars : cfg.tie === 'wait' ? t.line : t.order; }
-function score(t) {
-  switch (cfg.method) {
-    case 'round': return [t.turns, t.line];
-    case 'dollar': return [t.dollars, tieKey(t)];
-    case 'count': return [t.turns, tieKey(t)];
-    case 'time': return [t.minutes, tieKey(t)];
-    case 'points': return [t.points, tieKey(t)];
-    case 'hybrid': return [t.turns, t.dollars, tieKey(t)];
-    default: return [t.line];
+function part6() {
+  var b = '';
+  if (isManual()) b += na(L('Chủ tiệm tự chọn thợ nên không có từ chối tự động.', 'The owner picks, so there is no automatic refusal.'));
+  else {
+    b += q(L('Nếu thợ đang rảnh, làm được dịch vụ nhưng không muốn nhận khách, tiệm xử lý thế nào?', 'If a free tech who can do the service does not want the customer, what happens?'));
+    b += opt('refuse', 'keep', L('Giữ vị trí', 'Keeps the place'), L('Khách giao cho thợ kế tiếp; thợ từ chối vẫn được đề nghị khách sau.', 'The customer goes to the next tech; the tech is still offered the next one.'));
+    b += opt('refuse', 'end', L('Xuống cuối hàng', 'Goes to the end of the line'), isLine() ? L('Các thợ còn lại được đề nghị trước.', 'The others are offered first.') : L('Đứng sau các thợ khác cho tới khi nhận khách kế tiếp.', 'Stands after the others until they take a customer.'));
+    if (isLine()) b += opt('refuse', 'count', L('Cộng một lượt như đã nhận khách', 'One turn, as if served'), L('Cộng một lượt và xuống cuối hàng.', 'Adds one turn and goes to the end.'));
+    b += ex(L('Hàng: Lan → Mai → Nhân → Dân. Lan từ chối, khách giao cho Mai. Sau đó: ', 'Line: Lan → Mai → Nhân → Dân. Lan says no, Mai takes the customer. After: ') + (cfg.refuse === 'keep' ? L('Lan → Nhân → Dân → Mai (Lan vẫn đầu hàng).', 'Lan → Nhân → Dân → Mai (Lan still first).') : cfg.refuse === 'end' ? L('Nhân → Dân → Lan → Mai (Nhân, Dân được trước Lan; Mai vừa nhận khách nên đứng cuối).', 'Nhân → Dân → Lan → Mai (Nhân and Dân go before Lan; Mai just took a customer so is last).') : L('Nhân → Dân → Lan → Mai, Lan cộng thêm một lượt.', 'Nhân → Dân → Lan → Mai, Lan adds one turn.')));
+    b += '<div class="must">' + esc(L('Thợ đang bận, chưa tới ca, không làm được dịch vụ hoặc cần tránh trùng lịch không được tự động xem là từ chối khách.', 'A tech who is busy, not on shift yet, cannot do the service or must avoid a booking clash is never counted as refusing.')) + '</div>';
+    b += now(L('giao khách cho thợ kế tiếp, và thợ từ chối ', 'give the customer to the next tech, and the tech who said no ') + (cfg.refuse === 'keep' ? L('giữ vị trí.', 'keeps the place.') : cfg.refuse === 'end' ? L('xuống cuối hàng.', 'goes to the end.') : L('cộng một lượt và xuống cuối hàng.', 'adds one turn and goes to the end.')));
   }
+  return sec(6, L('Thợ từ chối nhận khách', 'A tech says no'), b);
 }
-function cmp(a, b) { var x = score(a), y = score(b); for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i]; return a.line - b.line; }
-function ranked(s, skip) { return avail(s).filter(function (t) { return !skip || skip.indexOf(t.name) < 0; }).sort(cmp); }
-function nextTech(s, skip) { if (cfg.method === 'manual') return null; return ranked(s, skip)[0] || null; }
-function give(s, t, svc, kind, note) {
-  var w = weight(kind, svc);
-  t.turns += w; t.customers += 1; t.dollars += svc.price; t.minutes += svc.min; t.points += kind === 'walk' ? pointsOf(svc) : 0;
-  if (w > 0 || !(kind === 'request' && cfg.reqKeepPlace)) t.line = s.lineSeq++;
-  t.busy = svc.name; s.n++;
-  var why = T(kind === 'walk' ? 'walk-in' : kind === 'request' ? 'requested' : 'appointment');
-  s.log.unshift({ b: '#' + s.n + ' ' + svc.name + ' ($' + svc.price + ') → ' + t.name, m: why + ' · ' + T('counts as {0}', w === 0 ? T('no turn') : w === 0.5 ? T('½ turn') : T(w > 1 ? '{0} turns' : '{0} turn', w)) + (note ? ' · ' + note : '') });
+function part7() {
+  var b = q(L('A. Khách chưa được phục vụ rồi hủy hoặc không tới', 'A. A customer cancels or never comes before being served'));
+  b += '<div class="qn">' + esc(usesTurns() ? L('Nếu đã cộng lượt thì hoàn lại đúng số lượt đã cộng. Nếu chưa cộng thì không cộng và không hoàn thêm. Thợ không được tự đưa lên đầu hàng.', 'If a turn was added, exactly that turn is taken back. If none was added, nothing changes. The tech is not moved to the front.') : L('Tiền, số khách hoặc số phút đã cộng cho khách đó được trừ lại đúng như đã cộng.', 'The money, customer or minutes added for that customer are taken back exactly.')) + '</div>';
+  b += ex(L('Nhân nhận khách làm chân (cộng một lượt) rồi khách bỏ về → Nhân trừ lại một lượt; Nhân vẫn đứng ở vị trí hiện tại, không lên đầu hàng.', 'Nhân takes a pedicure (one turn), the customer leaves → Nhân loses that turn again; Nhân stays where he is, not moved to the front.'));
+  b += q(L('B. Sửa lỗi miễn phí của bộ móng cũ', 'B. Free fix of an earlier set'));
+  b += '<div class="qn">' + esc(L('Không cộng lượt, không cộng tiền. Ưu tiên thợ đã làm bộ móng nếu thợ đó đang rảnh; nếu không thì giao thợ rảnh kế tiếp, cũng không cộng lượt.', 'No turn, no money. The tech who did the set gets it if free; otherwise the next free tech, also with no turn.')) + '</div>';
+  b += q(L('C. Sửa móng có thu tiền', 'C. Paid nail fix'));
+  b += '<div class="qn">' + esc(L('Tính như dịch vụ bình thường theo giá: dưới $', 'Counts like a normal service by price: under $') + cfg.smallUnder + L(' thì theo luật dịch vụ nhỏ (Phần 4A).', ' follows the small service rule (Part 4A).')) + '</div>';
+  b += now(L('trừ lại đúng phần đã cộng khi khách hủy, không cộng gì cho sửa miễn phí, và tính sửa có thu tiền như dịch vụ nhỏ.', 'take back exactly what was added on a cancel, add nothing for a free fix, and count a paid fix as a small service.'));
+  return sec(7, L('Khách hủy, không tới hoặc quay lại sửa móng', 'Cancels, no-shows and nail fixes'), b);
 }
-function refuse(s, t) {
-  t.refusals++; var note;
-  if (cfg.refuseRule === 'lose') { t.turns += 1; t.line = s.lineSeq++; note = T('loses the turn (counts as served)'); }
-  else if (cfg.refuseRule === 'end') { t.line = s.lineSeq++; note = T('moves to the end of the line'); }
-  else if (t.refusals > +cfg.refuseMax) { t.line = s.lineSeq++; note = T('refused {0} times (limit {1}) → end of the line', t.refusals, cfg.refuseMax); }
-  else note = T('keeps the place ({0} of {1} refusals today)', t.refusals, cfg.refuseMax);
-  return note;
+function advanced() {
+  var b = q(L('Hàng chung hay chia hàng theo nhóm dịch vụ', 'One line or lines by service group'));
+  b += opt('queues', 'one', L('Một hàng chung cho mọi thợ', 'One line for all techs'), '');
+  b += opt('queues', 'split', L('Chia hàng theo nhóm (tay / chân / bột)', 'Lines by group (hands / feet / acrylic)') , L('Phần thử chưa mô phỏng nhiều hàng.', 'Not simulated in the try-it part.'));
+  b += q(L('Ai được đổi thứ tự trong hàng?', 'Who may change the order?'));
+  b += opt('whoMoves', 'owner', L('Chỉ chủ tiệm', 'Owner only'), '');
+  b += opt('whoMoves', 'desk', L('Chủ tiệm và lễ tân', 'Owner and front desk'), '');
+  b += q(L('Lưu lý do khi đổi thứ tự', 'Save a reason when changing the order'));
+  b += opt('reason', 'yes', L('Có – hỏi lý do và lưu vào lịch sử', 'Yes – ask and save it in the history'), '');
+  b += opt('reason', 'no', L('Không hỏi', 'Do not ask'), '');
+  b += q(L('Đầu ngày xếp hàng thế nào?', 'How does the line start each day?'), L('Bản đơn giản luôn bắt đầu lại mỗi ngày.', 'The simple version always starts fresh each day.'));
+  b += opt('startDay', 'clock', L('Ai bấm vào ca trước đứng trước', 'Whoever starts first stands first'), '');
+  b += opt('startDay', 'yesterday', L('Ai ít lượt nhất hôm qua đứng trước', 'Fewest turns yesterday first'), L('Phần thử chưa mô phỏng ngày hôm qua.', 'Not simulated in the try-it part.'));
+  if (!isLine() && !isManual()) {
+    b += q(L('Hai thợ bằng nhau thì ai trước?', 'Two techs are equal – who goes first?'));
+    b += opt('tie', 'clock', L('Ai bấm vào ca trước', 'Whoever started first'), '');
+    b += opt('tie', 'line', L('Ai đang đứng trước trong hàng', 'Whoever is ahead in line'), L('Thứ tự hàng đổi khi thợ nhận khách.', 'The order changes as techs take customers.'));
+    b += q(L('Thợ bấm vào ca sau bắt đầu từ đâu?', 'Where does a later tech start?'));
+    b += opt('late', 'end', L('Từ 0', 'From 0'), L('Thợ đó sẽ được đề nghị nhiều khách trước.', 'They will be offered customers first.'));
+    b += opt('late', 'avg', L('Từ mức trung bình của các thợ đang làm', 'From the average of the others'), '');
+  }
+  if (cfg.method === 'points') { b += q(L('Dịch vụ lớn (1½ điểm) từ', 'Big service (1½ points) from')); b += num('bigOver', 30, 120, 5); }
+  return b;
 }
-function toggleBreak(s, t) {
-  t.brk = !t.brk;
-  if (!t.brk && cfg.breakBack === 'end') { t.line = s.lineSeq++; return T('{0} is back – goes to the end of the line', t.name); }
-  return T(t.brk ? '{0} is on a break' : '{0} is back – keeps the place', t.name);
+/* ---------- summary in full sentences ---------- */
+function summary() {
+  var s = [];
+  s.push(L('Khách không hẹn: ', 'Walk-ins: ') + mName(cfg.method) + (cfg.method === 'dollar' ? L(' (tính ', ' (') + (cfg.dollarScope === 'all' ? L('mọi khách', 'every customer') : L('chỉ khách không hẹn', 'walk-ins only')) + L(', giá dịch vụ chưa trừ giảm giá, không tip, không thuế).', ', service price before discounts, no tip, no tax).') : '.'));
+  if (usesTurns()) {
+    s.push(L('Khách yêu cầu thợ ', 'A requested customer ') + wText(cfg.reqW) + (isLine() ? (cfg.reqPos === 'keep' ? L(' và thợ giữ vị trí.', ' and the tech keeps the place.') : L(' và thợ xuống cuối hàng.', ' and the tech goes to the end.')) : '.'));
+    s.push(L('Khách hẹn ', 'A booked customer ') + wText(cfg.apptW) + '.');
+    s.push(L('Dịch vụ dưới $', 'A service under $') + cfg.smallUnder + ' ' + wText(cfg.smallW) + '.');
+    s.push(L('Một thợ làm tay + chân: ', 'One tech, hands + feet: ') + (cfg.combo === 'one' ? L('một lượt.', 'one turn.') : L('hai lượt.', 'two turns.')) + L(' Hai thợ chia một khách: mỗi thợ ', ' Two techs sharing: ') + (cfg.twoTech === 'one' ? L('một lượt.', 'one turn each.') : L('nửa lượt.', 'half a turn each.')));
+  }
+  s.push(cfg.hold === '0' ? L('Không giữ thời gian trước giờ hẹn.', 'No time kept before appointments.') : L('Ngừng giao khách ', 'No walk-ins ') + cfg.hold + L(' phút trước giờ hẹn.', ' minutes before an appointment.'));
+  if (!isManual()) {
+    s.push(L('Thợ nghỉ xong ', 'Back from a break: ') + (cfg.breakBack === 'keep' ? L('giữ vị trí.', 'keeps the place.') : L('xuống cuối hàng.', 'end of the line.')));
+    s.push(L('Thợ từ chối khách ', 'A tech who says no ') + (cfg.refuse === 'keep' ? L('giữ vị trí.', 'keeps the place.') : cfg.refuse === 'end' ? L('xuống cuối hàng.', 'goes to the end.') : L('bị cộng một lượt và xuống cuối hàng.', 'adds one turn and goes to the end.')));
+  }
+  s.push(L('Khách hủy: trừ lại đúng phần đã cộng. Sửa miễn phí: không cộng. Sửa có thu tiền: tính như dịch vụ nhỏ.', 'Cancel: take back exactly what was added. Free fix: nothing added. Paid fix: like a small service.'));
+  return '<b>' + esc(L('Tiệm đang chọn luật như sau', 'The salon\'s rules right now')) + '</b>' + s.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('');
 }
 
-/* ---------- simulator UI ---------- */
-function drawSim() {
-  var nx = nextTech(sim); var box = $('#techs'); box.innerHTML = '';
-  sim.techs.forEach(function (t) {
-    var st = t.brk ? '<span class="st brk">' + T('On break') + '</span>' : t.busy ? '<span class="st busy">' + T('Busy') + '</span>' : '<span class="st free">' + T('Free') + '</span>';
-    var c = el('div', 'tech' + (nx && nx.name === t.name ? ' next' : ''));
-    c.innerHTML = '<div class="nm">' + esc(t.name) + st + '</div><div class="stats">' + T('Turns') + ' <b>' + fmt(t.turns) + '</b> · $<b>' + t.dollars + '</b><br>' + T('{0} cust · {1} min', t.customers, t.minutes) + (cfg.method === 'points' ? ' · ' + T('{0} pts', fmt(t.points)) : '') + (t.busy ? '<br>' + T('Doing: {0}', esc(t.busy)) : '') + '</div>'
-      + '<div class="acts"><button type="button" class="btn" data-done="' + t.name + '"' + (t.busy ? '' : ' disabled') + '>' + T('Done') + '</button><button type="button" class="btn" data-brk="' + t.name + '"' + (t.busy && !t.brk ? ' disabled' : '') + '>' + T(t.brk ? 'Back' : 'Break') + '</button></div>';
-    box.appendChild(c);
+/* ---------- the engine (preview only) ---------- */
+var sim;
+function fresh() { return { t: TECHS.map(function (n, i) { return { name: n, ord: i, on: n !== 'Dân', busy: null, brk: false, turns: 0, pend: 0, money: 0, cust: 0, min: 0, pts: 0, pen: false, last: null }; }), line: ['Lan', 'Mai', 'Nhân'], log: [], recs: [], n: 0, seq: 0 }; }
+function T(n) { return sim.t.filter(function (x) { return x.name === n; })[0]; }
+function lineStr() { return sim.line.join(' → '); }
+function toEnd(t) { var i = sim.line.indexOf(t.name); if (i >= 0) sim.line.splice(i, 1); sim.line.push(t.name); }
+function free(t) { return t.on && !t.brk && !t.busy; }
+function small(s) { return s.price < +cfg.smallUnder; }
+function weightOf(kind, s) {
+  if (kind === 'freefix') return 0;
+  var w = kind === 'req' ? +cfg.reqW : kind === 'appt' ? +cfg.apptW : small(s) ? +cfg.smallW : 1;
+  if (s.combo && cfg.combo === 'each' && w > 0) w = w * 2;
+  return w;
+}
+function ptsOf(s) { return small(s) ? 0.5 : s.price >= +cfg.bigOver ? 1.5 : 1; }
+function metric(t) { return cfg.method === 'dollar' ? t.money : cfg.method === 'count' ? t.cust : cfg.method === 'time' ? t.min : t.pts; }
+function ranked(skip) {
+  var c = sim.t.filter(function (t) { return free(t) && (!skip || skip.indexOf(t.name) < 0); });
+  if (isLine()) return sim.line.map(T).filter(function (t) { return c.indexOf(t) >= 0; });
+  if (isManual()) return c;
+  var lp = function (t) { var i = sim.line.indexOf(t.name); return i < 0 ? 99 : i; };
+  return c.sort(function (a, b) { if (a.pen !== b.pen) return a.pen ? 1 : -1; var d = metric(a) - metric(b); if (Math.abs(d) > 1e-9) return d; return cfg.tie === 'line' ? lp(a) - lp(b) : a.ord - b.ord; });
+}
+function nextTech(skip) { return isManual() ? null : (ranked(skip)[0] || null); }
+/* one tech gets one customer; share = 1 or 0.5 (two techs); returns the record */
+function apply(t, s, kind, share, w) {
+  var before = lineStr(), moved = '';
+  t.turns += w; t.cust += (kind === 'freefix' ? 0 : 1); t.min += Math.round(s.min * (share < 1 ? 0.5 : 1));
+  var cm = cfg.method !== 'dollar' || cfg.dollarScope === 'all' || kind === 'walk' || kind === 'two';
+  var money = kind === 'freefix' ? 0 : s.price * share; if (cm) t.money += money;
+  var pts = kind === 'freefix' ? 0 : ptsOf(s) * share; t.pts += pts; t.pen = false;
+  var pendAdd = 0;
+  if (isLine()) {
+    if (kind === 'req') { if (cfg.reqPos === 'end') { toEnd(t); moved = 'end'; } }
+    else if (w >= 1) { toEnd(t); moved = 'end'; }
+    else if (w === 0.5) { t.pend += 0.5; pendAdd = 0.5; if (t.pend >= 1) { t.pend -= 1; toEnd(t); moved = 'end'; pendAdd = -0.5; } }
+  } else if (sim.line.indexOf(t.name) >= 0) toEnd(t);
+  t.busy = s; var r = { id: ++sim.seq, t: t.name, s: s, kind: kind, w: w, money: cm ? money : 0, pts: pts, min: Math.round(s.min * (share < 1 ? 0.5 : 1)), cust: kind === 'freefix' ? 0 : 1, pendAdd: pendAdd, done: false };
+  sim.recs.push(r); return { rec: r, before: before, after: lineStr(), moved: moved };
+}
+function kindName(k) { return { walk: L('khách không hẹn', 'walk-in'), req: L('khách yêu cầu', 'requested'), appt: L('khách hẹn', 'booked'), two: L('hai thợ chia', 'two techs'), freefix: L('sửa miễn phí', 'free fix') }[k]; }
+function logGive(res, s, kind, note) {
+  var r = res.rec;
+  sim.log.unshift({ b: '#' + (++sim.n) + ' ' + sname(s) + ' $' + s.price + ' → ' + r.t, m: kindName(kind) + ' · ' + (usesTurns() ? wText(r.w) : '') + (isLine() ? ' · ' + (res.moved === 'end' ? L('xuống cuối hàng', 'to the end') : r.pendAdd > 0 ? L('giữ vị trí (chờ đủ nửa lượt thứ hai)', 'keeps the place (waiting for a second half)') : L('giữ vị trí', 'keeps the place')) + ' · ' + L('hàng: ', 'line: ') + res.after : '') + (note ? ' · ' + note : '') });
+}
+function walkIn(s) {
+  if (isManual()) { pickTech(L('Chủ tiệm chọn thợ cho ', 'Owner picks a tech for ') + sname(s), true, function (n) { var res = apply(T(n), s, 'walk', 1, weightOf('walk', s)); logGive(res, s, 'walk', L('chủ tiệm chọn', 'picked by the owner')); draw(); }); return; }
+  var t = nextTech(); if (!t) { sim.log.unshift({ b: L('Khách chờ', 'Customer waits'), m: L('không có thợ nào đang rảnh – không giao chồng khách cho thợ bận', 'nobody is free – a busy tech never gets two customers') }); draw(); return; }
+  var res = apply(t, s, 'walk', 1, weightOf('walk', s)); logGive(res, s, 'walk'); draw();
+}
+
+/* ---------- try-it UI ---------- */
+function drawTry() {
+  var nx = nextTech(); var order = isLine() ? sim.line : ranked().map(function (t) { return t.name; });
+  var rows = sim.t.slice().sort(function (a, b) { var ia = sim.line.indexOf(a.name), ib = sim.line.indexOf(b.name); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+  var h = '<div class="qn">' + esc(L('Thợ mẫu: Lan, Mai, Nhân, Dân (Dân chưa vào ca). Bấm các nút để xem khách vào ai theo luật đang chọn ở trên.', 'Sample techs: Lan, Mai, Nhân, Dân (Dân not on shift yet). Tap the buttons to see who gets each customer with the rules above.')) + '</div><div class="queue">';
+  rows.forEach(function (t) {
+    var pos = sim.line.indexOf(t.name);
+    var st = !t.on ? '<span class="st out">' + esc(L('Chưa vào ca', 'Not on shift')) + '</span>' : t.brk ? '<span class="st brk">' + esc(L('Đang nghỉ', 'On break')) + '</span>' : t.busy ? '<span class="st busy">' + esc(L('Đang làm', 'Busy')) + '</span>' : '<span class="st free">' + esc(L('Rảnh', 'Free')) + '</span>';
+    if (t.pen) st += '<span class="st pen">' + esc(L('Đứng sau', 'Behind')) + '</span>';
+    var stats = (usesTurns() ? L('Lượt ', 'Turns ') + fmt(t.turns) + (t.pend ? ' (+½ ' + L('chờ', 'waiting') + ')' : '') + ' · ' : '') + '$' + fmt(t.money) + ' · ' + t.cust + L(' khách · ', ' cust · ') + t.min + L(' phút', ' min') + (cfg.method === 'points' ? ' · ' + fmt(t.pts) + L(' điểm', ' pts') : '') + (t.busy ? ' · ' + L('đang làm: ', 'doing: ') + sname(t.busy) : '');
+    var acts = !t.on ? '<button type="button" class="btn" data-in="' + t.name + '">' + esc(L('Bấm vào ca', 'Start shift')) + '</button>'
+      : '<button type="button" class="btn" data-done="' + t.name + '"' + (t.busy ? '' : ' disabled') + '>' + esc(L('Làm xong', 'Finished')) + '</button>' + (isManual() ? '' : '<button type="button" class="btn" data-brk="' + t.name + '"' + (t.busy && !t.brk ? ' disabled' : '') + '>' + esc(t.brk ? L('Quay lại', 'Back') : L('Nghỉ', 'Break')) + '</button>');
+    h += '<div class="tq' + (nx && nx.name === t.name ? ' next' : '') + '"><div class="pos">' + (isLine() && pos >= 0 ? pos + 1 : '·') + '</div><div><span class="nm">' + esc(t.name) + '</span>' + st + '<div class="stats">' + esc(stats) + '</div></div><div class="acts">' + acts + '</div></div>';
   });
-  box.querySelectorAll('[data-done]').forEach(function (b) { b.addEventListener('click', function () { var t = find(b.dataset.done); t.busy = null; sim.log.unshift({ b: T('{0} finished', t.name), m: T('free again') }); drawSim(); }); });
-  box.querySelectorAll('[data-brk]').forEach(function (b) { b.addEventListener('click', function () { var m = toggleBreak(sim, find(b.dataset.brk)); sim.log.unshift({ b: m, m: T(cfg.breakBack === 'end' ? 'Break rule: end of the line' : 'Break rule: keeps the place') }); drawSim(); }); });
-  var order = ranked(sim).map(function (t) { return t.name; });
-  $('#nextLine').textContent = cfg.method === 'manual' ? T('Manual Turn: the owner picks the tech for each customer.') : nx ? T('Next walk-in goes to {0}', nx.name) + (order.length > 1 ? ' · ' + T('then {0}', order.slice(1).join(', ')) : '') : T(cfg.skipBusy ? 'Nobody is free right now (busy techs are skipped).' : 'Nobody is free right now.');
-  $('#log').innerHTML = sim.log.slice(0, 40).map(function (x) { return '<li><b>' + esc(x.b) + '</b><small>' + esc(x.m) + '</small></li>'; }).join('');
+  h += '</div><div class="nextline">' + esc(isManual() ? L('Chủ tiệm tự chọn thợ cho từng khách.', 'The owner picks a tech for each customer.') : nx ? L('Khách không hẹn kế tiếp: ', 'Next walk-in: ') + nx.name + (order.length > 1 && !isLine() ? L(' · sau đó ', ' · then ') + order.filter(function (n) { return n !== nx.name; }).join(', ') : '') + (isLine() ? L(' · hàng: ', ' · line: ') + lineStr() : '') : L('Hiện không có thợ nào rảnh.', 'Nobody is free right now.')) + '</div>';
+  h += '<div class="acts2"><button type="button" class="btn pri wide" data-a="walk">🚶 ' + esc(L('Khách không hẹn tới', 'Walk-in arrives')) + '</button>'
+    + '<button type="button" class="btn" data-a="req">⭐ ' + esc(L('Khách yêu cầu thợ', 'Asks for a tech')) + '</button><button type="button" class="btn" data-a="appt">📅 ' + esc(L('Khách hẹn tới', 'Booked customer')) + '</button>'
+    + '<button type="button" class="btn" data-a="two">👯 ' + esc(L('Hai thợ làm 1 khách', 'Two techs, 1 customer')) + '</button><button type="button" class="btn" data-a="fix">🔧 ' + esc(L('Sửa miễn phí', 'Free fix')) + '</button>'
+    + (isManual() ? '' : '<button type="button" class="btn red" data-a="refuse">✋ ' + esc(L('Thợ kế tiếp từ chối', 'Next tech says no')) + '</button>') + '<button type="button" class="btn red" data-a="cancel">🚫 ' + esc(L('Khách hủy / không tới', 'Cancel / no-show')) + '</button>'
+    + '<button type="button" class="btn wide" data-a="clear">↺ ' + esc(L('Bắt đầu lại ngày thử', 'Start the test day over')) + '</button></div>';
+  h += '<ul class="log">' + sim.log.slice(0, 50).map(function (x) { return '<li><b>' + esc(x.b) + '</b><small>' + esc(x.m) + '</small></li>'; }).join('') + '</ul>';
+  $('#tryBody').innerHTML = h;
 }
-function fmt(n) { return (Math.round(n * 10) / 10).toString(); }
-function find(n) { return sim.techs.filter(function (t) { return t.name === n; })[0]; }
 function pick(title, opts, cb) {
   var sh = $('#sheet'), bx = $('#sheetBox');
-  bx.innerHTML = '<h3>' + esc(title) + '</h3><div class="choices">' + opts.map(function (o, i) { return '<button type="button" class="btn blk" data-i="' + i + '">' + esc(o.t) + '</button>'; }).join('') + '</div><button type="button" class="btn blk" data-x>' + esc(T('Cancel')) + '</button>';
+  bx.innerHTML = '<h3>' + esc(title) + '</h3><div class="choices">' + opts.map(function (o, i) { return '<button type="button" class="btn blk" data-i="' + i + '"' + (o.dis ? ' disabled' : '') + '>' + esc(o.t) + '</button>'; }).join('') + '</div><button type="button" class="btn blk" data-x>' + esc(L('Đóng', 'Close')) + '</button>';
   sh.hidden = false;
   bx.querySelectorAll('[data-i]').forEach(function (b) { b.addEventListener('click', function () { sh.hidden = true; cb(opts[+b.dataset.i].v); }); });
   bx.querySelector('[data-x]').addEventListener('click', function () { sh.hidden = true; });
 }
-var svcOpts = function () { return SERVICES.map(function (s) { return { t: s.name + ' – $' + s.price + ' · ' + T('{0} min', s.min), v: s }; }); };
-var techOpts = function () { return TECHS.map(function (n) { var t = find(n); return { t: n + (t.brk ? ' (' + T('on break') + ')' : t.busy ? ' (' + T('busy – customer waits') + ')' : ''), v: n }; }); };
-function walkIn(svc, skip) {
-  if (cfg.method === 'manual') { pick(T('Manual Turn – who takes the {0}?', svc.name), techOpts(), function (n) { give(sim, find(n), svc, 'walk', T('picked by the owner')); drawSim(); }); return; }
-  var t = nextTech(sim, skip);
-  if (!t) { sim.log.unshift({ b: T('{0} customer waits', svc.name), m: T('no tech is free') }); drawSim(); return; }
-  if (svc.repair && cfg.repairSame) { /* the same tech within 7 days – sample: nobody did the set */ }
-  give(sim, t, svc, 'walk'); drawSim();
-}
-
-/* ---------- rotation preview ---------- */
-function rotation() {
-  var s = freshSim(), rows = [];
-  var plan = [['walk', 'full'], ['walk', 'mani'], ['walk', 'pedi'], ['walk', 'repair'], ['brk', 'Jenny'], ['request', 'full', 'Lisa'], ['walk', 'combo'], ['appt', 'pedi', 'Kim'], ['walk', 'polish'], ['walk', 'fill'], ['back', 'Jenny'], ['walk', 'mani'], ['walk', 'full']];
-  plan.forEach(function (p) {
-    if (p[0] === 'brk' || p[0] === 'back') { find2(s, p[1]).brk = p[0] === 'brk'; if (p[0] === 'back' && cfg.breakBack === 'end') find2(s, p[1]).line = s.lineSeq++; rows.push(['', T(p[0] === 'brk' ? '{0} takes a break' : '{0} is back', p[1]), '', '']); return; }
-    var svc = SERVICES.filter(function (x) { return x.id === p[1]; })[0], t;
-    if (p[0] === 'walk') { if (cfg.method === 'manual') { rows.push([s.n + 1, svc.name, T('Owner picks'), '']); s.n++; return; } t = s.techs.filter(function (x) { return !x.brk; }).sort(cmp)[0]; }
-    else t = find2(s, p[2]);
-    give(s, t, svc, p[0]);
-    rows.push([s.n, svc.name + ' $' + svc.price, t.name, T(p[0] === 'walk' ? 'walk-in' : p[0] === 'request' ? 'request' : 'appt')]);
-    s.techs.forEach(function (x) { x.busy = null; });
+function pickSvc(title, cb) { pick(title, SVC.map(function (s) { return { t: sname(s) + ' – $' + s.price + ' · ' + s.min + L(' phút', ' min'), v: s }; }), cb); }
+function pickTech(title, onlyFree, cb) { pick(title, sim.t.map(function (t) { var why = !t.on ? L('chưa vào ca', 'not on shift') : t.brk ? L('đang nghỉ', 'on break') : t.busy ? L('đang làm', 'busy') : ''; return { t: t.name + (why ? ' (' + why + ')' : ''), v: t.name, dis: onlyFree && !!why }; }), cb); }
+function act(a) {
+  if (a === 'walk') pickSvc(L('Khách không hẹn – làm dịch vụ gì?', 'Walk-in – which service?'), walkIn);
+  if (a === 'req') pickTech(L('Khách yêu cầu thợ nào?', 'Which tech is asked for?'), true, function (n) { pickSvc(L('Dịch vụ cho khách của ', 'Service for ') + n, function (s) { var res = apply(T(n), s, 'req', 1, usesTurns() ? weightOf('req', s) : 0); logGive(res, s, 'req'); draw(); }); });
+  if (a === 'appt') pickTech(L('Khách hẹn với thợ nào?', 'Booked with which tech?'), true, function (n) { pickSvc(L('Dịch vụ của khách hẹn', 'Booked service'), function (s) { var res = apply(T(n), s, 'appt', 1, usesTurns() ? weightOf('appt', s) : 0); logGive(res, s, 'appt'); draw(); }); });
+  if (a === 'two') {
+    var c = isManual() ? sim.t.filter(free) : ranked(); if (c.length < 2) { toast(L('Cần ít nhất 2 thợ đang rảnh', 'Two free techs are needed')); return; }
+    var s = SVC[3], w = usesTurns() ? (cfg.twoTech === 'one' ? 1 : 0.5) : 0;
+    [c[0], c[1]].forEach(function (t) { var res = apply(t, s, 'two', 0.5, w); logGive(res, s, 'two', L('hai thợ chia nhau, mỗi thợ nửa giá $', 'shared, half the price each $') + fmt(s.price / 2)); });
+    draw();
+  }
+  if (a === 'fix') pickTech(L('Thợ nào đã làm bộ móng cũ?', 'Who did the earlier set?'), false, function (n) {
+    var t = T(n), s = { vi: 'Sửa móng miễn phí', en: 'Free nail fix', price: 0, min: 15 }, note;
+    if (!free(t)) { t = nextTech() || sim.t.filter(free)[0]; note = n + L(' không rảnh → giao thợ rảnh kế tiếp', ' not free → next free tech'); }
+    if (!t) { toast(L('Hiện không có thợ nào rảnh', 'Nobody is free')); return; }
+    var res = apply(t, s, 'freefix', 1, 0); logGive(res, s, 'freefix', note || L('đúng thợ đã làm', 'the same tech')); draw();
   });
-  var sum = s.techs.map(function (t) { return esc(t.name) + ' ' + T('{0} turns', fmt(t.turns)) + ' / $' + t.dollars; }).join(' · ');
-  $('#rot').innerHTML = '<table class="rot"><thead><tr><th>#</th><th>' + T('Customer') + '</th><th>' + T('Goes to') + '</th><th>' + T('Type') + '</th></tr></thead><tbody>' + rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + esc(r[1]) + '</td><td><b>' + esc(r[2]) + '</b></td><td>' + esc(r[3]) + '</td></tr>'; }).join('') + '</tbody></table><div class="help" style="margin-top:8px">' + T('End: {0}', sum) + '</div>';
+  if (a === 'refuse') {
+    var t1 = nextTech(); if (!t1) { toast(L('Hiện không có thợ nào rảnh', 'Nobody is free')); return; }
+    var before = lineStr();
+    if (cfg.refuse === 'end') { if (isLine()) toEnd(t1); else t1.pen = true; }
+    if (cfg.refuse === 'count' && isLine()) { t1.turns += 1; toEnd(t1); }
+    var t2 = nextTech([t1.name]);
+    sim.log.unshift({ b: t1.name + L(' từ chối khách làm tay', ' says no to a manicure'), m: (cfg.refuse === 'keep' ? L('giữ vị trí', 'keeps the place') : cfg.refuse === 'end' ? L('xuống cuối hàng', 'goes to the end') : L('cộng một lượt và xuống cuối hàng', 'adds one turn and goes to the end')) + (isLine() ? ' · ' + L('trước: ', 'before: ') + before + L(' · sau: ', ' · after: ') + lineStr() : '') });
+    if (t2) { var res2 = apply(t2, SVC[0], 'walk', 1, weightOf('walk', SVC[0])); logGive(res2, SVC[0], 'walk', L('sau khi ', 'after ') + t1.name + L(' từ chối', ' said no')); }
+    else sim.log.unshift({ b: L('Khách chờ', 'Customer waits'), m: L('không còn thợ nào khác đang rảnh', 'no other tech is free') });
+    draw();
+  }
+  if (a === 'cancel') {
+    var open = sim.recs.filter(function (r) { return !r.done; }); if (!open.length) { toast(L('Chưa có khách nào để hủy', 'No customer to cancel')); return; }
+    pick(L('Khách nào hủy / không tới?', 'Which customer cancels?'), open.slice(-6).reverse().map(function (r) { return { t: r.t + ' – ' + sname(r.s), v: r }; }), function (r) {
+      var t = T(r.t); r.done = true; t.turns -= r.w; t.money -= r.money; t.pts -= r.pts; t.min -= r.min; t.cust -= r.cust; if (r.pendAdd > 0) t.pend = Math.max(0, t.pend - 0.5); if (r.pendAdd < 0) t.pend += 0.5; if (t.busy === r.s) t.busy = null;
+      sim.log.unshift({ b: L('Khách của ', 'Customer of ') + r.t + L(' hủy', ' cancelled'), m: (usesTurns() ? (r.w ? L('trừ lại ', 'takes back ') + fmt(r.w) + L(' lượt', ' turn') : L('chưa cộng lượt nên không trừ', 'no turn was added, nothing taken back')) : L('trừ lại phần đã cộng', 'takes back what was added')) + (isLine() ? ' · ' + L('vị trí không đổi, hàng: ', 'place unchanged, line: ') + lineStr() : '') }); draw();
+    });
+  }
+  if (a === 'clear') { sim = fresh(); draw(); toast(L('Đã bắt đầu lại ngày thử', 'Test day started over')); }
 }
-function find2(s, n) { return s.techs.filter(function (t) { return t.name === n; })[0]; }
-function recompute() { rotation(); drawSim(); }
 
-/* ---------- buttons ---------- */
-$('#bWalk').addEventListener('click', function () { pick(T('Walk-in – which service?'), svcOpts(), function (svc) { walkIn(svc); }); });
-$('#bReq').addEventListener('click', function () { pick(T('Which tech did the customer ask for?'), techOpts(), function (n) { pick(T('Service for {0}?', n), svcOpts(), function (svc) { give(sim, find(n), svc, 'request', cfg.reqKeepPlace ? T('keeps place in line') : ''); drawSim(); }); }); });
-$('#bAppt').addEventListener('click', function () { pick(T('Appointment with which tech?'), techOpts(), function (n) { pick(T('Appointment service?'), svcOpts(), function (svc) { give(sim, find(n), svc, 'appt'); drawSim(); }); }); });
-$('#bRefuse').addEventListener('click', function () {
-  var t = nextTech(sim); if (!t) { toast(T(cfg.method === 'manual' ? 'Manual Turn – nobody is offered' : 'Nobody is free')); return; }
-  var note = refuse(sim, t); sim.log.unshift({ b: T('{0} refused the next customer', t.name), m: note });
-  var t2 = nextTech(sim, [t.name]);
-  if (t2) give(sim, t2, SERVICES[0], 'walk', T('after {0} refused', t.name));
-  else sim.log.unshift({ b: T('{0} customer waits', 'Manicure'), m: T('no other tech is free – the customer goes to the next free tech') });
-  drawSim();
-});
-$('#bClear').addEventListener('click', function () { sim = freshSim(); drawSim(); toast(T('New day started')); });
-$('#bSave').addEventListener('click', function () { try { localStorage.setItem(KEY, JSON.stringify(cfg)); toast(T('Demo settings saved')); } catch (e) { toast(T('This browser cannot keep demo settings')); } });
-$('#bReset').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} cfg = copy(BASE); cfg.preset = 'traditional'; sim = freshSim(); drawAll(); toast(T('Demo reset')); });
-$('#bRot').addEventListener('click', function () { rotation(); $('#rotTop').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
-$('#groups').addEventListener('click', function (e) { var b = e.target.closest('.ex'); if (!b) return; var x = b.nextElementSibling; x.hidden = !x.hidden; b.setAttribute('aria-expanded', x.hidden ? 'false' : 'true'); });
-$('#bReco').addEventListener('click', function () { cfg = copy(BASE); cfg.preset = 'traditional'; drawAll(); toast(T('Recommended rules selected')); });
-$('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.currentTarget.hidden = true; });
-
-function applyLang() {
+/* ---------- page ---------- */
+function drawStatic() {
   document.documentElement.lang = LANG;
-  document.querySelectorAll('[data-t]').forEach(function (e) { if (!e.dataset.en) e.dataset.en = e.textContent; e.textContent = T(e.dataset.en); });
+  $('#banner').textContent = L('CHỈ XEM THỬ – CHƯA ÁP DỤNG VÀO TIỆM', 'PREVIEW ONLY – NOT SAVED TO SALON');
+  $('#h1').textContent = L('Chọn cách chia khách cho thợ', 'Choose how customers are shared among techs');
+  $('#lead').textContent = L('Các lựa chọn dưới đây quyết định thợ nào được nhận khách kế tiếp. Mỗi tiệm có thể chọn luật phù hợp với cách làm của mình.', 'The choices below decide which tech gets the next customer. Each salon can pick the rules that fit how it works.');
+  var W = [[L('Khách không hẹn', 'Walk-in'), L('khách tới tiệm mà chưa đặt lịch.', 'a customer who comes in without a booking.')], [L('Khách yêu cầu thợ', 'Requested customer'), L('khách muốn làm với một thợ cụ thể.', 'a customer who wants one particular tech.')],
+    [L('Lượt (turn)', 'Turn'), L('đơn vị dùng để chia khách, không phải tiền lương.', 'what is used to share customers – not pay.')], [L('Không cộng lượt', 'No turn'), L('khách đó không làm tăng số lượt đã nhận.', 'that customer does not raise the tech\'s turns.')], [L('Cộng nửa lượt', 'Half a turn'), L('cộng 0,5 vào số lượt; hai nửa lượt bằng một lượt.', 'adds 0.5; two halves make one turn.')]];
+  $('#words').innerHTML = '<b class="h">' + esc(L('Giải thích từ ngữ', 'Words used')) + '</b><dl>' + W.map(function (w) { return '<dt>' + esc(w[0]) + '</dt><dd>' + esc(w[1]) + '</dd>'; }).join('') + '</dl>';
+  $('#bSample').textContent = L('Điền lựa chọn mẫu', 'Fill in sample choices');
+  $('#sampleNote').textContent = L('Điền sẵn một bộ lựa chọn thông dụng. Chủ tiệm vẫn sửa được từng câu.', 'Fills in a common set of choices. Every answer can still be changed.');
+  $('#advT').textContent = L('Cài đặt thêm', 'More settings');
+  $('#tryT').textContent = L('Thử chia khách', 'Try it');
+  $('#bSave').textContent = L('Lưu bản xem thử', 'Save preview');
+  $('#bReset').textContent = L('Xoá, làm lại', 'Reset');
+  $('#saveNote').textContent = L('Chỉ lưu bản thử trên trình duyệt này. Chưa áp dụng vào tiệm.', 'Saved only in this browser as a test. Not applied to the salon.');
   document.querySelectorAll('.lang [data-lang]').forEach(function (b) { b.classList.toggle('on', b.dataset.lang === LANG); b.setAttribute('aria-pressed', b.dataset.lang === LANG ? 'true' : 'false'); });
 }
-document.querySelectorAll('.lang [data-lang]').forEach(function (b) { b.addEventListener('click', function () { LANG = b.dataset.lang; try { localStorage.setItem(LKEY, LANG); } catch (e) {} applyLang(); drawAll(); }); });
-sim = freshSim(); applyLang(); drawAll();
+function draw() {
+  var openAdv = $('#adv').open, openMore = !!($('#parts details.more') && $('#parts details.more').open);
+  $('#parts').innerHTML = part1() + part2() + part3() + part4() + part5() + part6() + part7();
+  if (openMore) { var m = $('#parts details.more'); if (m) m.open = true; }
+  $('#advBody').innerHTML = advanced(); $('#adv').open = openAdv;
+  $('#sum').innerHTML = summary(); drawTry();
+}
+document.addEventListener('change', function (e) { var x = e.target; if (x.type === 'radio' && x.name in cfg) { cfg[x.name] = x.value; if (x.name === 'method') sim = fresh(); var y = window.scrollY; draw(); window.scrollTo(0, y); } });
+document.addEventListener('click', function (e) {
+  var d = e.target.closest('[data-dn]'); if (d) { var k = d.dataset.dn; cfg[k] = Math.max(+d.dataset.min, Math.min(+d.dataset.max, +cfg[k] + +d.dataset.step)); var y = window.scrollY; draw(); window.scrollTo(0, y); return; }
+  var a = e.target.closest('[data-a]'); if (a) { act(a.dataset.a); return; }
+  var dn = e.target.closest('[data-done]'); if (dn) { var t = T(dn.dataset.done); sim.recs.forEach(function (r) { if (r.t === t.name && r.s === t.busy) r.done = true; }); t.busy = null; sim.log.unshift({ b: t.name + L(' làm xong', ' finished'), m: L('rảnh lại', 'free again') + (isLine() ? ' · ' + L('hàng: ', 'line: ') + lineStr() : '') }); draw(); return; }
+  var bk = e.target.closest('[data-brk]'); if (bk) { var t2 = T(bk.dataset.brk); t2.brk = !t2.brk; var before = lineStr(); if (!t2.brk && cfg.breakBack === 'end') { if (isLine()) toEnd(t2); else t2.pen = true; }
+    sim.log.unshift({ b: t2.name + (t2.brk ? L(' đi nghỉ', ' takes a break') : L(' nghỉ xong quay lại', ' is back from the break')), m: t2.brk ? L('không được giao khách khi đang nghỉ; vị trí giữ nguyên', 'gets no customers while on break; place kept') : (cfg.breakBack === 'keep' ? L('giữ vị trí', 'keeps the place') : L('xuống cuối hàng', 'goes to the end')) + (isLine() ? ' · ' + L('trước: ', 'before: ') + before + L(' · sau: ', ' · after: ') + lineStr() : '') }); draw(); return; }
+  var ci = e.target.closest('[data-in]'); if (ci) { var t3 = T(ci.dataset.in); t3.on = true; sim.line.push(t3.name);
+    if (!isLine() && !isManual() && cfg.late === 'avg') { var others = sim.t.filter(function (x) { return x !== t3 && x.on; }); var av = function (f) { return others.reduce(function (s, x) { return s + x[f]; }, 0) / Math.max(1, others.length); }; t3.money = av('money'); t3.cust = Math.round(av('cust')); t3.min = Math.round(av('min')); t3.pts = av('pts'); }
+    sim.log.unshift({ b: t3.name + L(' bấm vào ca', ' starts the shift'), m: isLine() ? L('xếp cuối hàng hiện tại · hàng: ', 'placed at the end · line: ') + lineStr() : (cfg.late === 'avg' ? L('bắt đầu ở mức trung bình', 'starts at the average') : L('bắt đầu từ 0', 'starts from 0')) }); draw(); return; }
+});
+$('#bSample').addEventListener('click', function () { cfg = copy(SAMPLE); sim = fresh(); draw(); toast(L('Đã điền lựa chọn mẫu – vẫn sửa được từng câu', 'Sample choices filled in – each can still be changed')); });
+$('#bSave').addEventListener('click', function () { try { localStorage.setItem(KEY, JSON.stringify(cfg)); toast(L('Đã lưu bản xem thử trên trình duyệt này', 'Preview saved in this browser')); } catch (e) { toast(L('Trình duyệt này không lưu được bản thử', 'This browser cannot save the preview')); } });
+$('#bReset').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} cfg = copy(SAMPLE); sim = fresh(); draw(); toast(L('Đã xoá bản thử', 'Preview reset')); });
+document.querySelectorAll('.lang [data-lang]').forEach(function (b) { b.addEventListener('click', function () { LANG = b.dataset.lang; try { localStorage.setItem(LKEY, LANG); } catch (e) {} drawStatic(); draw(); }); });
+$('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.currentTarget.hidden = true; });
+window.__tr = { cfg: function () { return cfg; }, sim: function () { return sim; }, act: act, walkIn: walkIn, SVC: SVC, T: function (n) { return T(n); } };
+sim = fresh(); drawStatic(); draw();
 })();
 </script>
 </body>
