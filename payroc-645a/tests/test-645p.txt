@@ -1,0 +1,30 @@
+== test 645a - Payroc at Checkout (fake gateway) 2026-11-04 21:18 CST · login 200
+✓ 0 Payroc off: pr_charge refused, nothing sent
+✓ 0 ticket says prOn false
+✓ 1 a NORMAL card checkout is unchanged
+✓ 1 a normal card receipt still needs "Done on DPS"
+✓ 2 ticket says prOn true
+✓ 2 pr_charge approved
+✓ 2 checkout2 with pr_ref -> receipt PAID, card has Payroc ref/payment/approval, last4 from Payroc
+✓ 2 the Payroc payment is marked used
+✓ 3 the same Payroc payment cannot pay a 2nd ticket
+✓ 4 declined card -> 402
+✓ 4 checkout2 with a DECLINED Payroc ref -> refused, NO receipt (never PAID without approval)
+✓ 4 an unknown ref -> refused
+✓ 5 a payment of another ticket -> refused
+✓ 6 card part not what Payroc took -> refused
+✓ 7 Pay tapped again: the SAME payment, no 2nd charge
+✓ 7 ... no new instruction sent
+✓ 8 Payroc receipt Void: no DPS tick, Payroc reverse -> receipt VOID
+✓ 8 the Payroc payment is marked voided
+✓ 9 refund $10 of $40: a Payroc refund instruction on the device -> refund saved
+✓ 10 Payroc declines the refund -> 402, NOT saved
+✓ 11 Void after the batch closed: reverse refused -> refund instruction $50 -> receipt VOID, payment "returned"
+✓ 12 refund ALL in the same batch -> reverse (no card needed)
+✓ 13 card tip on a Payroc receipt cannot be changed
+✓ 13 ... a cash tip is fine
+✓ 14 $35 Payroc + $20 cash: a $50 card refund refused, Payroc NOT asked
+✓ 15 Payroc not set up any more: receipt NOT voided
+✓ 16 audit has Payroc rows, never the key
+✓ 17 no PHP warning / error
+== 28 / 28 PASS
