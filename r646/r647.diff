@@ -1,0 +1,149 @@
+diff -ruN -x error_log -x '*.sqlite' int646/assets/admin/turn-mode.js int647/assets/admin/turn-mode.js
+--- int646/assets/admin/turn-mode.js	2026-11-05 01:22:15.336372799 -0600
++++ int647/assets/admin/turn-mode.js	2026-11-05 02:59:24.491828823 -0600
+@@ -16,7 +16,12 @@
+         + rb('1', on, `<b>2. ${LV('The app assigns the turns', 'App chia turn')}</b> – ${LV('tick the turn rules below and tap Save; the app follows them.', 'chọn luật turn bên dưới rồi bấm Save, app làm theo.')}`)
+         + `<div id="tmMsg"></div>`;
+       const first = b.querySelector('#trCard') || b.firstElementChild; if (first && first.parentNode) first.parentNode.insertBefore(card, first); else b.appendChild(card);
+-      const show = (app) => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = !app; }); };
++      /* (2.99.647 - LENH 647) with choice 1 the turn COUNTING rules ($ for 1 turn, bonus, half turn...) still count the line and Checkout:
++         hidden, but one tap shows them to change WITHOUT turning on "the app assigns" */
++      const show = (app) => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = !app; });
++        const m = card.querySelector('#tmMsg'); if (!m) return;
++        m.innerHTML = app ? '' : `<button type="button" class="btn ghost small" id="tmShow" style="margin-top:6px">${LV('Show the turn counting rules', 'Xem / sửa luật đếm turn')}</button>`;
++        const sb = m.querySelector('#tmShow'); if (sb) sb.addEventListener('click', () => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = false; }); m.innerHTML = ''; }); };
+       const pick = (app) => { const x = card.querySelector(`[name=tmMode][value="${app ? '1' : '0'}"]`); if (x) x.checked = true; };
+       show(on);
+       card.querySelectorAll('[name=tmMode]').forEach(x => x.addEventListener('change', async () => {
+diff -ruN -x error_log -x '*.sqlite' int646/assets/book-2.js int647/assets/book-2.js
+--- int646/assets/book-2.js	2026-11-05 01:24:52.072378617 -0600
++++ int647/assets/book-2.js	2026-11-05 02:59:24.491257964 -0600
+@@ -288,7 +288,7 @@
+     $$('[data-p]', el).forEach(b => b.addEventListener('click', () => setPeople(+b.dataset.p)));
+     $('#bAgain1', el)?.addEventListener('click', againGo); // (2.99.491 – LỆNH 488 b)
+     $$('[data-fp]', el).forEach(b => b.addEventListener('click', () => fpPick(b.dataset.fp))); $$('[data-fpd]', el).forEach(b => b.addEventListener('click', () => fpPick(b.dataset.fpd))); /* (2.99.646 - LENH 646) the tech / the day first */
+-    $$('[data-fpx]', el).forEach(b => b.addEventListener('click', () => { st.fpDone = false; refresh(); })); $$('[data-fpz]', el).forEach(b => b.addEventListener('click', () => { const dz = $('#fpDays', el); if (dz) dz.scrollBy({ left: +b.dataset.fpz * dz.clientWidth * 0.9, behavior: reduced ? 'auto' : 'smooth' }); }));
++    $$('[data-fpx]', el).forEach(b => b.addEventListener('click', () => { st.fpDone = false; st.fpRe = true; refresh(); })); $$('[data-fpz]', el).forEach(b => b.addEventListener('click', () => { const dz = $('#fpDays', el); if (dz) dz.scrollBy({ left: +b.dataset.fpz * dz.clientWidth * 0.9, behavior: reduced ? 'auto' : 'smooth' }); }));
+     const more = $('#bMore', el); if (more) more.addEventListener('click', askPeople);
+     const qi = $('#bQr', el); if (qi) kpSetup(qi, () => {}); if (qi) qi.addEventListener('focus', () => { if (!G.said.qrph) { G.said.qrph = true; gSpeak(PH_REAL()); } });
+     if (qi) qi.addEventListener('input', async () => { const pv = prettyPhone(qi.value); if (pv !== qi.value) qi.value = pv; st.qrPhone = pv; const d = digits(pv);
+diff -ruN -x error_log -x '*.sqlite' int646/assets/book.js int647/assets/book.js
+--- int646/assets/book.js	2026-11-05 01:24:52.076378617 -0600
++++ int647/assets/book.js	2026-11-05 02:59:29.867734864 -0600
+@@ -415,7 +415,7 @@
+    times and the booking stay the same. A time needs the services (their minutes), so 'date' = the day first → services → the times of that day.
+    The tech goes on person 1 and is kept only when that tech does the services (else "Any tech", as before); the day is the one step 3 opens on. */
+ const FIRST = () => st.info && (st.info.first === 'tech' || st.info.first === 'date') ? st.info.first : 'services';
+-const fpAsk = () => FIRST() !== 'services' && !st.fpDone && !st.peopleChosen;
++const fpAsk = () => FIRST() !== 'services' && !st.fpDone && (!st.peopleChosen || st.fpRe); /* (2.99.647 - LENH 647) fpRe: "Change" tapped after the people were chosen */
+ function fpHtml() {
+   const i = st.info;
+   if (FIRST() === 'tech') {
+@@ -436,7 +436,7 @@
+ function fpPick(v) {
+   if (FIRST() === 'tech') { st.fpTech = +v || 0; st.people[0] = st.fpTech; delete st.tp[0]; }
+   else { st.fpDate = v; st.date = v; st.start = null; st.slots = null; if (typeof G !== 'undefined') G.dayTap = true; } /* the day the customer picked: never jumped over when it is full */
+-  st.fpDone = true; refresh();
++  st.fpDone = true; st.fpRe = false; refresh();
+ }
+ function screenHtml(s) {
+   const i = st.info;
+diff -ruN -x error_log -x '*.sqlite' int646/inc/api/payroc.php int647/inc/api/payroc.php
+--- int646/inc/api/payroc.php	2026-11-05 00:03:08.000000000 -0600
++++ int647/inc/api/payroc.php	2026-11-05 02:58:35.297837968 -0600
+@@ -28,7 +28,7 @@
+     $r = pr_check(); $out(['check' => $r]);
+ case 'pr_test': /* the sandbox test runner – test orders only */
+     if ($method !== 'POST') fail('POST only', 405);
+-    if (pr_host() !== 'uat' && pr_host() !== 'std') fail('Sandbox only.');
++    if (pr_host() !== 'uat') fail('The test buttons work only on the sandbox host (api.uat.payroc.com). On api.payroc.com they would charge real cards.'); /* (2.99.647 - LENH 647) the old check could never fail */
+     app_lock('payroc'); if (session_status() === PHP_SESSION_ACTIVE) @session_write_close(); ignore_user_abort(true);
+     $op = (string)($in['op'] ?? ''); $wait = max(1, min(PR_WAIT, (int)(cfg()['pr_wait'] ?? PR_WAIT))); @set_time_limit($wait + 120);
+     $tc = mb_substr(trim((string)($in['tc'] ?? '')), 0, 40);
+diff -ruN -x error_log -x '*.sqlite' int646/inc/calls-tx.php int647/inc/calls-tx.php
+--- int646/inc/calls-tx.php	2026-11-05 01:22:15.020372787 -0600
++++ int647/inc/calls-tx.php	2026-11-05 02:59:04.337063574 -0600
+@@ -395,29 +395,34 @@
+    then deletes it on Telnyx. At most once a minute, 3 calls a time, 6 tries per call (the file may need a few minutes), calls of the last 3 hours. */
+ function tx_cli_airec(): void {
+     if ((string)setting('tx_key') === '' || time() - (int)setting('tx_airec_at') < 60) return; set_setting('tx_airec_at', (string)time());
++    /* (2.99.647 - LENH 647) tx_airec_try = [id => [asks, failed downloads]]: "no finished recording on Telnyx yet" (a long call) is only an ask (up to 45),
++       a failed download counts (up to 6); the calls asked least go first, so a few calls never block the others. */
+     $tries = json_decode((string)setting('tx_airec_try'), true); $tries = is_array($tries) ? $tries : [];
+     $l = q("SELECT id, call_sid FROM calls WHERE prov = 'tx' AND kind = 'agent' AND (file IS NULL OR file = '') AND purged = 0 AND call_sid <> '' AND created_at BETWEEN ? AND ? ORDER BY id DESC LIMIT 20",
+         [date('Y-m-d H:i:s', time() - 10800), date('Y-m-d H:i:s', time() - 120)])->fetchAll();
++    $tr = function ($v): array { return is_array($v) ? [(int)($v[0] ?? 0), (int)($v[1] ?? 0)] : [(int)$v, (int)$v]; }; /* an old plain number = asks and fails */
++    usort($l, fn($a, $b) => $tr($tries[(string)$a['id']] ?? 0)[0] <=> $tr($tries[(string)$b['id']] ?? 0)[0]);
+     $n = 0; $keep = [];
+     foreach ($l as $c) {
+-        $id = (string)$c['id']; $t = (int)($tries[$id] ?? 0); if ($t >= 6) { $keep[$id] = $t; continue; } if ($n >= 3) { $keep[$id] = $t; continue; }
+-        $n++; $keep[$id] = $t + 1;
+-        try { if (tx_airec_one((int)$c['id'], (string)$c['call_sid'])) unset($keep[$id]); }
++        $id = (string)$c['id']; [$ask, $bad] = $tr($tries[$id] ?? 0); $keep[$id] = [$ask, $bad];
++        if ($bad >= 6 || $ask >= 45 || $n >= 3) continue;
++        $n++; $keep[$id] = [$ask + 1, $bad + 1];
++        try { $ok = tx_airec_one((int)$c['id'], (string)$c['call_sid']); if ($ok === true) unset($keep[$id]); elseif ($ok === null) $keep[$id] = [$ask + 1, $bad]; }
+         catch (Throwable $e) { error_log('646 tx airec #' . $id . ': ' . $e->getMessage()); }
+     }
+     set_setting('tx_airec_try', json_encode($keep));
+ }
+-function tx_airec_one(int $id, string $sid): bool {
++function tx_airec_one(int $id, string $sid): ?bool { /* true = saved, false = a try that failed, null = Telnyx has no finished recording yet */
+     $l = tx_api('GET', '/recordings?filter%5Bcall_control_id%5D=' . rawurlencode($sid))['data'] ?? [];
+     $best = null; foreach ((array)$l as $r) { if (!is_array($r) || strtolower((string)($r['status'] ?? 'completed')) !== 'completed') continue; if ($best === null || (int)($r['duration_millis'] ?? 0) > (int)($best['duration_millis'] ?? 0)) $best = $r; }
+-    if ($best === null) return false;
++    if ($best === null) return null;
+     $rs = mb_substr((string)($best['id'] ?? ''), 0, 64); $us = array_values(array_filter([(string)($best['download_urls']['mp3'] ?? ''), (string)($best['download_urls']['wav'] ?? '')]));
+     $tmp = cl_dir() . '/.dl-' . bin2hex(random_bytes(6)); $ext = '';
+     $kind = function () use ($tmp): string { $h = (string)@file_get_contents($tmp, false, null, 0, 12); if ($h === '') return '';
+         if (substr($h, 0, 4) === 'RIFF' && substr($h, 8, 4) === 'WAVE') return 'wav'; if (substr($h, 0, 3) === 'ID3' || (strlen($h) > 1 && ord($h[0]) === 0xFF && (ord($h[1]) & 0xE0) === 0xE0)) return 'mp3'; return ''; };
+     foreach ($us as $u) {
+         if (!tx_telnyx_host($u) && !preg_match('/(^|\.)s3([.-][a-z0-9-]+)*\.amazonaws\.com$/', strtolower((string)parse_url($u, PHP_URL_HOST))) && !getenv('NF_TX_BASE')) continue; /* Telnyx serves recording files from S3 (live rec_url host: s3.amazonaws.com) */
+-        $code = tx_dl($u, $tmp, false); if (in_array($code, [401, 403], true)) $code = tx_dl($u, $tmp, true);
++        $code = tx_dl($u, $tmp, false); if (in_array($code, [401, 403], true) && tx_telnyx_host($u)) $code = tx_dl($u, $tmp, true); /* (2.99.647 - LENH 647) the API key only to Telnyx, never to S3 */
+         if ($code === 200 && ($ext = $kind()) !== '') break; $ext = '';
+     }
+     if ($ext === '') { @unlink($tmp); return false; }
+diff -ruN -x error_log -x '*.sqlite' int646/inc/core.php int647/inc/core.php
+--- int646/inc/core.php	2026-11-05 01:28:11.336386014 -0600
++++ int647/inc/core.php	2026-11-05 03:01:04.740985107 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.646');
++define('APP_VERSION', '2.99.647');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN -x error_log -x '*.sqlite' int646/inc/payroc-pay.php int647/inc/payroc-pay.php
+--- int646/inc/payroc-pay.php	2026-11-05 01:22:14.628111299 -0600
++++ int647/inc/payroc-pay.php	2026-11-05 02:58:35.297629518 -0600
+@@ -72,7 +72,7 @@
+     $ref = pr_new_order(); $row = ['key' => $key, 'amt' => $amt, 'tip' => $tip, 'st' => 'unsure', 'at' => now_str(), 'by' => actor_name(), 'idem' => pr_uuid()];
+     pr_pend_put($ref, $row); /* saved BEFORE the call: a lost answer is asked again with the same key */
+     $x = pr_sale_send($amt, $ref, $row['idem'], (string)$row['by']);
+-    if ($x['status'] !== 'sent') { $row = pr_apply_result($ref, $row, ['status' => $x['status'] === 'unknown' ? 'unknown' : 'failure', 'msg' => $x['msg']]); pr_fail_for($row); }
++    if ($x['status'] !== 'sent') { $row = pr_apply_result($ref, $row, ['status' => $x['status'] === 'auth' || ($x['status'] === 'error' && ($x['http'] ?? 0) >= 400 && ($x['http'] ?? 0) < 500 && ($x['http'] ?? 0) !== 409) ? 'failure' : 'unknown', 'msg' => $x['msg']]); pr_fail_for($row); } /* (2.99.647 - LENH 647) a 5xx / no answer = NOT sure (the device may have it): kept, the next tap asks with the SAME key - like pr_recheck */
+     $row['instr'] = $x['instr']; pr_pend_put($ref, ['instr' => $x['instr'], 'st' => 'wait']);
+     $row = pr_apply_result($ref, $row, pr_instr_result('payment', $x['instr'], $wait));
+     if ($row['st'] !== 'paid') pr_fail_for($row);
+@@ -81,7 +81,7 @@
+ }
+ /** Stop the try still waiting on the device for this ticket. */
+ function pr_stop(array $ids): array {
+-    app_lock('payroc'); $key = pr_key($ids);
++    $key = pr_key($ids); /* (2.99.647 - LENH 647) no app_lock: pr_charge holds it for the whole wait on the device, so Stop could never run while it mattered */
+     foreach (pr_pend() as $ref => $r) {
+         if (($r['key'] ?? '') !== $key || !in_array($r['st'] ?? '', ['wait', 'unsure'], true) || ($r['instr'] ?? '') === '') continue;
+         $c = pr_instr_cancel('payment', (string)$r['instr']);
+@@ -145,7 +145,8 @@
+     $void = function (array $x) use ($r, &$pend): bool {
+         $ref = (string)$x['ref']; if (($pend[$ref]['st'] ?? '') === 'voided') return true;
+         $idem = (string)($pend[$ref]['videm'] ?? ''); if ($idem === '') { $idem = pr_uuid(); pr_pend_put($ref, ['videm' => $idem]); }
+-        $v = pr_reverse((string)$x['pay'], null, $idem); if (!$v['ok']) return false;
++        $v = pr_reverse((string)$x['pay'], null, $idem);
++        if (!$v['ok']) { if ($v['status'] === 'unknown' || (int)$v['http'] === 0 || (int)$v['http'] >= 500 || (int)$v['http'] === 409) fail('Not sure Payroc cancelled the card payment (' . $v['msg'] . '). Tap again in a minute - the SAME void is asked again, never a 2nd money back. The receipt was NOT changed.', 409); return false; } /* (2.99.647 - LENH 647) only a clear refusal (4xx, e.g. the batch closed) falls back to a refund on the device */
+         pr_pend_put($ref, ['st' => 'voided', 'void_at' => now_str(), 'rno' => (int)$r['rno']]); audit('payroc', 'Payroc void ' . usd((float)($x['amt'] ?? $x['pay_amt'])), 'approved', 'reversed · receipt #' . $r['rno'] . ' · payment ' . $x['pay']); return true; };
+     if ($action === 'receipt_void') {
+         if (abs($sum - $cardBack) >= 0.005) fail('This receipt has a Payroc payment of ' . usd($sum) . ' but ' . usd($cardBack) . ' on card – give the card money back by hand on the right machine. Nothing was changed.', 409);
