@@ -69,14 +69,15 @@ function pr_token(bool $fresh = false, string &$why = ''): string {
     set_setting('pr_tok', ad_enc(json_encode(['tok' => $tok, 'exp' => time() + max(60, (int)($h['j']['expires_in'] ?? 3600))])));
     return $tok;
 }
-/** API call with the token (a 401 gets a new token once; a POST keeps its Idempotency-Key, so it is safe to send again). */
+/** API call with the token (a 401 gets a new token once; a POST keeps its Idempotency-Key, so it is safe to send again).
+    An empty body is sent as the JSON object {} – PHP's json_encode([]) gives [] and Payroc answers 400 "validation errors" (void, 04/11 22:31). */
 function pr_http(string $method, string $path, ?array $body, string $idem = '', int $timeout = 30): array {
     $why = ''; $tok = pr_token(false, $why); if ($tok === '') return ['net' => false, 'http' => 401, 'j' => null, 'err' => 'auth: ' . $why];
     for ($n = 0; $n < 2; $n++) {
         $hd = ['Authorization: Bearer ' . $tok, 'Accept: application/json'];
         if ($body !== null) $hd[] = 'Content-Type: application/json';
         if ($idem !== '') $hd[] = 'Idempotency-Key: ' . $idem;
-        $h = pr_raw($method, pr_api() . $path, $hd, $body !== null ? json_encode($body) : ($method === 'POST' ? '' : null), $timeout);
+        $h = pr_raw($method, pr_api() . $path, $hd, $body !== null ? ($body === [] ? '{}' : json_encode($body)) : ($method === 'POST' ? '' : null), $timeout);
         if ($h['http'] !== 401 || $n === 1) return $h;
         $tok = pr_token(true, $why); if ($tok === '') return ['net' => false, 'http' => 401, 'j' => null, 'err' => 'auth: ' . $why];
     }
