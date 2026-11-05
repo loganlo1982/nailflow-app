@@ -29,7 +29,7 @@ build)
   cp -a "$OLD/uploads" "$W/uploads"; mkdir -p "$W/.well-known"
   grep -n "showapp" "$W/.htaccess" && echo "NOTE: .htaccess mentions showapp"
   cp -p $A/sites.php /root/backup/sites.php.pre-hair-$(date +%m%d%H%M)
-  LINE="  'hair'      => ['hosts' => ['$DOM'], 'web' => '$W', 'cron' => []], // (2.99.646 - 05/11) the hair demo salon, moved from the nailflow account"
+  LINE="  'hair'      => ['hosts' => ['$DOM'], 'web' => '$W', 'cron' => []], /* (2.99.646 - 05/11) the hair demo salon, moved from the nailflow account */"
   F=$A/sites.php L="$LINE" $PHP -r '$f=getenv("F"); $s=file_get_contents($f); $p=strrpos($s, "];"); if($p===false) exit(1); file_put_contents($f, substr($s,0,$p).getenv("L")."\n".substr($s,$p));'
   $PHP -l $A/sites.php >/dev/null; $PHP -r '$m = require "/home/uyurpyzubx0m/app/sites.php"; echo isset($m["hair"]) ? "sites.php ok (" . count($m) . " sites)\n" : "NO"; ' | grep -q "ok" || die "sites.php"
   chown -R $U:$U "$SD" "$W"; chown -h $U:$U "$SD/current"
