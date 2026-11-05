@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F2F2F7">
+<title>Turn Rules Settings – Preview</title>
+<style>
+:root{--bg:#F2F2F7;--card:#fff;--ink:#111418;--muted:#5B6475;--line:#E3E5E8;--blue:#2563EB;--blue2:#1D4ED8;--green:#1E8E3E;--red:#D93025;--amber:#B45309;--soft:#EEF4FF}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+.banner{position:sticky;top:0;z-index:20;background:#FEF3C7;color:#7C2D12;border-bottom:1px solid #FCD34D;text-align:center;font-weight:800;font-size:14px;letter-spacing:.02em;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+header{padding:18px 0 6px}
+h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
+.sub{margin:4px 0 0;color:var(--muted);font-size:17px}
+h2.sec{margin:22px 4px 8px;font-size:14px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pad{padding:14px}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.preset{min-height:64px;border:2px solid var(--line);background:var(--card);border-radius:14px;padding:10px 12px;text-align:left;font:inherit;color:inherit;cursor:pointer}
+.preset b{display:block;font-size:16px}
+.preset span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.preset.on{border-color:var(--blue);background:var(--soft)}
+.preset.custom{grid-column:1/-1}
+details.grp{background:var(--card);border:1px solid var(--line);border-radius:14px;margin:0 0 10px;overflow:hidden}
+details.grp>summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:58px;padding:12px 14px;cursor:pointer;font-weight:700;font-size:18px}
+details.grp>summary::-webkit-details-marker{display:none}
+summary .ic{font-size:22px;width:28px;text-align:center}
+summary .t{flex:1;min-width:0}
+summary .sm{display:block;font-size:13px;font-weight:500;color:var(--muted);margin-top:1px;overflow-wrap:anywhere}
+summary .chev{color:#9AA3B2;font-size:20px;transition:transform .2s}
+details[open]>summary .chev{transform:rotate(90deg)}
+.body{border-top:1px solid var(--line);padding:4px 14px 12px}
+.row{padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.lbl{font-weight:700;font-size:17px}
+.help{color:var(--muted);font-size:14px;margin-top:3px}
+.tw{display:flex;align-items:center;gap:12px}
+.tw .grow{flex:1;min-width:0}
+.sw{position:relative;flex:0 0 56px;width:56px;height:34px}
+.sw input{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;border-radius:34px;background:#D1D5DB;transition:background .2s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:28px;height:28px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .2s}
+.sw input:checked+i{background:#34C759}
+.sw input:checked+i::after{transform:translateX(22px)}
+select{width:100%;min-height:48px;margin-top:8px;font:inherit;font-size:17px;padding:0 40px 0 12px;border:1px solid #CBD2DE;border-radius:12px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%235B6475' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 14px center;-webkit-appearance:none;appearance:none;color:var(--ink)}
+.methods{display:grid;gap:8px;margin-top:10px}
+.mth{display:flex;gap:10px;align-items:flex-start;border:2px solid var(--line);border-radius:12px;padding:10px 12px;min-height:56px;cursor:pointer}
+.mth input{flex:0 0 auto;width:24px;height:24px;margin:2px 0 0;accent-color:var(--blue)}
+.mth b{display:block;font-size:17px}
+.mth span{display:block;font-size:14px;color:var(--muted)}
+.mth em{display:block;font-style:normal;font-size:13px;color:var(--blue2);margin-top:3px}
+.mth.on{border-color:var(--blue);background:var(--soft)}
+.num{display:flex;align-items:center;gap:10px;margin-top:8px}
+.num button{flex:0 0 48px;height:48px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font-size:24px;font-weight:700;color:var(--blue);cursor:pointer}
+.num output{flex:1;text-align:center;font-size:20px;font-weight:800}
+/* simulator */
+.techs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tech{border:2px solid var(--line);border-radius:14px;padding:10px;background:#fff;min-width:0}
+.tech.next{border-color:var(--green);box-shadow:0 0 0 3px rgba(30,142,62,.18)}
+.tech .nm{display:flex;align-items:center;gap:6px;font-weight:800;font-size:18px}
+.tech .st{font-size:13px;font-weight:700;border-radius:999px;padding:2px 8px;background:#E5E7EB;color:#374151;margin-left:auto;white-space:nowrap}
+.tech .st.free{background:#DCFCE7;color:#166534}.tech .st.busy{background:#DBEAFE;color:#1E40AF}.tech .st.brk{background:#FEF3C7;color:#92400E}
+.tech .stats{font-size:13px;color:var(--muted);margin:6px 0 8px;line-height:1.35}
+.tech .stats b{color:var(--ink)}
+.tech .acts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{min-height:44px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font:inherit;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;padding:6px 8px}
+.btn:disabled{opacity:.4}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.grn{background:var(--green);border-color:var(--green);color:#fff}
+.btn.red{color:var(--red);border-color:rgba(217,48,37,.4)}
+.btn.blk{width:100%;min-height:52px;font-size:17px}
+.simbar{display:grid;gap:8px;margin-top:12px}
+.simbar .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nextline{margin:12px 0 0;padding:12px;border-radius:12px;background:#ECFDF5;color:#065F46;font-weight:700;font-size:16px}
+.log{margin:10px 0 0;padding:0;list-style:none;max-height:300px;overflow:auto;border-top:1px solid var(--line)}
+.log li{padding:8px 2px;border-bottom:1px solid var(--line);font-size:14px}
+.log li b{font-size:15px}
+.log li small{display:block;color:var(--muted)}
+.rot{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+.rot th,.rot td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+.rot th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.foot .in{max-width:640px;margin:0 auto;display:grid;gap:4px}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 0}
+.foot .save{grid-column:1/-1;min-height:54px;font-size:18px}
+.foot small{grid-column:1/-1;text-align:center;color:var(--amber);font-weight:800;font-size:12px;letter-spacing:.03em}
+.toast{position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:40;background:#111827;color:#fff;font-weight:700;padding:12px 18px;border-radius:999px;font-size:16px;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+.toast.show{opacity:1}
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:flex;align-items:flex-end}
+.sheet[hidden]{display:none}
+.sheet .box{background:#fff;width:100%;max-width:640px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet h3{margin:0 0 6px;font-size:22px}
+.choices{display:grid;gap:8px;margin:10px 0}
+@media (prefers-color-scheme:dark){
+ :root{--bg:#0F141E;--card:#1A2132;--ink:#E6EAF2;--muted:#A3ACBD;--line:#2C3546;--soft:#1E2A44}
+ select,.num button,.btn,.tech,.preset{background-color:#1A2132;color:var(--ink);border-color:#3F4D64}
+ .btn.pri{background:var(--blue);color:#fff}.btn.grn{background:var(--green);color:#fff}
+ .foot{background:rgba(26,33,50,.96)}.sheet .box{background:#1A2132}
+ .nextline{background:#0B3B2A;color:#A7F3D0}
+ .banner{background:#3B2A08;color:#FCD34D;border-color:#7C5A10}
+ .tech .st{background:#2C3546;color:#D1D5DB}
+}
+</style>
+</head>
+<body>
+<div class="banner">PREVIEW ONLY – NOT SAVED TO SALON</div>
+<div class="wrap">
+<header>
+  <h1>Turn Rules Settings</h1>
+  <p class="sub">Customize how technicians receive customers.</p>
+</header>
+
+<div class="tools"><button class="btn" id="bReset">↺ Reset Demo</button><button class="btn" id="bRot">▶ Preview Turn Rotation</button></div>
+<h2 class="sec">Quick start</h2>
+<div class="presets" id="presets"></div>
+
+<h2 class="sec">Rules</h2>
+<div id="groups"></div>
+
+<h2 class="sec" id="simTop">Try it – 4 technicians</h2>
+<div class="card pad">
+  <div class="help" style="margin:0 0 10px">Sample techs only. Tap the buttons to see who gets the next customer with your rules.</div>
+  <div class="techs" id="techs"></div>
+  <div class="nextline" id="nextLine"></div>
+  <div class="simbar">
+    <button class="btn pri blk" id="bWalk">🚶 Walk-in customer arrives</button>
+    <div class="two">
+      <button class="btn" id="bReq">⭐ Customer requests a tech</button>
+      <button class="btn" id="bAppt">📅 Appointment arrives</button>
+    </div>
+    <div class="two">
+      <button class="btn red" id="bRefuse">✋ Next tech refuses</button>
+      <button class="btn" id="bClear">↺ Start the day over</button>
+    </div>
+  </div>
+  <ul class="log" id="log"></ul>
+</div>
+
+<h2 class="sec" id="rotTop">Turn rotation preview</h2>
+<div class="card pad">
+  <div class="help" style="margin:0">The same 11 customers with your rules: walk-ins, 1 request for Lisa, 1 appointment for Kim. Jenny takes a break after customer 4 and comes back after customer 9.</div>
+  <div id="rot"></div>
+</div>
+<div style="height:20px"></div>
+</div>
+
+<div class="foot"><div class="in">
+  <button class="btn grn save" id="bSave">Save Settings (Demo)</button>
+  <small>PREVIEW ONLY – NOT SAVED TO SALON</small>
+</div></div>
+<div class="toast" id="toast"></div>
+<div class="sheet" id="sheet" hidden><div class="box" id="sheetBox"></div></div>
+
+<script>
+(function () {
+'use strict';
+var KEY = 'nf_turn_rules_preview_v1';
+var TECHS = ['Anna', 'Jenny', 'Lisa', 'Kim'];
+var SERVICES = [
+  { id: 'mani', name: 'Manicure', price: 25, min: 30 },
+  { id: 'pedi', name: 'Pedicure', price: 40, min: 45 },
+  { id: 'fill', name: 'Acrylic Fill', price: 40, min: 45 },
+  { id: 'full', name: 'Full Set', price: 55, min: 60 },
+  { id: 'combo', name: 'Mani + Pedi', price: 65, min: 75, two: true },
+  { id: 'repair', name: 'Nail Repair', price: 10, min: 15, repair: true },
+  { id: 'polish', name: 'Polish Change', price: 15, min: 15 }
+];
+var METHODS = [
+  { v: 'round', t: 'Round Robin', d: 'Everyone takes turns in order. The next free tech in line gets the customer.', e: 'Anna → Jenny → Lisa → Kim → Anna …' },
+  { v: 'dollar', t: 'Dollar Turn', d: 'The tech with the lowest dollar total today gets the next customer.', e: 'Anna $65, Jenny $25 → Jenny is next.' },
+  { v: 'count', t: 'Customer Count', d: 'The tech who has served the fewest customers today is next.', e: 'Lisa 2 customers, Kim 1 → Kim is next.' },
+  { v: 'time', t: 'Service Time', d: 'The tech with the fewest service minutes today is next.', e: 'Anna 90 min, Lisa 45 min → Lisa is next.' },
+  { v: 'points', t: 'Point-Based Turn', d: 'Each service gives points (small = ½, normal = 1, big = 1½). Fewest points is next.', e: 'Repair = ½ point, Full Set = 1½ points.' },
+  { v: 'manual', t: 'Manual Turn', d: 'The owner or front desk picks the tech every time. The app only shows the list.', e: 'Good for very small salons.' },
+  { v: 'hybrid', t: 'Hybrid Turn', d: 'Customer count first; when two techs are tied, the lower dollar total goes first.', e: 'Anna and Kim both 2 → Kim $50 vs Anna $80 → Kim.' }
+];
+var GROUPS = [
+  { k: 'method', ic: '🔄', t: 'Turn Distribution Method', custom: true },
+  { k: 'req', ic: '⭐', t: 'Requested Customers', rows: [
+    { k: 'reqCounts', s: 'Request', type: 'sel', l: 'A requested customer counts as', h: 'When a customer asks for a tech by name.', o: [['none', 'No turn (bonus for the tech)'], ['half', 'Half a turn'], ['full', 'A full turn']] },
+    { k: 'reqKeepPlace', s: 'Keeps place', type: 'sw', l: 'Tech keeps their place in line', h: 'On: a request does not move the tech to the end of the line.' } ] },
+  { k: 'walk', ic: '🚶', t: 'Walk-In Rules', rows: [
+    { k: 'skipBusy', s: 'Skip busy', type: 'sw', l: 'Skip techs who are busy', h: 'A busy tech keeps their place and gets the next customer when free.' },
+    { k: 'smallUnder', s: 'Small under', type: 'num', l: 'Small service under ($)', h: 'Services below this price count as a small turn.', min: 0, max: 60, step: 5 },
+    { k: 'smallCounts', s: 'Small', type: 'sel', l: 'A small service counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] } ] },
+  { k: 'appt', ic: '📅', t: 'Appointment Rules', rows: [
+    { k: 'apptCounts', s: 'Appointment', type: 'sel', l: 'An appointment counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] },
+    { k: 'apptHold', s: 'Hold', type: 'sel', l: 'Hold the tech before the appointment', h: 'The tech is not offered walk-ins this long before an appointment.', o: [['0', 'No hold'], ['15', '15 minutes'], ['30', '30 minutes']] } ] },
+  { k: 'refuse', ic: '✋', t: 'Technician Refusal', rows: [
+    { k: 'refuseRule', s: '', type: 'sel', l: 'When a tech says no to a customer', o: [['keep', 'No change – keeps their place'], ['end', 'Moves to the end of the line'], ['lose', 'Loses the turn (counts as served)']] },
+    { k: 'refuseMax', s: 'Max per day', type: 'num', l: 'Refusals allowed per day', h: 'After this many, the tech goes to the end of the line.', min: 0, max: 5, step: 1 } ] },
+  { k: 'break', ic: '☕', t: 'Break & Late Arrival', rows: [
+    { k: 'breakBack', s: '', type: 'sel', l: 'Coming back from a break', o: [['keep', 'Keeps their place'], ['end', 'Goes to the end of the line']] },
+    { k: 'lateJoin', s: 'Late', type: 'sel', l: 'A tech who clocks in late', o: [['end', 'Starts at the end of the line'], ['avg', 'Starts with the average turns']] } ] },
+  { k: 'multi', ic: '💅', t: 'Multiple Services', rows: [
+    { k: 'multiSvc', s: '', type: 'sel', l: 'One customer, several services (Mani + Pedi)', o: [['one', 'One turn per customer'], ['each', 'One turn per service']] } ] },
+  { k: 'multitech', ic: '👯', t: 'Multiple Technicians', rows: [
+    { k: 'multiTech', s: '', type: 'sel', l: 'Two techs work on one customer', o: [['each', 'Each tech gets a full turn'], ['half', 'Each tech gets half a turn'], ['main', 'Only the main tech gets the turn']] } ] },
+  { k: 'cancel', ic: '🚫', t: 'Cancellations & No-Shows', rows: [
+    { k: 'cancelGive', s: 'Give back', type: 'sw', l: 'Give the turn back on a cancel or no-show', h: 'On: the tech gets their place back if the customer leaves or never comes.' },
+    { k: 'cancelWithin', s: 'Within', type: 'sel', l: 'Only if cancelled within', o: [['5', '5 minutes'], ['10', '10 minutes'], ['any', 'Any time']] } ] },
+  { k: 'repair', ic: '🔧', t: 'Repair Customers', rows: [
+    { k: 'repairCounts', s: 'Repair', type: 'sel', l: 'A repair (fix one nail) counts as', o: [['none', 'No turn'], ['half', 'Half a turn'], ['full', 'A full turn']] },
+    { k: 'repairSame', s: 'Same tech', type: 'sw', l: 'Send repairs to the tech who did the set', h: 'If the customer comes back within 7 days.' } ] },
+  { k: 'queues', ic: '🧾', t: 'Separate Turn Queues', rows: [
+    { k: 'queues', s: '', type: 'sel', l: 'Turn lines', o: [['one', 'One line for everyone'], ['handsfeet', 'Hands and Feet separate'], ['acrylic', 'Acrylic techs separate']] } ] },
+  { k: 'reset', ic: '🌙', t: 'End-of-Day Reset', rows: [
+    { k: 'resetWhen', s: '', type: 'sel', l: 'Start the turns fresh', o: [['day', 'Every day'], ['week', 'Every week (Monday)'], ['never', 'Never (carry over)']] },
+    { k: 'resetOrder', s: 'First', type: 'sel', l: 'First in line the next morning', o: [['clock', 'Who clocks in first'], ['last', 'Who had the fewest turns yesterday']] } ] },
+  { k: 'owner', ic: '👑', t: 'Owner Override Permissions', rows: [
+    { k: 'ownerMove', s: 'Owner moves', type: 'sw', l: 'Owner can move a tech in the line', h: 'Drag a tech up or down by hand.' },
+    { k: 'ownerReason', s: 'Reason', type: 'sw', l: 'Ask for a reason when moving', h: 'The reason is saved in the turn history.' },
+    { k: 'deskMove', type: 'sw', l: 'Front desk can move techs too' } ] },
+  { k: 'adv', ic: '⚙️', t: 'Advanced Turn Rules', rows: [
+    { k: 'tie', s: 'Tie', type: 'sel', l: 'When two techs are tied', o: [['clock', 'Who clocked in first'], ['dollar', 'Lower dollar total'], ['wait', 'Who waited longest']] },
+    { k: 'minDone', s: 'Min. minutes', type: 'num', l: 'Minimum minutes before "Done" counts', h: 'Finished faster than this? The app asks before giving a turn.', min: 0, max: 20, step: 5 },
+    { k: 'bigOver', type: 'num', l: 'Big service over ($)', h: 'Point-Based: services above this give 1½ points.', min: 30, max: 120, step: 5 } ] }
+];
+var BASE = { method: 'round', reqCounts: 'none', reqKeepPlace: true, skipBusy: true, smallUnder: 20, smallCounts: 'half', apptCounts: 'none', apptHold: '15',
+  refuseRule: 'end', refuseMax: 2, breakBack: 'keep', lateJoin: 'end', multiSvc: 'one', multiTech: 'half', cancelGive: true, cancelWithin: '10',
+  repairCounts: 'none', repairSame: true, queues: 'one', resetWhen: 'day', resetOrder: 'clock', ownerMove: true, ownerReason: false, deskMove: false,
+  tie: 'clock', minDone: 5, bigOver: 50 };
+var PRESETS = [
+  { k: 'traditional', t: 'Traditional Salon', d: 'Simple round robin, requests are a bonus.', s: { method: 'round', reqCounts: 'none', apptCounts: 'none', refuseRule: 'end', smallCounts: 'half', multiSvc: 'one' } },
+  { k: 'dollar', t: 'Dollar Fairness', d: 'Lowest dollars today goes next.', s: { method: 'dollar', reqCounts: 'full', apptCounts: 'full', refuseRule: 'lose', smallCounts: 'full', multiSvc: 'one', tie: 'clock' } },
+  { k: 'apptprio', t: 'Appointment Priority', d: 'Appointments first, walk-ins fill in.', s: { method: 'count', apptCounts: 'none', apptHold: '30', reqCounts: 'half', refuseRule: 'end' } },
+  { k: 'mix', t: 'Walk-In + Appointment', d: 'Hybrid: customers first, then dollars.', s: { method: 'hybrid', apptCounts: 'half', reqCounts: 'half', apptHold: '15', refuseRule: 'end', smallCounts: 'half' } },
+  { k: 'custom', t: 'Custom Rules', d: 'Start from your own choices.', s: {} }
+];
+
+var cfg = load();
+var sim;
+
+function $(s, r) { return (r || document).querySelector(s); }
+function el(tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function copy(o) { return JSON.parse(JSON.stringify(o)); }
+function load() {
+  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); var c = copy(BASE); c.preset = 'traditional'; for (var k in o) if (k in c || k === 'preset') c[k] = o[k]; return c; } } catch (e) {}
+  var c2 = copy(BASE); c2.preset = 'traditional'; return c2;
+}
+function toast(t) { var x = $('#toast'); x.textContent = t; x.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function () { x.classList.remove('show'); }, 1800); }
+function label(row, v) { for (var i = 0; i < row.o.length; i++) if (row.o[i][0] === String(v)) return row.o[i][1]; return ''; }
+
+/* ---------- settings UI ---------- */
+function drawPresets() {
+  var box = $('#presets'); box.innerHTML = '';
+  PRESETS.forEach(function (p) {
+    var b = el('button', 'preset' + (p.k === 'custom' ? ' custom' : '') + (cfg.preset === p.k ? ' on' : ''), '<b>' + esc(p.t) + '</b><span>' + esc(p.d) + '</span>');
+    b.type = 'button'; b.setAttribute('aria-pressed', cfg.preset === p.k ? 'true' : 'false'); b.dataset.preset = p.k;
+    b.addEventListener('click', function () {
+      if (p.k !== 'custom') { var c = copy(BASE); for (var k in p.s) c[k] = p.s[k]; cfg = c; }
+      cfg.preset = p.k; drawAll(); toast(p.t + ' selected');
+    });
+    box.appendChild(b);
+  });
+}
+function summaryOf(g) {
+  if (g.custom) { var m = METHODS.filter(function (x) { return x.v === cfg.method; })[0]; return m ? m.t : ''; }
+  return g.rows.slice(0, 2).map(function (r) { var v = cfg[r.k]; var sh = r.s || ''; return r.type === 'sw' ? sh + ': ' + (v ? 'On' : 'Off') : r.type === 'num' ? sh + ' ' + (r.k === 'smallUnder' || r.k === 'bigOver' ? '$' + v : v) : (sh ? sh + ': ' : '') + label(r, v); }).join(' · ');
+}
+function drawGroups() {
+  var box = $('#groups'); var open = {}; box.querySelectorAll('details[open]').forEach(function (d) { open[d.dataset.g] = 1; }); box.innerHTML = '';
+  GROUPS.forEach(function (g, gi) {
+    var d = el('details', 'grp'); d.dataset.g = g.k; if (open[g.k] || (gi === 0 && !box.dataset.init)) d.open = true;
+    d.appendChild(el('summary', '', '<span class="ic">' + g.ic + '</span><span class="t">' + (gi + 1) + '. ' + esc(g.t) + '<span class="sm">' + esc(summaryOf(g)) + '</span></span><span class="chev">›</span>'));
+    var b = el('div', 'body');
+    if (g.custom) {
+      b.appendChild(el('div', 'help', 'Choose how the app decides who gets the next walk-in customer.'));
+      var ms = el('div', 'methods');
+      METHODS.forEach(function (m) {
+        var lab = el('label', 'mth' + (cfg.method === m.v ? ' on' : ''), '<input type="radio" name="method" value="' + m.v + '"' + (cfg.method === m.v ? ' checked' : '') + '><div><b>' + esc(m.t) + '</b><span>' + esc(m.d) + '</span><em>Example: ' + esc(m.e) + '</em></div>');
+        lab.querySelector('input').addEventListener('change', function () { cfg.method = m.v; changed(); });
+        ms.appendChild(lab);
+      });
+      b.appendChild(ms);
+    } else g.rows.forEach(function (r) { b.appendChild(rowEl(r)); });
+    d.appendChild(b); box.appendChild(d);
+  });
+  box.dataset.init = '1';
+}
+function rowEl(r) {
+  var row = el('div', 'row'); var id = 'f_' + r.k;
+  if (r.type === 'sw') {
+    row.innerHTML = '<div class="tw"><div class="grow"><label class="lbl" for="' + id + '">' + esc(r.l) + '</label>' + (r.h ? '<div class="help">' + esc(r.h) + '</div>' : '') + '</div><span class="sw"><input type="checkbox" role="switch" id="' + id + '"' + (cfg[r.k] ? ' checked' : '') + '><i></i></span></div>';
+    row.querySelector('input').addEventListener('change', function (e) { cfg[r.k] = e.target.checked; changed(); });
+  } else if (r.type === 'sel') {
+    row.innerHTML = '<label class="lbl" for="' + id + '">' + esc(r.l) + '</label>' + (r.h ? '<div class="help">' + esc(r.h) + '</div>' : '') + '<select id="' + id + '">' + r.o.map(function (o) { return '<option value="' + o[0] + '"' + (String(cfg[r.k]) === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>';
+    row.querySelector('select').addEventListener('change', function (e) { cfg[r.k] = e.target.value; changed(); });
+  } else {
+    var money = r.k === 'smallUnder' || r.k === 'bigOver';
+    row.innerHTML = '<div class="lbl">' + esc(r.l) + '</div>' + (r.h ? '<div class="help">' + esc(r.h) + '</div>' : '') + '<div class="num"><button type="button" aria-label="Less">−</button><output id="' + id + '">' + (money ? '$' : '') + cfg[r.k] + '</output><button type="button" aria-label="More">+</button></div>';
+    var bs = row.querySelectorAll('button');
+    bs[0].addEventListener('click', function () { cfg[r.k] = Math.max(r.min, +cfg[r.k] - r.step); changed(); });
+    bs[1].addEventListener('click', function () { cfg[r.k] = Math.min(r.max, +cfg[r.k] + r.step); changed(); });
+  }
+  return row;
+}
+function changed() { cfg.preset = 'custom'; drawAll(); }
+function drawAll() { drawPresets(); drawGroups(); recompute(); }
+
+/* ---------- the turn engine (preview only) ---------- */
+function freshSim() {
+  return { techs: TECHS.map(function (n, i) { return { name: n, order: i, turns: 0, dollars: 0, minutes: 0, customers: 0, points: 0, busy: null, brk: false, refusals: 0, line: i }; }), log: [], lineSeq: TECHS.length, n: 0 };
+}
+function weight(kind, svc) {
+  var w;
+  if (svc.repair) w = cfg.repairCounts;
+  else if (kind === 'request') w = cfg.reqCounts;
+  else if (kind === 'appt') w = cfg.apptCounts;
+  else if (svc.price < +cfg.smallUnder) w = cfg.smallCounts;
+  else w = 'full';
+  var v = w === 'none' ? 0 : w === 'half' ? 0.5 : 1;
+  if (svc.two && cfg.multiSvc === 'each' && v > 0) v = v * 2;
+  return v;
+}
+function pointsOf(svc) { return svc.repair || svc.price < +cfg.smallUnder ? 0.5 : svc.price > +cfg.bigOver ? 1.5 : 1; }
+function avail(s) { return s.techs.filter(function (t) { return !t.brk && (!cfg.skipBusy || !t.busy); }); }
+function tieKey(t) { return cfg.tie === 'dollar' ? t.dollars : cfg.tie === 'wait' ? t.line : t.order; }
+function score(t) {
+  switch (cfg.method) {
+    case 'round': return [t.turns, t.line];
+    case 'dollar': return [t.dollars, tieKey(t)];
+    case 'count': return [t.turns, tieKey(t)];
+    case 'time': return [t.minutes, tieKey(t)];
+    case 'points': return [t.points, tieKey(t)];
+    case 'hybrid': return [t.turns, t.dollars, tieKey(t)];
+    default: return [t.line];
+  }
+}
+function cmp(a, b) { var x = score(a), y = score(b); for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i]; return a.line - b.line; }
+function ranked(s, skip) { return avail(s).filter(function (t) { return !skip || skip.indexOf(t.name) < 0; }).sort(cmp); }
+function nextTech(s, skip) { if (cfg.method === 'manual') return null; return ranked(s, skip)[0] || null; }
+function give(s, t, svc, kind, note) {
+  var w = weight(kind, svc);
+  t.turns += w; t.customers += 1; t.dollars += svc.price; t.minutes += svc.min; t.points += kind === 'walk' ? pointsOf(svc) : 0;
+  if (w > 0 || !(kind === 'request' && cfg.reqKeepPlace)) t.line = s.lineSeq++;
+  t.busy = svc.name; s.n++;
+  var why = kind === 'walk' ? 'walk-in' : kind === 'request' ? 'requested' : 'appointment';
+  s.log.unshift({ b: '#' + s.n + ' ' + svc.name + ' ($' + svc.price + ') → ' + t.name, m: why + ' · counts as ' + (w === 0 ? 'no turn' : w === 0.5 ? '½ turn' : w + ' turn' + (w > 1 ? 's' : '')) + (note ? ' · ' + note : '') });
+}
+function refuse(s, t) {
+  t.refusals++; var note;
+  if (cfg.refuseRule === 'lose') { t.turns += 1; t.line = s.lineSeq++; note = 'loses the turn (counts as served)'; }
+  else if (cfg.refuseRule === 'end') { t.line = s.lineSeq++; note = 'moves to the end of the line'; }
+  else if (t.refusals > +cfg.refuseMax) { t.line = s.lineSeq++; note = 'refused ' + t.refusals + ' times (limit ' + cfg.refuseMax + ') → end of the line'; }
+  else note = 'keeps the place (' + t.refusals + ' of ' + cfg.refuseMax + ' refusals today)';
+  return note;
+}
+function toggleBreak(s, t) {
+  t.brk = !t.brk;
+  if (!t.brk && cfg.breakBack === 'end') { t.line = s.lineSeq++; return t.name + ' is back – goes to the end of the line'; }
+  return t.name + (t.brk ? ' is on a break' : ' is back – keeps the place');
+}
+
+/* ---------- simulator UI ---------- */
+function drawSim() {
+  var nx = nextTech(sim); var box = $('#techs'); box.innerHTML = '';
+  sim.techs.forEach(function (t) {
+    var st = t.brk ? '<span class="st brk">On break</span>' : t.busy ? '<span class="st busy">Busy</span>' : '<span class="st free">Free</span>';
+    var c = el('div', 'tech' + (nx && nx.name === t.name ? ' next' : ''));
+    c.innerHTML = '<div class="nm">' + esc(t.name) + st + '</div><div class="stats">Turns <b>' + fmt(t.turns) + '</b> · $<b>' + t.dollars + '</b><br>' + t.customers + ' cust · ' + t.minutes + ' min' + (cfg.method === 'points' ? ' · ' + fmt(t.points) + ' pts' : '') + (t.busy ? '<br>Doing: ' + esc(t.busy) : '') + '</div>'
+      + '<div class="acts"><button type="button" class="btn" data-done="' + t.name + '"' + (t.busy ? '' : ' disabled') + '>Done</button><button type="button" class="btn" data-brk="' + t.name + '"' + (t.busy && !t.brk ? ' disabled' : '') + '>' + (t.brk ? 'Back' : 'Break') + '</button></div>';
+    box.appendChild(c);
+  });
+  box.querySelectorAll('[data-done]').forEach(function (b) { b.addEventListener('click', function () { var t = find(b.dataset.done); t.busy = null; sim.log.unshift({ b: t.name + ' finished', m: 'free again' }); drawSim(); }); });
+  box.querySelectorAll('[data-brk]').forEach(function (b) { b.addEventListener('click', function () { var m = toggleBreak(sim, find(b.dataset.brk)); sim.log.unshift({ b: m, m: cfg.breakBack === 'end' ? 'Break rule: end of the line' : 'Break rule: keeps the place' }); drawSim(); }); });
+  var order = ranked(sim).map(function (t) { return t.name; });
+  $('#nextLine').textContent = cfg.method === 'manual' ? 'Manual Turn: the owner picks the tech for each customer.' : nx ? 'Next walk-in goes to ' + nx.name + (order.length > 1 ? ' · then ' + order.slice(1).join(', ') : '') : 'Nobody is free right now' + (cfg.skipBusy ? ' (busy techs are skipped).' : '.');
+  $('#log').innerHTML = sim.log.slice(0, 40).map(function (x) { return '<li><b>' + esc(x.b) + '</b><small>' + esc(x.m) + '</small></li>'; }).join('');
+}
+function fmt(n) { return (Math.round(n * 10) / 10).toString(); }
+function find(n) { return sim.techs.filter(function (t) { return t.name === n; })[0]; }
+function pick(title, opts, cb) {
+  var sh = $('#sheet'), bx = $('#sheetBox');
+  bx.innerHTML = '<h3>' + esc(title) + '</h3><div class="choices">' + opts.map(function (o, i) { return '<button type="button" class="btn blk" data-i="' + i + '">' + esc(o.t) + '</button>'; }).join('') + '</div><button type="button" class="btn blk" data-x>Cancel</button>';
+  sh.hidden = false;
+  bx.querySelectorAll('[data-i]').forEach(function (b) { b.addEventListener('click', function () { sh.hidden = true; cb(opts[+b.dataset.i].v); }); });
+  bx.querySelector('[data-x]').addEventListener('click', function () { sh.hidden = true; });
+}
+var svcOpts = SERVICES.map(function (s) { return { t: s.name + ' – $' + s.price + ' · ' + s.min + ' min', v: s }; });
+var techOpts = function () { return TECHS.map(function (n) { var t = find(n); return { t: n + (t.brk ? ' (on break)' : t.busy ? ' (busy – customer waits)' : ''), v: n }; }); };
+function walkIn(svc, skip) {
+  if (cfg.method === 'manual') { pick('Manual Turn – who takes the ' + svc.name + '?', techOpts(), function (n) { give(sim, find(n), svc, 'walk', 'picked by the owner'); drawSim(); }); return; }
+  var t = nextTech(sim, skip);
+  if (!t) { sim.log.unshift({ b: svc.name + ' customer waits', m: 'no tech is free' }); drawSim(); return; }
+  if (svc.repair && cfg.repairSame) { /* the same tech within 7 days – sample: nobody did the set */ }
+  give(sim, t, svc, 'walk'); drawSim();
+}
+
+/* ---------- rotation preview ---------- */
+function rotation() {
+  var s = freshSim(), rows = [];
+  var plan = [['walk', 'full'], ['walk', 'mani'], ['walk', 'pedi'], ['walk', 'repair'], ['brk', 'Jenny'], ['request', 'full', 'Lisa'], ['walk', 'combo'], ['appt', 'pedi', 'Kim'], ['walk', 'polish'], ['walk', 'fill'], ['back', 'Jenny'], ['walk', 'mani'], ['walk', 'full']];
+  plan.forEach(function (p) {
+    if (p[0] === 'brk' || p[0] === 'back') { find2(s, p[1]).brk = p[0] === 'brk'; if (p[0] === 'back' && cfg.breakBack === 'end') find2(s, p[1]).line = s.lineSeq++; rows.push(['', p[1] + (p[0] === 'brk' ? ' takes a break' : ' is back'), '', '']); return; }
+    var svc = SERVICES.filter(function (x) { return x.id === p[1]; })[0], t;
+    if (p[0] === 'walk') { if (cfg.method === 'manual') { rows.push([s.n + 1, svc.name, 'Owner picks', '']); s.n++; return; } t = s.techs.filter(function (x) { return !x.brk; }).sort(cmp)[0]; }
+    else t = find2(s, p[2]);
+    give(s, t, svc, p[0]);
+    rows.push([s.n, svc.name + ' $' + svc.price, t.name, p[0] === 'walk' ? 'walk-in' : p[0] === 'request' ? 'request' : 'appt']);
+    s.techs.forEach(function (x) { x.busy = null; });
+  });
+  var sum = s.techs.map(function (t) { return esc(t.name) + ' ' + fmt(t.turns) + ' turns / $' + t.dollars; }).join(' · ');
+  $('#rot').innerHTML = '<table class="rot"><thead><tr><th>#</th><th>Customer</th><th>Goes to</th><th>Type</th></tr></thead><tbody>' + rows.map(function (r) { return '<tr><td>' + r[0] + '</td><td>' + esc(r[1]) + '</td><td><b>' + esc(r[2]) + '</b></td><td>' + esc(r[3]) + '</td></tr>'; }).join('') + '</tbody></table><div class="help" style="margin-top:8px">End: ' + sum + '</div>';
+}
+function find2(s, n) { return s.techs.filter(function (t) { return t.name === n; })[0]; }
+function recompute() { rotation(); drawSim(); }
+
+/* ---------- buttons ---------- */
+$('#bWalk').addEventListener('click', function () { pick('Walk-in – which service?', svcOpts, function (svc) { walkIn(svc); }); });
+$('#bReq').addEventListener('click', function () { pick('Which tech did the customer ask for?', techOpts(), function (n) { pick('Service for ' + n + '?', svcOpts, function (svc) { give(sim, find(n), svc, 'request', cfg.reqKeepPlace ? 'keeps place in line' : ''); drawSim(); }); }); });
+$('#bAppt').addEventListener('click', function () { pick('Appointment with which tech?', techOpts(), function (n) { pick('Appointment service?', svcOpts, function (svc) { give(sim, find(n), svc, 'appt'); drawSim(); }); }); });
+$('#bRefuse').addEventListener('click', function () {
+  var t = nextTech(sim); if (!t) { toast(cfg.method === 'manual' ? 'Manual Turn – nobody is offered' : 'Nobody is free'); return; }
+  var note = refuse(sim, t); sim.log.unshift({ b: t.name + ' refused the next customer', m: note });
+  var t2 = nextTech(sim, [t.name]);
+  if (t2) give(sim, t2, SERVICES[0], 'walk', 'after ' + t.name + ' refused');
+  else sim.log.unshift({ b: 'The Manicure customer waits', m: 'no other tech is free – the customer goes to the next free tech' });
+  drawSim();
+});
+$('#bClear').addEventListener('click', function () { sim = freshSim(); drawSim(); toast('New day started'); });
+$('#bSave').addEventListener('click', function () { try { localStorage.setItem(KEY, JSON.stringify(cfg)); toast('Demo settings saved'); } catch (e) { toast('This browser cannot keep demo settings'); } });
+$('#bReset').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} cfg = copy(BASE); cfg.preset = 'traditional'; sim = freshSim(); drawAll(); toast('Demo reset'); });
+$('#bRot').addEventListener('click', function () { rotation(); $('#rotTop').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.currentTarget.hidden = true; });
+
+sim = freshSim(); drawAll();
+})();
+</script>
+</body>
+</html>
