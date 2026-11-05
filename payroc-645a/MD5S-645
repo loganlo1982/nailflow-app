@@ -1,0 +1,14 @@
+68d58164ce7c9527c0d2e5dcce763489  inc/payroc.php
+b1086550fe12f1490faebb77274d31cc  inc/payroc-pay.php
+767d82ceb6076a66351cdd9da8738d17  inc/api/payroc.php
+f7bee1ce7c291261db9ddbe5886b3b01  inc/api/prpay.php
+aafbe4da5d4ec82bd57cd8a9e520c3f8  assets/admin/payroc-hq.js
+d72fe8b7a2860febcbc169d054d1c66a  api.php
+2d5f825fa84315dda9ebae172799dac5  assets/admin-core.js
+567ef4a1f70b39376c95573a8f3fd606  assets/admin/checkout-2b.js
+b7bf069d9ede236b381fc99b3c5e485e  assets/admin/checkout-2d.js
+414f57f002857093ff9ea654a64033a4  assets/admin/checkout-receipt.js
+4c62cb79f9635d7f10f726b434520be1  inc/api/checkout.php
+799afa77e41fdc518cbfcfa776b2892d  inc/checkout-edit.php
+e399b4a65ab2215962b4a98f1346f97f  inc/checkout.php
+3ee21ce1ceef61caa26b686335662350  inc/support.php
