@@ -181,5 +181,18 @@ function pr_refund_send(float $amount, string $order, string $idem, string $why 
     $r = $id !== '' && in_array($h['http'], [200, 201, 202], true) ? ['status' => 'sent', 'instr' => $id, 'msg' => ''] : ['status' => $h['net'] ? 'unknown' : 'error', 'instr' => $id, 'http' => $h['http'], 'msg' => pr_problem($h)];
     pr_log('refund', $r, ['order' => $order, 'amount' => round($amount, 2)]); return $r;
 }
+/** Refund a payment by its paymentId – no card needed. Request from Payroc's own "Card Present Certification" Postman collection (read 04/11 21:55):
+    POST {api}/payments/{paymentId}/refund {processingTerminalId, operator, amount (cents), description} + Idempotency-Key.
+    ok ONLY when the answer carries transactionResult.responseCode "A"; anything else is shown as it came (never guessed as refunded). */
+function pr_refund_ref(string $paymentId, float $amount, string $idem, string $why = 'Refund'): array {
+    $c = pr_creds(); $body = ['processingTerminalId' => $c['tid'], 'operator' => 'NailFlow', 'amount' => pr_cents($amount), 'description' => mb_substr($why, 0, 200)];
+    $h = pr_http('POST', '/payments/' . rawurlencode($paymentId) . '/refund', $body, $idem, 30);
+    if ($h['net'] || $h['http'] >= 500) { $h2 = pr_http('POST', '/payments/' . rawurlencode($paymentId) . '/refund', $body, $idem, 30); if (!$h2['net']) $h = $h2; }
+    $n = is_array($h['j']) && in_array($h['http'], [200, 201], true) ? pr_pay_norm($h['j']) : [];
+    $ok = ($n['code'] ?? '') === 'A';
+    $r = ['ok' => $ok, 'http' => $h['http'], 'status' => $ok ? 'refunded' : ($h['net'] ? 'unknown' : ($n ? 'not approved' : 'error')), 'code' => $n['code'] ?? '', 'approval' => $n['approval'] ?? '',
+        'refund_id' => (string)($h['j']['refundId'] ?? ($n['payment_id'] ?? '')), 'msg' => $n ? ($n['msg'] ?: (string)($n['tr_status'] ?? '')) : pr_problem($h)];
+    pr_log('refund_ref', $r, ['pay' => $paymentId, 'amount' => round($amount, 2)]); return $r;
+}
 /** "Check the connection": only a token (nothing is charged). */
 function pr_check(): array { $why = ''; $t = pr_token(true, $why); $r = ['ok' => $t !== '', 'status' => $t !== '' ? 'token ok' : 'no token', 'msg' => $t !== '' ? '' : $why]; pr_log('check', $r); return $r; }

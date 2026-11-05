@@ -9,9 +9,9 @@
   const mine = () => !IS_MGR && (!S.nfOnly || !!S.support);
   const say = (b, t, bad) => { const p = b.querySelector('#prMsg'); if (p) { p.textContent = t; p.style.color = bad ? 'var(--danger, #c0392b)' : ''; } };
   const logRows = (l) => (l || []).slice(0, 8).map(x => `<li>${esc(x.at || '')} · ${esc(x.op || '')}${x.amount != null ? ' $' + esc(x.amount) : ''} · ${esc(x.status || '')}${x.code ? ' ' + esc(x.code) : ''}${x.last4 ? ' · ••' + esc(x.last4) : ''}</li>`).join('');
-  const testRows = (l) => (l || []).slice(0, 12).map(t => `<li>${esc(t.at || '')} · ${esc(t.tc || '')} ${esc(t.op || '')} $${esc(t.amt)} · <b>${esc(t.st || '')}</b>${t.code ? ' ' + esc(t.code) : ''}${t.approval ? ' · ' + esc(t.approval) : ''}${t.void ? ' · void: ' + esc(t.void) : ''}${t.msg ? ' · ' + esc(t.msg) : ''}
+  const testRows = (l) => (l || []).slice(0, 12).map(t => `<li>${esc(t.at || '')} · ${esc(t.tc || '')} ${esc(t.op || '')} $${esc(t.amt)} · <b>${esc(t.st || '')}</b>${t.code ? ' ' + esc(t.code) : ''}${t.approval ? ' · ' + esc(t.approval) : ''}${t.void ? ' · void: ' + esc(t.void) : ''}${t.refund ? ' · refund: ' + esc(t.refund) : ''}${t.msg ? ' · ' + esc(t.msg) : ''}
     ${t.st === 'inProgress' || t.st === 'waiting' ? ` <button type="button" class="btn" data-prt="poll" data-id="${esc(t.id)}">${esc(T('Result', 'Kết quả'))}</button> <button type="button" class="btn" data-prt="stop" data-id="${esc(t.id)}">${esc(T('Stop', 'Dừng'))}</button>` : ''}
-    ${t.op === 'sale' && t.st === 'approved' && !t.void ? ` <button type="button" class="btn" data-prt="void" data-id="${esc(t.id)}">Void</button>` : ''}</li>`).join('');
+    ${t.op === 'sale' && t.st === 'approved' && !t.void ? ` <button type="button" class="btn" data-prt="void" data-id="${esc(t.id)}">Void</button>` : ''}${t.op === 'sale' && t.st === 'approved' && !t.void && !t.refund ? ` <button type="button" class="btn" data-prt="refund_ref" data-id="${esc(t.id)}">${esc(T('Refund', 'Hoàn tiền'))}</button>` : ''}</li>`).join('');
   async function box(b) {
     if (!mine() || b.querySelector('#prBox')) return;
     const d = document.createElement('div'); d.className = 'card'; d.id = 'prBox'; d.style.marginTop = '12px'; b.appendChild(d);

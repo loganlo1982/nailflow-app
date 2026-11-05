@@ -39,7 +39,9 @@ const setting = (k) => sq('get', k);
   t = await T('void', { id: saleId }); ok('t_void', t.void === 'reversed', t);
   t = await T('refund', { amt: 5, tc: 'TC3' }); ok('t_refund', t.st === 'approved' && t.code === 'A', t);
   let p0 = posts(); t = await T('sale', { amt: 10.55, tc: '500' }); ok('t_500_same_key', t.st === 'approved' && posts() === p0 + 2 && Object.keys(fake().instr).length > 0, { t, p: posts() - p0 });
-  j = await api('pr_tests_csv'); ok('csv', j.csv && j.csv.includes('TC1') && !j.csv.includes(KEY) && !/476173\*+/.test(j.csv), (j.csv || '').slice(0, 200));
+  t = await T('sale', { amt: 12, tc: 'TC4' }); t = await T('refund_ref', { id: t.id, amt: 12 }); ok('t_refund_by_payment', /^refunded \$12/.test(t.refund || ''), t);
+  t = await T('refund_ref', { id: 'nope' }); ok('t_refund_ref_needs_sale', !t.refund, t);
+  j = await api('pr_tests_csv'); ok('csv', j.csv && j.csv.includes('TC1') && j.csv.includes('refunded') && !j.csv.includes(KEY) && !/476173\*+/.test(j.csv), (j.csv || '').slice(0, 200));
   ok('log_clean', !setting('pr_log').includes(KEY) && !/tok\d/.test(setting('pr_log')) && !/\d{6}\*+\d{4}/.test(setting('pr_log')), setting('pr_log').slice(0, 200));
   // ---- Checkout charge
   j = await api('pr_save', { tid: '', sn: '', key: '', on: true }); ok('on', j.pr.on, j);

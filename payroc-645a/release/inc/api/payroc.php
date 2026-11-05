@@ -48,12 +48,19 @@ case 'pr_test': /* the sandbox test runner – test orders only */
         $ord = (string)($in['id'] ?? ''); $t = $prTests()[$ord] ?? null; if (!$t || ($t['pay'] ?? '') === '' || ($t['op'] ?? '') !== 'sale') fail('Pick an approved test sale.', 404);
         $vi = (string)($t['videm'] ?? ''); if ($vi === '') { $vi = pr_uuid(); $prTestPut($ord, ['videm' => $vi]); }
         $v = pr_reverse((string)$t['pay'], null, $vi); $prTestPut($ord, ['void' => $v['ok'] ? 'reversed' : 'failed: ' . $v['msg'], 'void_at' => now_str()]); $out(['test' => $prTests()[$ord]]);
+    } elseif ($op === 'refund_ref') { /* Payroc certification "Refund": a refund of a previously approved test sale, by its paymentId (no card) */
+        $ord = (string)($in['id'] ?? ''); $t = $prTests()[$ord] ?? null; if (!$t || ($t['pay'] ?? '') === '' || ($t['op'] ?? '') !== 'sale' || ($t['st'] ?? '') !== 'approved') fail('Pick an approved test sale.', 404);
+        $amt = round((float)($in['amt'] ?? 0), 2); if ($amt < 0.01 || $amt > (float)$t['amt']) $amt = (float)$t['amt'];
+        $ri = (string)($t['ridem'] ?? ''); if ($ri === '') { $ri = pr_uuid(); $prTestPut($ord, ['ridem' => $ri]); }
+        $v = pr_refund_ref((string)$t['pay'], $amt, $ri, 'NailFlow certification refund');
+        $prTestPut($ord, ['refund' => ($v['ok'] ? 'refunded ' : $v['status'] . ' ') . '$' . $amt . ($v['refund_id'] !== '' ? ' · ' . $v['refund_id'] : '') . ($v['code'] !== '' ? ' · ' . $v['code'] : '') . ($v['ok'] ? '' : ' · HTTP ' . $v['http'] . ' ' . $v['msg']), 'refund_at' => now_str()]);
+        $out(['test' => $prTests()[$ord]]);
     } else fail('Unknown test.', 404);
     $prTestPut($ord, ['st' => $s['status'], 'msg' => (string)($s['msg'] ?? ''), 'pay' => (string)($s['payment_id'] ?? ''), 'code' => (string)($s['code'] ?? ''), 'approval' => (string)($s['approval'] ?? ''), 'last4' => (string)($s['last4'] ?? ''), 'card' => (string)($s['card'] ?? ''), 'done_at' => now_str()]);
     $out(['test' => $prTests()[$ord]]);
 case 'pr_tests_csv': /* for the certification email: no key, no card number */
-    $rows = [['order', 'test case', 'type', 'amount', 'time', 'instruction', 'result', 'responseCode', 'approval', 'paymentId', 'card', 'last4', 'void', 'message']];
-    foreach ($prTests() as $t) $rows[] = [$t['id'] ?? '', $t['tc'] ?? '', $t['op'] ?? '', $t['amt'] ?? '', $t['at'] ?? '', $t['instr'] ?? '', $t['st'] ?? '', $t['code'] ?? '', $t['approval'] ?? '', $t['pay'] ?? '', $t['card'] ?? '', $t['last4'] ?? '', $t['void'] ?? '', $t['msg'] ?? ''];
+    $rows = [['order', 'test case', 'type', 'amount', 'time', 'instruction', 'result', 'responseCode', 'approval', 'paymentId', 'card', 'last4', 'void', 'refund', 'message']];
+    foreach ($prTests() as $t) $rows[] = [$t['id'] ?? '', $t['tc'] ?? '', $t['op'] ?? '', $t['amt'] ?? '', $t['at'] ?? '', $t['instr'] ?? '', $t['st'] ?? '', $t['code'] ?? '', $t['approval'] ?? '', $t['pay'] ?? '', $t['card'] ?? '', $t['last4'] ?? '', $t['void'] ?? '', $t['refund'] ?? '', $t['msg'] ?? ''];
     $csv = ''; foreach ($rows as $r) $csv .= implode(',', array_map(fn($v) => '"' . str_replace('"', '""', (string)$v) . '"', $r)) . "\r\n";
     json_out(['ok' => true, 'csv' => $csv]);
 }
