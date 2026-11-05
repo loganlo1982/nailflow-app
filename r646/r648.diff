@@ -1,0 +1,320 @@
+diff -ruN -x error_log -x '*.sqlite' int646/assets/admin/appts.js int648/assets/admin/appts.js
+--- int646/assets/admin/appts.js	2026-10-31 21:03:43.000000000 -0500
++++ int648/assets/admin/appts.js	2026-11-05 03:05:01.457441796 -0600
+@@ -448,7 +448,7 @@
+    3) remembered on this device (localStorage, try/catch) - a new day keeps it
+    4) a narrow box: only the customer's name on one line ('...') + the status colour; everything (services, time, MINUTES, tech, status) in the box one tap shows */
+ const AP7 = { key: 'nfApCols', w: [0, 140, 200], st: null, fit: 0 };
+-AP7.on = () => !IS_DESK && (IS_MGR || document.documentElement.dataset.app === 'admin');
++AP7.on = () => false; /* (2.99.647 - anh Logan 05/11 03:04 "tat ca cac trang bo phan gach do"): the row [All techs] [- zoom +] is gone on every page; every tech shows, columns fit the screen, a saved choice is ignored. Was: !IS_DESK && (IS_MGR || document.documentElement.dataset.app === 'admin') */
+ AP7.get = () => { if (AP7.st) return AP7.st; let o = null; try { o = JSON.parse(localStorage.getItem(AP7.key) || 'null'); } catch (e) {}
+   o = o && typeof o === 'object' ? o : {}; AP7.st = { z: [0, 1, 2].includes(o.z) ? o.z : 0, hide: Array.isArray(o.hide) ? o.hide.map(Number).filter(Boolean) : [], only: !!o.only, solo: +o.solo || 0 }; return AP7.st; };
+ AP7.save = () => { try { localStorage.setItem(AP7.key, JSON.stringify(AP7.get())); } catch (e) {} };
+diff -ruN -x error_log -x '*.sqlite' int646/assets/admin/turn-mode.js int648/assets/admin/turn-mode.js
+--- int646/assets/admin/turn-mode.js	2026-11-05 01:22:15.336372799 -0600
++++ int648/assets/admin/turn-mode.js	2026-11-05 02:59:24.491828823 -0600
+@@ -16,7 +16,12 @@
+         + rb('1', on, `<b>2. ${LV('The app assigns the turns', 'App chia turn')}</b> – ${LV('tick the turn rules below and tap Save; the app follows them.', 'chọn luật turn bên dưới rồi bấm Save, app làm theo.')}`)
+         + `<div id="tmMsg"></div>`;
+       const first = b.querySelector('#trCard') || b.firstElementChild; if (first && first.parentNode) first.parentNode.insertBefore(card, first); else b.appendChild(card);
+-      const show = (app) => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = !app; }); };
++      /* (2.99.647 - LENH 647) with choice 1 the turn COUNTING rules ($ for 1 turn, bonus, half turn...) still count the line and Checkout:
++         hidden, but one tap shows them to change WITHOUT turning on "the app assigns" */
++      const show = (app) => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = !app; });
++        const m = card.querySelector('#tmMsg'); if (!m) return;
++        m.innerHTML = app ? '' : `<button type="button" class="btn ghost small" id="tmShow" style="margin-top:6px">${LV('Show the turn counting rules', 'Xem / sửa luật đếm turn')}</button>`;
++        const sb = m.querySelector('#tmShow'); if (sb) sb.addEventListener('click', () => { ['#trCard', '#teCard'].forEach(q => { const el = b.querySelector(q); if (el) el.hidden = false; }); m.innerHTML = ''; }); };
+       const pick = (app) => { const x = card.querySelector(`[name=tmMode][value="${app ? '1' : '0'}"]`); if (x) x.checked = true; };
+       show(on);
+       card.querySelectorAll('[name=tmMode]').forEach(x => x.addEventListener('change', async () => {
+diff -ruN -x error_log -x '*.sqlite' int646/assets/book-2.js int648/assets/book-2.js
+--- int646/assets/book-2.js	2026-11-05 01:24:52.072378617 -0600
++++ int648/assets/book-2.js	2026-11-05 02:59:24.491257964 -0600
+@@ -288,7 +288,7 @@
+     $$('[data-p]', el).forEach(b => b.addEventListener('click', () => setPeople(+b.dataset.p)));
+     $('#bAgain1', el)?.addEventListener('click', againGo); // (2.99.491 – LỆNH 488 b)
+     $$('[data-fp]', el).forEach(b => b.addEventListener('click', () => fpPick(b.dataset.fp))); $$('[data-fpd]', el).forEach(b => b.addEventListener('click', () => fpPick(b.dataset.fpd))); /* (2.99.646 - LENH 646) the tech / the day first */
+-    $$('[data-fpx]', el).forEach(b => b.addEventListener('click', () => { st.fpDone = false; refresh(); })); $$('[data-fpz]', el).forEach(b => b.addEventListener('click', () => { const dz = $('#fpDays', el); if (dz) dz.scrollBy({ left: +b.dataset.fpz * dz.clientWidth * 0.9, behavior: reduced ? 'auto' : 'smooth' }); }));
++    $$('[data-fpx]', el).forEach(b => b.addEventListener('click', () => { st.fpDone = false; st.fpRe = true; refresh(); })); $$('[data-fpz]', el).forEach(b => b.addEventListener('click', () => { const dz = $('#fpDays', el); if (dz) dz.scrollBy({ left: +b.dataset.fpz * dz.clientWidth * 0.9, behavior: reduced ? 'auto' : 'smooth' }); }));
+     const more = $('#bMore', el); if (more) more.addEventListener('click', askPeople);
+     const qi = $('#bQr', el); if (qi) kpSetup(qi, () => {}); if (qi) qi.addEventListener('focus', () => { if (!G.said.qrph) { G.said.qrph = true; gSpeak(PH_REAL()); } });
+     if (qi) qi.addEventListener('input', async () => { const pv = prettyPhone(qi.value); if (pv !== qi.value) qi.value = pv; st.qrPhone = pv; const d = digits(pv);
+diff -ruN -x error_log -x '*.sqlite' int646/assets/book.js int648/assets/book.js
+--- int646/assets/book.js	2026-11-05 01:24:52.076378617 -0600
++++ int648/assets/book.js	2026-11-05 02:59:29.867734864 -0600
+@@ -415,7 +415,7 @@
+    times and the booking stay the same. A time needs the services (their minutes), so 'date' = the day first → services → the times of that day.
+    The tech goes on person 1 and is kept only when that tech does the services (else "Any tech", as before); the day is the one step 3 opens on. */
+ const FIRST = () => st.info && (st.info.first === 'tech' || st.info.first === 'date') ? st.info.first : 'services';
+-const fpAsk = () => FIRST() !== 'services' && !st.fpDone && !st.peopleChosen;
++const fpAsk = () => FIRST() !== 'services' && !st.fpDone && (!st.peopleChosen || st.fpRe); /* (2.99.647 - LENH 647) fpRe: "Change" tapped after the people were chosen */
+ function fpHtml() {
+   const i = st.info;
+   if (FIRST() === 'tech') {
+@@ -436,7 +436,7 @@
+ function fpPick(v) {
+   if (FIRST() === 'tech') { st.fpTech = +v || 0; st.people[0] = st.fpTech; delete st.tp[0]; }
+   else { st.fpDate = v; st.date = v; st.start = null; st.slots = null; if (typeof G !== 'undefined') G.dayTap = true; } /* the day the customer picked: never jumped over when it is full */
+-  st.fpDone = true; refresh();
++  st.fpDone = true; st.fpRe = false; refresh();
+ }
+ function screenHtml(s) {
+   const i = st.info;
+diff -ruN -x error_log -x '*.sqlite' int646/assets/hq.css int648/assets/hq.css
+--- int646/assets/hq.css	2026-10-25 22:52:54.000000000 -0500
++++ int648/assets/hq.css	2026-11-05 03:10:22.323710823 -0600
+@@ -6,3 +6,6 @@
+ .hq-csv-tbl{overflow:auto;max-height:280px;border:1px solid rgba(128,128,128,.3);border-radius:8px;margin:8px 0}
+ .hq-csv-tbl table{border-collapse:collapse;width:100%;font-size:13px}.hq-csv-tbl th,.hq-csv-tbl td{padding:5px 8px;border-bottom:1px solid rgba(128,128,128,.2);text-align:left;white-space:nowrap}
+ .hq-csv-sum{margin:10px 0;padding:10px 12px;border-radius:10px;background:rgba(10,132,255,.1)}.hq-csv-sum.ok{background:rgba(52,199,89,.14)}
++/* (2.99.648) AI call sheet: the 3 numbers */
++.hq-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0}
++.hq-grid2 label{display:flex;flex-direction:column;gap:4px;font-size:14px}
+diff -ruN -x error_log -x '*.sqlite' int646/assets/hq.js int648/assets/hq.js
+--- int646/assets/hq.js	2026-10-31 20:59:18.000000000 -0500
++++ int648/assets/hq.js	2026-11-05 03:10:22.321028127 -0600
+@@ -126,7 +126,7 @@
+       openSheet(`<h2>Security</h2><label class="hq-chk"><input type="checkbox" id="ownOk" ${on ? 'checked' : ''}> <span><b>Cho phép vào từ tài khoản chủ tiệm</b> · Allow opening HQ from the American Nails owner account (Home → 🏢 Mở AN HQ, after the owner's own login + Authenticator). Managers and techs never see it.</span></label>
+         <label class="hq-lbl" for="supPh"><b>Số hỗ trợ NailFlow</b> · shown on every salon's “Forgot password?”</label><div class="hq-acts"><input class="hq-in" id="supPh" type="tel" maxlength="20" value="${esc((DATA && DATA.support) || '(515) 672-7879')}"><button class="hq-btn sm" type="button" id="supSave">Save</button></div>
+         <h3 style="margin:14px 0 6px">🤖 AI key – ⚡ color charts</h3><p class="hq-muted" style="margin:0 0 6px">Claude API key: the salons' 📷 Add from color chart reads the numbers with it (no key: the phone reads them itself, less sure). Kept on the server only – never shown again.</p>
+-        <div id="aiSt" class="hq-muted">…</div><div class="hq-acts"><input class="hq-in" id="aiKey" type="password" autocomplete="off" placeholder="sk-ant-…" aria-label="AI key"><select class="hq-in" id="aiModel" aria-label="AI model"></select><button class="hq-btn sm" type="button" id="aiSave">Save</button><button class="hq-btn sm ghost" type="button" id="aiDel">Remove key</button></div>
++        <div id="aiSt" class="hq-muted">…</div><div class="hq-acts"><input id="aiKey" type="password" autocomplete="off" placeholder="sk-ant-…" aria-label="AI key"><select class="hq-in" id="aiModel" aria-label="AI model"></select><button class="hq-btn sm" type="button" id="aiSave">Save</button><button class="hq-btn sm ghost" type="button" id="aiDel">Remove key</button></div>
+         <h3 style="margin:14px 0 6px">📞 Speech-to-text key – calls</h3><p class="hq-muted" style="margin:0 0 6px">OpenAI API key: the salons' 📞 call assistant turns the recorded calls into words with it (one key for every salon). Kept on the server only – never shown again.</p>
+         <div id="sttSt" class="hq-muted">…</div><div class="hq-acts"><input class="hq-in" id="sttKey" type="password" autocomplete="off" placeholder="sk-…" aria-label="Speech-to-text key"><select class="hq-in" id="sttModel" aria-label="Speech-to-text model"></select><button class="hq-btn sm" type="button" id="sttSave">Save</button><button class="hq-btn sm ghost" type="button" id="sttDel">Remove key</button></div>
+         <h3 style="margin:14px 0 6px">Remembered devices</h3><div id="rmList" class="hq-muted">…</div>
+@@ -157,7 +157,7 @@
+       <p class="hq-muted small">Updated ${esc(DATA.now)} · <button class="hq-link" id="bRe">Reload</button></p>`;
+     $('#bRe').onclick = loadCards;
+     $$('.hq-card').forEach(el => { const s = DATA.salons.find(x => x.id === el.dataset.id);
+-      el.addEventListener('click', e => { const b = e.target.closest('[data-do]'); if (!b) return; ({ support: (x) => supAsk({ id: x.id, name: x.name || x.id, nocode: !!x.supNoCode, cell: x.info && x.info.owner_cell ? '…' + String(x.info.owner_cell).replace(/\D/g, '').slice(-4) : '' }), texting: textingSheet, calls: (x) => window.HqCalls && HqCalls.open(x), /* (2.99.598 – LỆNH 595) */ edit: editInfo, logo: editLogo, reset: resetLink, setup: (x) => window.HqSetup && HqSetup.open(x), csv: (x) => window.HqCsv && HqCsv.open(x), /* (2.99.420 – LENH-614 mục 8) */ twofa: twofaOff, pause: pauseAsk, open: reopen, rollback: rollbackAsk })[b.dataset.do](s); }); });
++      el.addEventListener('click', e => { const b = e.target.closest('[data-do]'); if (!b) return; ({ support: (x) => supAsk({ id: x.id, name: x.name || x.id, nocode: !!x.supNoCode, cell: x.info && x.info.owner_cell ? '…' + String(x.info.owner_cell).replace(/\D/g, '').slice(-4) : '' }), texting: textingSheet, aicall: aiSheet, /* (2.99.648) */ calls: (x) => window.HqCalls && HqCalls.open(x), /* (2.99.598 – LỆNH 595) */ edit: editInfo, logo: editLogo, reset: resetLink, setup: (x) => window.HqSetup && HqSetup.open(x), csv: (x) => window.HqCsv && HqCsv.open(x), /* (2.99.420 – LENH-614 mục 8) */ twofa: twofaOff, pause: pauseAsk, open: reopen, rollback: rollbackAsk })[b.dataset.do](s); }); });
+   }
+   function card(s) {
+     if (!s.ok) return `<article class="hq-card bad" data-id="${esc(s.id)}"><h3>${esc(s.id)}</h3><p class="hq-err">${esc(s.error || 'Cannot read this salon.')}</p>
+@@ -174,9 +174,10 @@
+         ${row('Thông báo chủ', s.ownerPush ? '✓ app NailFlow' : '<span class="hq-tag warn">⚠ chủ chưa bật thông báo</span>')}
+         ${row('Owner last in', esc(ago(s.lastLogin)) + (s.lastLogin ? ` <small class="hq-muted">${esc(s.lastLogin)}</small>` : ''))}
+         ${row('Appointments', `<b>${s.today}</b> today · <b>${s.week}</b> next 7 days`)}
++        ${s.ai ? row('AI call', s.ai.on ? `on · <b${!s.ai.free && s.ai.min > s.ai.incl ? ' class="hq-warnc"' : ''}>${s.ai.min}</b>${s.ai.free ? '' : ' / ' + s.ai.incl} min this month${s.ai.free ? ' · Free' : ' · $' + Number(s.ai.total).toFixed(2)}` : 'off') : ''}
+         ${row('Texting device', esc(DEV[s.device] || DEV['']) + (s.device ? (s.autoOn ? ' · Auto send on' : ' · Auto send off') : '') + ` · <b${s.toSend ? ' class="hq-warnc"' : ''}>${s.toSend}</b> in To send`)}
+       </dl>
+-      <div class="hq-acts"><button class="hq-btn sm" data-do="support">🔧 Xin vào hỗ trợ</button><button class="hq-btn sm" data-do="texting">📲 Tin nhắn</button><button class="hq-btn sm" data-do="calls">📞 Calls</button><button class="hq-btn sm" data-do="edit">✏️ Edit info</button><button class="hq-btn sm" data-do="logo">🖼 Logo</button><button class="hq-btn sm" data-do="csv">📥 Nạp khách từ CSV</button>
++      <div class="hq-acts"><button class="hq-btn sm" data-do="support">🔧 Xin vào hỗ trợ</button><button class="hq-btn sm" data-do="texting">📲 Tin nhắn</button><button class="hq-btn sm" data-do="aicall">🤖 AI call</button><button class="hq-btn sm" data-do="calls">📞 Calls</button><button class="hq-btn sm" data-do="edit">✏️ Edit info</button><button class="hq-btn sm" data-do="logo">🖼 Logo</button><button class="hq-btn sm" data-do="csv">📥 Nạp khách từ CSV</button>
+         <button class="hq-btn sm" data-do="setup">📲 Gửi hướng dẫn cài đặt</button><button class="hq-btn sm" data-do="reset">🔑 Đặt lại mật khẩu chủ tiệm</button>
+         ${s.info && s.info.twofa ? '<button class="hq-btn sm" data-do="twofa">Tắt 2FA tạm cho tiệm này</button>' : (s.info && s.info.twofaOffAt ? `<small class="hq-muted">2FA tắt từ HQ lúc ${esc(s.info.twofaOffAt)}</small>` : '')}
+         ${s.paused ? '<button class="hq-btn sm good" data-do="open">▶ Open again</button>' : '<button class="hq-btn sm danger" data-do="pause">⏸ Pause salon</button>'}
+@@ -336,6 +337,29 @@
+     const send = $('#supSend'); if (send) send.onclick = async (e) => { busy(e.target, true); try { const r = await api('sup_code', { id: x.id }); try { await fetch('/api.php?action=sup_kick', { cache: 'no-store' }); } catch (k) {} msg('Đã gửi mã tới ' + r.to + ' – hết hạn ' + r.minutes + ' phút.'); } catch (y) { msg(y.message, true); } finally { busy(e.target, false); } };
+     $('#supIn').onclick = async (e) => { busy(e.target, true); try { const r = await api('sup_enter', { id: x.id, code: ($('#supCode') || {}).value || '' }); location.href = r.url; } catch (y) { msg(y.message, true); busy(e.target, false); } };
+   }
++  /* (2.99.648 - anh Logan 05/11 03:07) 🤖 AI call of a salon: on / off, the plan (minutes, $ a month, $ a minute over, Free) and the bill of this month / last month.
++     Over the minutes the AI keeps answering; HQ only shows the money (nothing is charged). */
++  async function aiSheet(s) {
++    let r; try { r = await api('aicall&id=' + encodeURIComponent(s.id)); } catch (e) { return toast(e.message, true); }
++    const usd = (v) => '$' + Number(v).toFixed(2);
++    const draw = () => { const P = r.plan;
++      const mrow = (m) => `<tr><td>${esc(m.month)}</td><td>${m.calls}</td><td><b>${m.minutes}</b>${P.free ? '' : ' / ' + P.incl}</td><td>${P.free ? 'Free' : (m.over ? m.over + ' × ' + usd(P.over) + ' = ' + usd(m.overUsd) : '–')}</td><td><b>${usd(m.total)}</b></td></tr>`;
++      openSheet(`<h2>🤖 AI call – ${esc(r.name)}</h2>
++      ${r.main ? '<p class="hq-muted">American Nails: AI call always on.</p>' : `<label class="hq-chk"><input type="checkbox" id="aiOn" ${r.on ? 'checked' : ''}> <span>This salon may use the AI call</span></label>`}
++      <label class="hq-chk"><input type="checkbox" id="aiFree" ${P.free ? 'checked' : ''}> <span>Free (no bill)</span></label>
++      <div class="hq-grid2">
++        <label>Minutes in the plan / month<input id="aiIncl" type="number" min="0" step="1" inputmode="numeric" value="${P.incl}"></label>
++        <label>$ a month<input id="aiUsd" type="number" min="0" step="0.01" inputmode="decimal" value="${P.usd}"></label>
++        <label>$ a minute over<input id="aiOver" type="number" min="0" step="0.01" inputmode="decimal" value="${P.over}"></label>
++      </div>
++      <p class="hq-muted">Over the minutes the AI keeps answering (no lost calls); the extra minutes go on the bill. HQ only shows the money – nothing is charged. Minutes = the AI part of each call, rounded up.</p>
++      <table class="hq-csv-tbl"><thead><tr><th>Month</th><th>Calls</th><th>Minutes</th><th>Over</th><th>Bill</th></tr></thead><tbody>${r.months.map(mrow).join('')}</tbody></table>
++      <div class="hq-acts"><button class="hq-btn good" id="aiSave">Save</button><button class="hq-btn ghost" type="button" data-close>Close</button></div>`);
++      $('#aiSave').onclick = async (e) => { busy(e.target, true);
++        const set = { free: $('#aiFree').checked, incl: $('#aiIncl').value, usd: $('#aiUsd').value, over: $('#aiOver').value }; if ($('#aiOn')) set.on = $('#aiOn').checked;
++        try { r = await api('aicall', { id: s.id, set }); toast('Saved ✓'); draw(); } catch (y) { toast(y.message, true); busy(e.target, false); } }; };
++    draw();
++  }
+   /* 📲 Tin nhắn of a salon: device (shared Android 601 / its own Android / by hand on the owner's phone) + Auto send – never a login or key */
+   async function textingSheet(s) {
+     let r; try { r = await api('texting&id=' + encodeURIComponent(s.id)); } catch (e) { return toast(e.message, true); }
+diff -ruN -x error_log -x '*.sqlite' int646/hq/api.php int648/hq/api.php
+--- int646/hq/api.php	2026-10-31 22:10:06.000000000 -0500
++++ int648/hq/api.php	2026-11-05 03:09:58.870751675 -0600
+@@ -215,6 +215,8 @@
+     case 'sup_enter': // the code the owner read out (none: American Nails / demo) → the salon's admin as NailFlow support (2 hours)
+         $need(); if ($method !== 'POST') hq_fail('POST only', 405);
+         hq_out(hq_sup_enter((string)($in['id'] ?? ''), (string)($in['code'] ?? '')));
++    case 'aicall': // (2.99.648) 🤖 AI call: on / off + the plan (minutes, $ a month, $ a minute over, Free) + the minutes this month / last month
++        $need(); try { if ($method === 'POST') hq_out(hq_ai((string)($in['id'] ?? ''), (array)($in['set'] ?? []))); hq_out(hq_ai((string)($_GET['id'] ?? ''))); } catch (RuntimeException $e) { hq_fail($e->getMessage()); }
+     case 'texting': // 📲 Tin nhắn: read / change the device + Auto send on/off (never a login or key)
+         $need(); if ($method === 'POST') hq_out(hq_texting((string)($in['id'] ?? ''), (array)($in['set'] ?? [])));
+         hq_out(hq_texting((string)($_GET['id'] ?? '')));
+diff -ruN -x error_log -x '*.sqlite' int646/inc/api/payroc.php int648/inc/api/payroc.php
+--- int646/inc/api/payroc.php	2026-11-05 00:03:08.000000000 -0600
++++ int648/inc/api/payroc.php	2026-11-05 02:58:35.297837968 -0600
+@@ -28,7 +28,7 @@
+     $r = pr_check(); $out(['check' => $r]);
+ case 'pr_test': /* the sandbox test runner – test orders only */
+     if ($method !== 'POST') fail('POST only', 405);
+-    if (pr_host() !== 'uat' && pr_host() !== 'std') fail('Sandbox only.');
++    if (pr_host() !== 'uat') fail('The test buttons work only on the sandbox host (api.uat.payroc.com). On api.payroc.com they would charge real cards.'); /* (2.99.647 - LENH 647) the old check could never fail */
+     app_lock('payroc'); if (session_status() === PHP_SESSION_ACTIVE) @session_write_close(); ignore_user_abort(true);
+     $op = (string)($in['op'] ?? ''); $wait = max(1, min(PR_WAIT, (int)(cfg()['pr_wait'] ?? PR_WAIT))); @set_time_limit($wait + 120);
+     $tc = mb_substr(trim((string)($in['tc'] ?? '')), 0, 40);
+diff -ruN -x error_log -x '*.sqlite' int646/inc/calls-tx.php int648/inc/calls-tx.php
+--- int646/inc/calls-tx.php	2026-11-05 01:22:15.020372787 -0600
++++ int648/inc/calls-tx.php	2026-11-05 02:59:04.337063574 -0600
+@@ -395,29 +395,34 @@
+    then deletes it on Telnyx. At most once a minute, 3 calls a time, 6 tries per call (the file may need a few minutes), calls of the last 3 hours. */
+ function tx_cli_airec(): void {
+     if ((string)setting('tx_key') === '' || time() - (int)setting('tx_airec_at') < 60) return; set_setting('tx_airec_at', (string)time());
++    /* (2.99.647 - LENH 647) tx_airec_try = [id => [asks, failed downloads]]: "no finished recording on Telnyx yet" (a long call) is only an ask (up to 45),
++       a failed download counts (up to 6); the calls asked least go first, so a few calls never block the others. */
+     $tries = json_decode((string)setting('tx_airec_try'), true); $tries = is_array($tries) ? $tries : [];
+     $l = q("SELECT id, call_sid FROM calls WHERE prov = 'tx' AND kind = 'agent' AND (file IS NULL OR file = '') AND purged = 0 AND call_sid <> '' AND created_at BETWEEN ? AND ? ORDER BY id DESC LIMIT 20",
+         [date('Y-m-d H:i:s', time() - 10800), date('Y-m-d H:i:s', time() - 120)])->fetchAll();
++    $tr = function ($v): array { return is_array($v) ? [(int)($v[0] ?? 0), (int)($v[1] ?? 0)] : [(int)$v, (int)$v]; }; /* an old plain number = asks and fails */
++    usort($l, fn($a, $b) => $tr($tries[(string)$a['id']] ?? 0)[0] <=> $tr($tries[(string)$b['id']] ?? 0)[0]);
+     $n = 0; $keep = [];
+     foreach ($l as $c) {
+-        $id = (string)$c['id']; $t = (int)($tries[$id] ?? 0); if ($t >= 6) { $keep[$id] = $t; continue; } if ($n >= 3) { $keep[$id] = $t; continue; }
+-        $n++; $keep[$id] = $t + 1;
+-        try { if (tx_airec_one((int)$c['id'], (string)$c['call_sid'])) unset($keep[$id]); }
++        $id = (string)$c['id']; [$ask, $bad] = $tr($tries[$id] ?? 0); $keep[$id] = [$ask, $bad];
++        if ($bad >= 6 || $ask >= 45 || $n >= 3) continue;
++        $n++; $keep[$id] = [$ask + 1, $bad + 1];
++        try { $ok = tx_airec_one((int)$c['id'], (string)$c['call_sid']); if ($ok === true) unset($keep[$id]); elseif ($ok === null) $keep[$id] = [$ask + 1, $bad]; }
+         catch (Throwable $e) { error_log('646 tx airec #' . $id . ': ' . $e->getMessage()); }
+     }
+     set_setting('tx_airec_try', json_encode($keep));
+ }
+-function tx_airec_one(int $id, string $sid): bool {
++function tx_airec_one(int $id, string $sid): ?bool { /* true = saved, false = a try that failed, null = Telnyx has no finished recording yet */
+     $l = tx_api('GET', '/recordings?filter%5Bcall_control_id%5D=' . rawurlencode($sid))['data'] ?? [];
+     $best = null; foreach ((array)$l as $r) { if (!is_array($r) || strtolower((string)($r['status'] ?? 'completed')) !== 'completed') continue; if ($best === null || (int)($r['duration_millis'] ?? 0) > (int)($best['duration_millis'] ?? 0)) $best = $r; }
+-    if ($best === null) return false;
++    if ($best === null) return null;
+     $rs = mb_substr((string)($best['id'] ?? ''), 0, 64); $us = array_values(array_filter([(string)($best['download_urls']['mp3'] ?? ''), (string)($best['download_urls']['wav'] ?? '')]));
+     $tmp = cl_dir() . '/.dl-' . bin2hex(random_bytes(6)); $ext = '';
+     $kind = function () use ($tmp): string { $h = (string)@file_get_contents($tmp, false, null, 0, 12); if ($h === '') return '';
+         if (substr($h, 0, 4) === 'RIFF' && substr($h, 8, 4) === 'WAVE') return 'wav'; if (substr($h, 0, 3) === 'ID3' || (strlen($h) > 1 && ord($h[0]) === 0xFF && (ord($h[1]) & 0xE0) === 0xE0)) return 'mp3'; return ''; };
+     foreach ($us as $u) {
+         if (!tx_telnyx_host($u) && !preg_match('/(^|\.)s3([.-][a-z0-9-]+)*\.amazonaws\.com$/', strtolower((string)parse_url($u, PHP_URL_HOST))) && !getenv('NF_TX_BASE')) continue; /* Telnyx serves recording files from S3 (live rec_url host: s3.amazonaws.com) */
+-        $code = tx_dl($u, $tmp, false); if (in_array($code, [401, 403], true)) $code = tx_dl($u, $tmp, true);
++        $code = tx_dl($u, $tmp, false); if (in_array($code, [401, 403], true) && tx_telnyx_host($u)) $code = tx_dl($u, $tmp, true); /* (2.99.647 - LENH 647) the API key only to Telnyx, never to S3 */
+         if ($code === 200 && ($ext = $kind()) !== '') break; $ext = '';
+     }
+     if ($ext === '') { @unlink($tmp); return false; }
+diff -ruN -x error_log -x '*.sqlite' int646/inc/core.php int648/inc/core.php
+--- int646/inc/core.php	2026-11-05 01:28:11.336386014 -0600
++++ int648/inc/core.php	2026-11-05 03:10:41.285807456 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.646');
++define('APP_VERSION', '2.99.648');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN -x error_log -x '*.sqlite' int646/inc/guest.php int648/inc/guest.php
+--- int646/inc/guest.php	2026-11-05 01:22:14.844372780 -0600
++++ int648/inc/guest.php	2026-11-05 03:10:51.540199769 -0600
+@@ -16,7 +16,9 @@
+     /* (2.99.639k QA-0018) the setup link works without the owner (need_admin off) - a guest never makes one; the push files neither */
+     'setup_new', 'setup_prev_clear', 'pt_file',
+     /* (2.99.646 - LENH 646) a guest also never: the phone AI (Telnyx setup), the card terminals (Dejavoo / Payroc codes, checks, tests), a real text from the salon Android, a gift card sale */
+-    'tx_setup', 'dv_save', 'dv_check', 'pr_save', 'pr_check', 'pr_test', 'as_send_now', 'gift_create'];
++    'tx_setup', 'dv_save', 'dv_check', 'pr_save', 'pr_check', 'pr_test', 'as_send_now', 'gift_create',
++    /* (2.99.648) a guest never plays a customer's recorded call or reads what was said (every AI call is recorded since 2.99.646) */
++    'call_audio', 'call_get'];
+ /* (2.99.646 - LENH 646) only the POST (save) of these is refused: reading the page stays open for a guest */
+ const GUEST_DENY_POST = ['tx_cfg', 'calls_cfg'];
+ /** Settings a guest never changes (save_settings drops them). */
+diff -ruN -x error_log -x '*.sqlite' int646/inc/hq.php int648/inc/hq.php
+--- int646/inc/hq.php	2026-10-31 20:49:57.000000000 -0500
++++ int648/inc/hq.php	2026-11-05 03:09:58.869029680 -0600
+@@ -192,6 +192,8 @@
+             'week' => $cnt("SELECT COUNT(*) FROM appointments WHERE kind = 'appt' AND status NOT IN ('cancelled') AND appt_date >= ? AND appt_date <= ?", [$today, $wk]),
+             'ownerPush' => $cnt("SELECT COUNT(*) FROM push_subs WHERE target = 'admin' AND endpoint LIKE ?", ['fcm:%']) > 0, // (2.99.320 – lệnh 534 mục 16) the owner's NailFlow app gets notifications
+             'toSend' => $cnt("SELECT COUNT(*) FROM outbox WHERE status = 'pending' AND (due_at = '' OR due_at <= ?)", [$now->format('Y-m-d H:i:s')])];
++        try { $aiMain = hq_is_main_root((string)$root); $aiPlan = hq_ai_plan($id, $aiMain); [, $aiMin] = hq_ai_minutes($p, date('Y-m')); /* (2.99.648) 🤖 AI call line on the card */
++            $card['ai'] = ['on' => $aiMain || ($s['call_agent_ok'] ?? '') === '1', 'min' => $aiMin, 'incl' => $aiPlan['incl'], 'free' => $aiPlan['free'], 'total' => hq_ai_bill($aiPlan, $aiMin)['total']]; } catch (Throwable $e) {}
+         $card['info'] = ['salon_name' => $s['salon_name'] ?? '', 'app_short' => $s['app_short'] ?? '', 'salon_address' => $s['salon_address'] ?? '', 'salon_phone' => $s['salon_phone'] ?? '',
+             'no_text_phones' => $s['no_text_phones'] ?? '', 'owner_email' => $s['owner_email'] ?? '', 'owner_cell' => $s['owner_cell'] ?? '', 'hours' => json_decode($s['hours'] ?? '', true) ?: null, 'logo' => (int)($s['logo_ver'] ?? 0) > 0 ? $card['url'] . '/uploads/logo/192-' . (int)$s['logo_ver'] . '.png' : '',
+             'rgWhen' => (string)((json_decode((string)($s['rg_cfg'] ?? ''), true) ?: [])['when'] ?? 'open'), /* (2.99.325 – lệnh 550) */ 'resetPhone' => ($s['admin_reset_phone'] ?? '') !== '', 'twofa' => ($s['admin_totp_on'] ?? '') === '1', 'twofaOffAt' => $s['hq_2fa_off_at'] ?? ''];
+@@ -479,6 +481,47 @@
+     hq_change(function (&$d) use ($id, $how, $cell) { hq_log($d, $id, 'support session', '', 'opened ' . ($how === 'code' ? 'with the owner code (cell ' . $cell . ')' : '(NailFlow\'s own / demo salon – no code)') . ' – 2 hours'); });
+     return ['ok' => true, 'url' => $url . '/admin/#sup=' . $t, 'how' => $how];
+ }
++/* (2.99.648 - anh Logan 05/11 03:07 "Option cho HQ cho cac tiem duoc su dung AI call va gioi han bao nhieu phut ... tinh tien them neu vuot ... 100 phut 50 dong 1 thang ...
++   co the chinh thong so trong HQ"; 03:10: over = $0.50 a minute, the AI keeps answering when over (never a lost call), HQ only SHOWS the money (nothing is charged).
++   🤖 AI call of a salon: on / off (salon setting call_agent_ok - American Nails is always on), its plan (hq.json ai_plan[id]: minutes in the plan, $ a month,
++   $ a minute over, or Free) and the minutes of the AI calls this month and last month (calls kind 'agent': each call rounded UP to the minute). */
++const HQ_AI_DEF = ['incl' => 100, 'usd' => 50.0, 'over' => 0.50];
++function hq_is_main_root(string $root): bool { return rtrim($root, '/') === rtrim(hq_root(), '/'); }
++function hq_ai_plan(string $id, bool $main): array {
++    $x = (array)(hq_load()['ai_plan'][$id] ?? []);
++    return ['incl' => isset($x['incl']) ? (int)$x['incl'] : HQ_AI_DEF['incl'], 'usd' => isset($x['usd']) ? (float)$x['usd'] : HQ_AI_DEF['usd'],
++        'over' => isset($x['over']) ? (float)$x['over'] : HQ_AI_DEF['over'], 'free' => array_key_exists('free', $x) ? !empty($x['free']) : $main]; /* American Nails: Free unless HQ says */
++}
++/** [AI calls, minutes] of a month 'Y-m' (a salon with no calls table yet: 0, 0). */
++function hq_ai_minutes(PDO $p, string $month): array {
++    $from = $month . '-01 00:00:00'; $to = date('Y-m-01', strtotime($month . '-01 +1 month')) . ' 00:00:00'; $n = 0; $min = 0;
++    try { $st = $p->prepare("SELECT dur_sec FROM calls WHERE kind = 'agent' AND created_at >= ? AND created_at < ?"); $st->execute([$from, $to]);
++        foreach ($st->fetchAll(PDO::FETCH_COLUMN) as $d) { $n++; $min += (int)ceil(max(0, (int)$d) / 60); } } catch (Throwable $e) { return [0, 0]; }
++    return [$n, $min];
++}
++function hq_ai_bill(array $plan, int $min): array {
++    if ($plan['free']) return ['base' => 0.0, 'over' => 0, 'overUsd' => 0.0, 'total' => 0.0];
++    $over = max(0, $min - $plan['incl']); $ou = round($over * $plan['over'], 2);
++    return ['base' => round($plan['usd'], 2), 'over' => $over, 'overUsd' => $ou, 'total' => round($plan['usd'] + $ou, 2)];
++}
++function hq_ai(string $id, ?array $set = null): array {
++    $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('No config for this salon.'); $p = hq_pdo($c); $s = hq_set($p, $c); $main = hq_is_main_root((string)$sl['root']);
++    if ($set !== null) {
++        $was = hq_ai_plan($id, $main) + ['on' => $main || ($s['call_agent_ok'] ?? '') === '1'];
++        $num = function (string $k, float $lo, float $hi, string $say) use ($set): ?float { if (!array_key_exists($k, $set)) return null; $v = $set[$k];
++            if (!is_numeric($v) || (float)$v < $lo || (float)$v > $hi) throw new RuntimeException($say); return (float)$v; };
++        $incl = $num('incl', 0, 100000, 'Minutes in the plan: 0 – 100,000.'); $usd = $num('usd', 0, 10000, '$ a month: 0 – 10,000.'); $over = $num('over', 0, 100, '$ a minute over: 0 – 100.');
++        if (array_key_exists('on', $set) && !$main) hq_put($p, $c, 'call_agent_ok', !empty($set['on']) ? '1' : '0');
++        hq_change(function (&$d) use ($id, $incl, $usd, $over, $set) { $x = (array)($d['ai_plan'][$id] ?? []);
++            if ($incl !== null) $x['incl'] = (int)round($incl); if ($usd !== null) $x['usd'] = round($usd, 2); if ($over !== null) $x['over'] = round($over, 2);
++            if (array_key_exists('free', $set)) $x['free'] = !empty($set['free']); $d['ai_plan'][$id] = $x; });
++        $s = hq_set($p, $c); $now = hq_ai_plan($id, $main) + ['on' => $main || ($s['call_agent_ok'] ?? '') === '1'];
++        if ($now != $was) { hq_salon_audit($p, 'AI call plan (NailFlow)', json_encode($was), json_encode($now)); hq_change(function (&$d) use ($id, $was, $now) { hq_log($d, $id, 'AI call', json_encode($was), json_encode($now)); }); }
++    }
++    $plan = hq_ai_plan($id, $main); $out = [];
++    foreach ([date('Y-m'), date('Y-m', strtotime(date('Y-m-01') . ' -1 month'))] as $m) { [$n, $min] = hq_ai_minutes($p, $m); $out[] = ['month' => $m, 'calls' => $n, 'minutes' => $min] + hq_ai_bill($plan, $min); }
++    return ['ok' => true, 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id), 'main' => $main, 'on' => $main || ($s['call_agent_ok'] ?? '') === '1', 'plan' => $plan, 'months' => $out];
++}
+ /** 📲 Tin nhắn of a salon (543 22:36 kept by 567): what device, Auto send on/off, texts today – and the 3 choices. Never a login / key. */
+ function hq_texting(string $id, ?array $set = null): array {
+     $sl = hq_salon($id); $c = hq_cfg($sl['root']); $p = hq_pdo($c); $s = hq_set($p, $c);
+diff -ruN -x error_log -x '*.sqlite' int646/inc/payroc-pay.php int648/inc/payroc-pay.php
+--- int646/inc/payroc-pay.php	2026-11-05 01:22:14.628111299 -0600
++++ int648/inc/payroc-pay.php	2026-11-05 02:58:35.297629518 -0600
+@@ -72,7 +72,7 @@
+     $ref = pr_new_order(); $row = ['key' => $key, 'amt' => $amt, 'tip' => $tip, 'st' => 'unsure', 'at' => now_str(), 'by' => actor_name(), 'idem' => pr_uuid()];
+     pr_pend_put($ref, $row); /* saved BEFORE the call: a lost answer is asked again with the same key */
+     $x = pr_sale_send($amt, $ref, $row['idem'], (string)$row['by']);
+-    if ($x['status'] !== 'sent') { $row = pr_apply_result($ref, $row, ['status' => $x['status'] === 'unknown' ? 'unknown' : 'failure', 'msg' => $x['msg']]); pr_fail_for($row); }
++    if ($x['status'] !== 'sent') { $row = pr_apply_result($ref, $row, ['status' => $x['status'] === 'auth' || ($x['status'] === 'error' && ($x['http'] ?? 0) >= 400 && ($x['http'] ?? 0) < 500 && ($x['http'] ?? 0) !== 409) ? 'failure' : 'unknown', 'msg' => $x['msg']]); pr_fail_for($row); } /* (2.99.647 - LENH 647) a 5xx / no answer = NOT sure (the device may have it): kept, the next tap asks with the SAME key - like pr_recheck */
+     $row['instr'] = $x['instr']; pr_pend_put($ref, ['instr' => $x['instr'], 'st' => 'wait']);
+     $row = pr_apply_result($ref, $row, pr_instr_result('payment', $x['instr'], $wait));
+     if ($row['st'] !== 'paid') pr_fail_for($row);
+@@ -81,7 +81,7 @@
+ }
+ /** Stop the try still waiting on the device for this ticket. */
+ function pr_stop(array $ids): array {
+-    app_lock('payroc'); $key = pr_key($ids);
++    $key = pr_key($ids); /* (2.99.647 - LENH 647) no app_lock: pr_charge holds it for the whole wait on the device, so Stop could never run while it mattered */
+     foreach (pr_pend() as $ref => $r) {
+         if (($r['key'] ?? '') !== $key || !in_array($r['st'] ?? '', ['wait', 'unsure'], true) || ($r['instr'] ?? '') === '') continue;
+         $c = pr_instr_cancel('payment', (string)$r['instr']);
+@@ -145,7 +145,8 @@
+     $void = function (array $x) use ($r, &$pend): bool {
+         $ref = (string)$x['ref']; if (($pend[$ref]['st'] ?? '') === 'voided') return true;
+         $idem = (string)($pend[$ref]['videm'] ?? ''); if ($idem === '') { $idem = pr_uuid(); pr_pend_put($ref, ['videm' => $idem]); }
+-        $v = pr_reverse((string)$x['pay'], null, $idem); if (!$v['ok']) return false;
++        $v = pr_reverse((string)$x['pay'], null, $idem);
++        if (!$v['ok']) { if ($v['status'] === 'unknown' || (int)$v['http'] === 0 || (int)$v['http'] >= 500 || (int)$v['http'] === 409) fail('Not sure Payroc cancelled the card payment (' . $v['msg'] . '). Tap again in a minute - the SAME void is asked again, never a 2nd money back. The receipt was NOT changed.', 409); return false; } /* (2.99.647 - LENH 647) only a clear refusal (4xx, e.g. the batch closed) falls back to a refund on the device */
+         pr_pend_put($ref, ['st' => 'voided', 'void_at' => now_str(), 'rno' => (int)$r['rno']]); audit('payroc', 'Payroc void ' . usd((float)($x['amt'] ?? $x['pay_amt'])), 'approved', 'reversed · receipt #' . $r['rno'] . ' · payment ' . $x['pay']); return true; };
+     if ($action === 'receipt_void') {
+         if (abs($sum - $cardBack) >= 0.005) fail('This receipt has a Payroc payment of ' . usd($sum) . ' but ' . usd($cardBack) . ' on card – give the card money back by hand on the right machine. Nothing was changed.', 409);

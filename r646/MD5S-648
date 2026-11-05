@@ -1,0 +1,13 @@
+0ff190a141fb97683123067e767ce2a7  assets/admin/appts.js
+fb8df622550b5ed3170f4f5c1be8140a  assets/admin/turn-mode.js
+372ebb59f91678d4e1c6fdbb5b67c99c  assets/book-2.js
+74a6c87de39985981bb3548d63e8eae8  assets/book.js
+e67b0a0b05c589e089e66c75287dc605  assets/hq.css
+36c8c8127b62bd8db5b97c1b2f3de7db  assets/hq.js
+b02ca0b174b7d2b514637a695f704c75  hq/api.php
+0d3e103845df87a06fd0984f193214d2  inc/api/payroc.php
+3d6fc6557e6056c8caf770edf85e85dd  inc/calls-tx.php
+b1f2bfe11ff490f16e290367bba5c99c  inc/core.php
+b320e70fe244224d309ecaa16d543d9e  inc/guest.php
+e428084bc7423f5970c3a7dbc4d33bfd  inc/hq.php
+4f623e50c95ca185e4bef74134595868  inc/payroc-pay.php
