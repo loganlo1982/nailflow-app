@@ -821,56 +821,10 @@ index ee70207..e662603 100644
 +<?php /* (2.99.646 - LENH 646 hair) a hair salon only: its flag + on-screen words; nails: nothing */ echo hair_words_tag($B); ?>
  </body></html>
 diff --git a/inc/api/_auth.php b/inc/api/_auth.php
-index df66f82..fd9f723 100644
+index df66f82..0f284ba 100644
 --- a/inc/api/_auth.php
 +++ b/inc/api/_auth.php
-@@ -55,15 +55,19 @@ function tech_cookie(): void { setcookie('an_tk', tech_key(), ['expires' => time
- function staff_slow(): void {
-     q('DELETE FROM login_attempts WHERE at < ?', [time() - 960]);
-     $n = (int)q('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND at >= ?', ['S:' . ip_key(), time() - 900])->fetchColumn();
--    if ($n > 0) sleep(min(6, $n));
-+    if ($n > 0) sleep(min(2, $n)); /* (2.99.646 - LENH 646) at most 2 s (was 6): a wait never ties up the web workers; the per-device limit below stops the guessing */
- }
-+/* (2.99.646 - LENH 646) wrong tech PINs from one device (not the salon iPad): 10 in 15 minutes -> that device waits 15 minutes; the tech is locked for everyone only at 20 (pin_fail) */
-+const STAFF_IP_MAX = 10, PIN_REMOTE_MAX = 20;
-+function staff_ip_locked(): bool { return (int)q('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND at >= ?', ['S:' . ip_key(), time() - 900])->fetchColumn() >= STAFF_IP_MAX; }
- function staff_bad(): void { q('INSERT INTO login_attempts (ip, at) VALUES (?, ?)', ['S:' . ip_key(), time()]); }
- function staff_pin_check(array $s, string $pin, bool $kiosk = false): void {
-     $sid = (int)$s['id'];
-     if (pin_locked_day($sid)) fail(TV('Too many tries today – ask the owner to tap “Reset PIN”.', 'Sai quá nhiều lần hôm nay – nhờ chủ tiệm bấm “Reset PIN”.'), 429);
-     if (pin_locked($sid)) fail(TV('Too many tries – wait 15 minutes.', 'Sai quá nhiều lần – chờ 15 phút.'), 429);
-+    if (!$kiosk && staff_ip_locked()) fail(TV('Too many tries – wait 15 minutes.', 'Sai quá nhiều lần – chờ 15 phút.'), 429); /* (2.99.646 - LENH 646) this device first */
-     if ((string)$s['pin_hash'] === '') fail($kiosk ? TV('No PIN yet – ask the owner for your /tech/ link.', 'Chưa có PIN – xin chủ tiệm link /tech/.') : TV('You have no PIN yet. Tap "Set up my PIN".', 'Bạn chưa có PIN. Bấm "Set up my PIN".'));
--    if (!password_verify($pin, (string)$s['pin_hash'])) { if (!$kiosk) staff_bad(); pin_fail($sid); fail(pin_locked($sid) ? TV('Too many tries – wait 15 minutes.', 'Sai quá nhiều lần – chờ 15 phút.') : TV('Wrong PIN.', 'Sai PIN.'), 401); }
-+    if (!password_verify($pin, (string)$s['pin_hash'])) { if (!$kiosk) staff_bad(); pin_fail($sid, !$kiosk); /* (2.99.646 - LENH 646) a phone's wrong PIN: the tech's own lock at 20 */ fail(pin_locked($sid) ? TV('Too many tries – wait 15 minutes.', 'Sai quá nhiều lần – chờ 15 phút.') : TV('Wrong PIN.', 'Sai PIN.'), 401); }
-     pin_clear($sid);
- }
- /** (2.99.58) iPad clock in: from N minutes before opening (Settings → Turn, default 60) until closing. The owner's own tech (the $1-rule tech)
-@@ -80,17 +84,18 @@ function clock_any_time(array $s): bool {
- }
- /** (2.61) 3 lockouts in 24 hours: that tech's PIN login stays locked for 24 hours (the owner can Set PIN to unlock). */
- function pin_locked_day(int $sid): bool { $n = (int)setting('pinlock_' . $sid); $t = (int)setting('pinlock_t_' . $sid); return $n >= 3 && time() - $t < 86400; }
--function pin_fail(int $sid): void {
--    q('INSERT INTO login_attempts (ip, at) VALUES (?, ?)', ['P:' . $sid, time()]);
--    if ((int)q('SELECT COUNT(*) FROM login_attempts WHERE ip = ?', ['P:' . $sid])->fetchColumn() >= 5) {
--        q('DELETE FROM login_attempts WHERE ip = ?', ['P:' . $sid]);
-+function pin_fail(int $sid, bool $remote = false): void {
-+    $pk = ($remote ? 'PR:' : 'P:') . $sid; /* (2.99.646 - LENH 646) a phone (/tech/, /staff/): its own count, 20 (PIN_REMOTE_MAX); the iPad / desk / setup codes: 5 as before */
-+    q('INSERT INTO login_attempts (ip, at) VALUES (?, ?)', [$pk, time()]);
-+    if ((int)q('SELECT COUNT(*) FROM login_attempts WHERE ip = ?', [$pk])->fetchColumn() >= ($remote ? PIN_REMOTE_MAX : 5)) {
-+        q('DELETE FROM login_attempts WHERE ip = ?', [$pk]);
-         q('INSERT INTO login_attempts (ip, at) VALUES (?, ?)', ['PL:' . $sid, time()]);
-         $t = (int)setting('pinlock_t_' . $sid); $n = time() - $t < 86400 ? (int)setting('pinlock_' . $sid) + 1 : 1;
-         set_setting('pinlock_' . $sid, (string)$n); if ($n === 1) set_setting('pinlock_t_' . $sid, (string)time());
-         audit('login_locked', 'Tech ' . staff_name($sid), '5 wrong PINs / setup codes in 15 minutes', $n >= 3 ? 'locked for 24 hours (3rd time today)' : 'locked for 15 minutes');
-     }
- }
--function pin_clear(int $sid): void { q('DELETE FROM login_attempts WHERE ip IN (?, ?)', ['P:' . $sid, 'PL:' . $sid]); q('DELETE FROM settings WHERE k IN (?, ?)', ['pinlock_' . $sid, 'pinlock_t_' . $sid]); }
-+function pin_clear(int $sid): void { q('DELETE FROM login_attempts WHERE ip IN (?, ?, ?)', ['P:' . $sid, 'PL:' . $sid, 'PR:' . $sid]); /* (2.99.646 - LENH 646) + PR: */ q('DELETE FROM settings WHERE k IN (?, ?)', ['pinlock_' . $sid, 'pinlock_t_' . $sid]); }
- /** PINs anyone could guess: 0000, 1234, 4321, 7890, 1212, 123123, 2580... */
- function weak_pin(string $p): bool {
-     return (bool)preg_match('/^(\d)\1+$/', $p) || str_contains('01234567890', $p) || str_contains('09876543210', $p)
-@@ -101,7 +106,7 @@ function csv_safe(array $row): array { return array_map(fn($v) => is_string($v)
+@@ -101,7 +101,7 @@ function csv_safe(array $row): array { return array_map(fn($v) => is_string($v)
  function check_csrf(): void {
      // (2.61) also the actions that change something even when opened as a plain link (GET): a link from another site can't do them
      $getChanges = ['mgr_newkey', 'checkin_newkey', 'logo_revert', 'backup_now', 'backup_offsite_now', 'test_link_new', 'push_test', 'totp_setup'];
@@ -1009,7 +963,7 @@ index 52512b0..a57d229 100644
      while ($left > 0 && !feof($fh)) { $b = fread($fh, min(65536, $left)); if ($b === false) break; echo $b; $left -= strlen($b); }
      fclose($fh); exit;
 diff --git a/inc/api/checkin.php b/inc/api/checkin.php
-index 423acb3..9a64c0a 100644
+index 423acb3..c53bdbf 100644
 --- a/inc/api/checkin.php
 +++ b/inc/api/checkin.php
 @@ -204,6 +204,7 @@ case 'ck_walkin': // no appointment today: join today's waiting list as a walk-i
@@ -1020,6 +974,15 @@ index 423acb3..9a64c0a 100644
      $party = (int)($in['party_of'] ?? 0); // (2.99.92) "How many people?": person 2, 3… on the same number, with their own name
      $pa = $party ? q("SELECT * FROM appointments WHERE id = ? AND phone = ? AND appt_date = ? AND status = 'arrived'", [$party, $phone, date('Y-m-d')])->fetch() : null;
      if ($pa && q("SELECT 1 FROM appointments WHERE phone = ? AND appt_date = ? AND status = 'arrived' AND UPPER(customer_name) = ? LIMIT 1", [$phone, date('Y-m-d'), $name])->fetchColumn())
+@@ -223,7 +224,7 @@ case 'ck_walkin': // no appointment today: join today's waiting list as a walk-i
+     $rows = create_group(['people' => [$tech], 'date' => $today, 'start' => intdiv(now_min(), 5) * 5,
+         'duration' => $undecided ? max(5, min(180, (int)setting('ck_undecided_min'))) : max(15, (int)array_sum(array_column($svc, 'duration'))),
+         'service_ids' => implode(',', $sids), 'name' => $name, 'phone' => $phone, 'note' => $undecided ? UNDECIDED_NOTE : 'Self check-in',
+-        'color' => $svc[0]['color'] ?? UNDECIDED_COLOR, 'walkin' => true, 'source' => 'kiosk', 'price' => array_sum(array_column($svc, 'price')), 'sms_ok' => $agreed]);
++        'color' => $svc[0]['color'] ?? UNDECIDED_COLOR, 'walkin' => true, 'source' => 'kiosk', 'price' => array_sum(array_column($svc, 'price')), 'sms_ok' => $agreed]); if (function_exists('book_unlock')) book_unlock(); /* (2.99.646) the walk-in is saved: the booking lock is let go at once (texts / push after it, like save_appt) */
+     if ($pa) { $gid = (string)$pa['group_id'] !== '' ? (string)$pa['group_id'] : 'kp' . (int)$pa['id']; // (2.99.92) the party together (one group)
+         q('UPDATE appointments SET group_id = ? WHERE id IN (?, ?)', [$gid, (int)$pa['id'], (int)$rows[0]['id']]); $rows[0]['group_id'] = $gid; }
+     $what = $undecided ? 'service not decided – ask them' : appt_label($rows[0]);
 diff --git a/inc/api/checkout.php b/inc/api/checkout.php
 index 84c6631..774f3d2 100644
 --- a/inc/api/checkout.php
@@ -1103,7 +1066,7 @@ index 0000000..a32cee3
 +}
 +fail('Unknown action', 404);
 diff --git a/inc/api/links.php b/inc/api/links.php
-index f9c5ff2..d376a1a 100644
+index f9c5ff2..48582ad 100644
 --- a/inc/api/links.php
 +++ b/inc/api/links.php
 @@ -11,7 +11,7 @@ case 'my_appt':
@@ -1124,11 +1087,12 @@ index f9c5ff2..d376a1a 100644
      $fmt = fn($x) => date('D M j', strtotime($x['appt_date'])) . ' ' . min_to_label((int)$x['start_min']);
      $line = first_name((string)$a['customer_name']) . ' changed: ' . $fmt($a) . ' → ' . $fmt($n) . ' (' . (count($members) > 1 ? count($members) . ' people, ' : '') . $tn . ')';
      notify_admin('online', $line, (int)$a['id'], ['sub' => 'change', 'title' => '📅 Changed by the customer', 'body' => $line, 'url' => '?date=' . $date]);
-@@ -91,6 +91,7 @@ case 'answer': // customer taps "Confirm" / "Cancel" on their page (the link in
+@@ -91,6 +91,8 @@ case 'answer': // customer taps "Confirm" / "Cancel" on their page (the link in
          fail('Please tap the link in the text we sent you to confirm.', 403);
      if (!$yes) { // (2.99.207 – order 408) the same cancel as a texted CANCEL (inc/replies.php)
          require_once APP_ROOT . '/inc/replies.php';
 +        if ((string)$a['appt_date'] === date('Y-m-d') && strlen($p646 = norm_phone((string)$a['phone'])) === 12 && rp_started($p646)) fail('This appointment can no longer be changed online. Please call the salon.'); /* (2.99.646 - LENH 646 #4) the same guard as a texted cancel: this number started / checked in today (a booking today) -> never cancelled by itself */
++        if (!array_filter($members, fn($m) => (string)$m['status'] === 'booked')) fail('This appointment can no longer be changed online. Please call the salon.'); /* (2.99.646) nothing still booked: never say "cancelled" */
          $depMsg = cust_cancel($a, "Huỷ qua web: I can't come", 'Customer (text link)', "can't come", 'web'); // (2.99.332 – lệnh 561) + the same "CANCELLED" text as a texted cancel (once)
          json_out(['ok' => true, 'refunded' => str_contains($depMsg, 'refunded')]);
      }
