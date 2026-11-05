@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Luật chia turn – Xem thử</title>
+<style>
+:root{--bg:#F2F2F7;--card:#fff;--ink:#1C1C1E;--sub:#55555A;--line:#E0E0E6;--blue:#2F6FB5;--blueSoft:#E6EEF8;--green:#1E7B37;--greenSoft:#E3F1E6;--amber:#7A4F00;--amberSoft:#FFF1CF;--red:#C62828;--sel:#EEF4FC}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--ink:#F2F2F7;--sub:#AEAEB2;--line:#38383A;--blue:#6AA6EE;--blueSoft:#1A2A40;--green:#6FD08C;--greenSoft:#16301F;--amber:#F5C36B;--amberSoft:#3A2C0D;--red:#FF8A80;--sel:#18263A}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:hidden}
+.banner{position:sticky;top:0;z-index:20;background:#FFE7A8;color:#5A2A00;border-bottom:2px solid #E8B64A;text-align:center;font-weight:800;font-size:17px;line-height:1.3;padding:calc(8px + env(safe-area-inset-top)) 12px 8px}
+@media (prefers-color-scheme:dark){.banner{background:#3B2C07;color:#FFD86B;border-color:#7A5A12}}
+main{max-width:640px;margin:0 auto;padding:8px 16px calc(130px + env(safe-area-inset-bottom))}
+header{display:flex;align-items:center;gap:12px;padding:12px 0 4px}
+h1{font-size:24px;line-height:1.25;margin:0}
+h2{font-size:21px;margin:26px 0 8px}
+.lang{margin-left:auto;flex:none;min-height:44px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:22px;padding:0 16px;font:inherit;font-size:17px;font-weight:600}
+.sub{color:var(--sub);font-size:17px;margin:6px 0}
+.three{background:var(--blueSoft);border-radius:12px;padding:10px 12px;font-size:17px;margin:10px 0}
+.q{background:var(--card);border-radius:14px;padding:14px 14px 12px;margin:12px 0}
+.q h3{font-size:20px;line-height:1.3;margin:0 0 6px}
+.q h3 .no{color:var(--blue);margin-right:6px}
+.line1{font-size:17px;color:var(--ink);background:var(--amberSoft);border-radius:10px;padding:8px 10px;margin:6px 0 8px}
+label.o{display:flex;gap:12px;align-items:flex-start;min-height:48px;padding:10px 8px;margin:8px 0 0;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+label.o.on{border-color:var(--blue);background:var(--sel)}
+label.o input[type=radio],label.o input[type=checkbox]{margin:2px 0 0;width:26px;height:26px;flex:none;accent-color:var(--blue)}
+label.o .t{font-size:18px;font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 0}
+.tag{font-size:17px;font-weight:600;border-radius:8px;padding:0 8px;line-height:1.5}
+.pop{background:var(--greenSoft);color:var(--green)}.later{background:var(--amberSoft);color:var(--amber)}.built{background:var(--blueSoft);color:var(--blue)}
+.ex{display:block;color:var(--sub);font-size:17px;line-height:1.4;margin-top:4px}
+input.n,select,textarea{font:inherit;font-size:18px;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+input.n{width:96px;min-height:44px;display:inline-block;margin:2px 4px}
+select{min-height:48px;width:100%}
+textarea{width:100%;min-height:52px;margin-top:10px;display:block}
+.f{margin:12px 0 0}.f>span{display:block;font-size:17px;color:var(--sub);margin-bottom:4px}
+.btn{font:inherit;font-size:18px;font-weight:700;border:0;border-radius:12px;min-height:52px;padding:10px 14px;background:var(--blue);color:#fff;width:100%;cursor:pointer}
+.btn.alt{background:var(--card);color:var(--blue);border:1px solid var(--line)}
+.btn:disabled{opacity:.45}
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.foot .fi{max-width:640px;margin:0 auto;display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.foot .btn.save{background:var(--green)}
+/* simulator */
+.sim{background:var(--card);border-radius:14px;padding:14px;margin:12px 0}
+.clock{font-weight:700;font-size:18px}
+.lab{font-size:17px;font-weight:700;margin:12px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:40px;border:2px solid var(--line);border-radius:20px;padding:2px 12px 2px 4px;font-size:17px;font-weight:700;background:var(--card)}
+.chip b{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--blueSoft);color:var(--blue)}
+.chip.mv{border-color:var(--blue)}
+.row{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;margin:6px 0}
+.row>span{font-weight:700;font-size:17px}
+.arrow{margin:2px 0 2px 64px;color:var(--blue);font-weight:700;font-size:17px}
+.cnt{background:var(--greenSoft);border-radius:10px;padding:8px 10px;font-size:17px;margin:8px 0 0}
+.tim{background:var(--amberSoft);border-radius:10px;padding:8px 10px;font-size:17px;margin:8px 0 0}
+.cnt b{color:var(--green)}.tim b{color:var(--amber)}
+.ev{border:2px solid var(--blue);border-radius:12px;padding:10px 12px;margin:12px 0 0}
+.ev p{margin:0 0 6px;font-size:17px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}
+.acts .btn{font-size:17px;min-height:52px;background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.acts .wide{grid-column:1/-1}
+.note{font-size:17px;color:var(--amber);margin:8px 0 0}
+#sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center}
+#sheet>div{background:var(--card);border-radius:16px 16px 0 0;max-width:640px;width:100%;padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+#sheet h2{margin:0 0 8px}
+#sheet ul{padding-left:22px;margin:8px 0}#sheet li{margin:6px 0;font-size:17px}
+#sheet .btn{margin-top:10px}
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:#111827;color:#fff;font-weight:700;padding:12px 18px;border-radius:14px;font-size:17px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;text-align:center}
+.toast.show{opacity:1}
+:focus-visible{outline:3px solid #7FB0E8;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="banner" id="banner"></div>
+<main id="app"></main>
+<div class="foot"><div class="fi"><button type="button" class="btn save" id="bSave"></button><button type="button" class="btn alt" id="bReset"></button></div></div>
+<div id="sheet"><div id="sheetIn" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function () {
+'use strict';
+/* NailFlowApp – turn rules preview v8 (same questions as the salon setup link). Preview only: no network; browser storage only. */
+var KEY = 'nf_turn_rules_preview_v8', LKEY = 'nf_turn_rules_preview_lang';
+var L = 'vi'; try { if (localStorage.getItem(LKEY) === 'en') L = 'en'; } catch (e) {}
+function V(vi, en) { return L === 'vi' ? vi : en; }
+function $(s, r) { return (r || document).querySelector(s); }
+function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function fmt(n) { n = Math.round(n * 100) / 100; return L === 'vi' ? String(n).replace('.', ',') : String(n); }
+function tm(m) { var h = Math.floor(m / 60), x = m % 60; return ((h % 12) || 12) + ':' + (x < 10 ? '0' : '') + x + (L === 'vi' ? (h < 12 ? ' sáng' : h < 18 ? ' chiều' : ' tối') : (h < 12 ? ' AM' : ' PM')); }
+function toast(t) { var x = $('#toast'); x.textContent = t; x.classList.add('show'); clearTimeout(toast.h); toast.h = setTimeout(function () { x.classList.remove('show'); }, 2200); }
+var EX = {
+"q1:clock": [
+"VD: Anna và Jenny đều có 2 turn. Anna clock in 9:30, Jenny clock in 9:45 → khách kế giao cho Anna.",
+"E.g. Anna and Jenny both have 2 turns. Anna clocked in at 9:30, Jenny at 9:45 → the next customer goes to Anna."
+],
+"q1:done": [
+"VD: Anna và Jenny đều có 2 turn. Jenny làm xong khách lúc 11:00, Anna xong lúc 11:20 → khách kế giao cho Jenny.",
+"E.g. Anna and Jenny both have 2 turns. Jenny finished at 11:00, Anna at 11:20 → the next customer goes to Jenny."
+],
+"q1:L:fixed": [
+"VD: ngày nào cũng theo thứ tự chủ xếp sẵn Anna – Jenny – Lisa, ai tới trước cũng vậy.",
+"E.g. every day the owner's order Anna – Jenny – Lisa, whoever comes in first."
+],
+"q1:L:rotate": [
+"VD: hôm nay Anna đứng đầu, ngày mai Jenny đứng đầu, ngày mốt Lisa đứng đầu.",
+"E.g. today Anna is first, tomorrow Jenny, the day after Lisa."
+],
+"q1:L:yesterday": [
+"VD: tối qua tới lượt Lisa thì sáng nay bắt đầu từ Lisa.",
+"E.g. last night it was Lisa's turn, so this morning starts with Lisa."
+],
+"q1:L:start": [
+"VD: Anna vừa nhận khách là xuống cuối hàng ngay, không chờ làm xong.",
+"E.g. Anna goes to the end of the line as soon as she takes a customer."
+],
+"q2:cust": [
+"VD: mức $ là 30. Khách trả $45 = 1 turn. Khách trả $20 (dưới $30) thì tính theo ô \"Khách dưới mức đó\" bên dưới (nửa turn / bonus / không tính).",
+"E.g. the $ line is 30. A $45 customer = 1 turn. A $20 customer (under $30) follows \"A customer under that\" below (half / bonus / nothing)."
+],
+"q2:svc": [
+"VD: X = $35. Khách làm pedicure $40 + gel manicure $40 → 2 turn (mỗi dịch vụ từ $35 là 1 turn).",
+"E.g. X = $35. Pedicure $40 + gel manicure $40 → 2 turns (each service from $35 = 1 turn)."
+],
+"q2:per": [
+"VD: X = $35. Khách trả $70 → 2 turn; khách trả $105 → 3 turn.",
+"E.g. X = $35. A $70 customer → 2 turns; $105 → 3 turns."
+],
+"q2:L:minutes": [
+"VD: mỗi 45 phút làm = 1 turn; khách full set làm 90 phút = 2 turn.",
+"E.g. every 45 minutes = 1 turn; a 90-minute full set = 2 turns."
+],
+"q2:L:15": [
+"VD: khách trên $80 (full set + design) = 1.5 turn.",
+"E.g. a customer over $80 (full set + design) = 1.5 turns."
+],
+"q4:none": [
+"VD: khách gọi tên Anna. Anna làm khách đó nhưng không bị tính turn, vẫn giữ chỗ trong hàng.",
+"E.g. a customer asks for Anna. Anna does her but gets no turn and keeps her place in line."
+],
+"q4:count": [
+"VD: Anna làm khách gọi tên mình → Anna bị tính 1 turn và xuống cuối hàng như khách walk-in.",
+"E.g. Anna does a customer who asked for her → 1 turn, to the end of the line like a walk-in."
+],
+"q4:half": [
+"VD: Anna làm khách gọi tên mình → tính 0.5 turn.",
+"E.g. Anna does a customer who asked for her → half a turn."
+],
+"q4:L:keepfirst": [
+"VD: Anna đang đứng đầu hàng thì nhận khách gọi tên mình → không tính turn, nhưng khách walk-in kế giao cho người đứng sau Anna.",
+"E.g. Anna is first in line and takes her own customer → no turn, but the next walk-in goes to the tech after Anna."
+],
+"q5:": [
+"VD: ghi 20. Anna có hẹn lúc 2:00 → từ 1:40 app không giao khách walk-in cho Anna nữa, để Anna rảnh đón khách hẹn.",
+"E.g. 20. Anna has a booking at 2:00 → from 1:40 the app gives Anna no walk-in, so she is free for it."
+],
+"q6:1": [
+"VD: chỉ Kim và Lisa làm builder gel. Khách builder gel tới thì giữ Kim làm khách đó, Kim không bị tính mất turn.",
+"E.g. only Kim and Lisa do builder gel. A builder gel customer comes: Kim is kept for her and loses no turn."
+],
+"q6:0": [
+"VD: khách builder gel tới, hàng là Anna – Kim – Lisa. Anna không biết làm nên bỏ qua, giao Kim. Anna vẫn giữ chỗ đầu hàng.",
+"E.g. a builder gel customer, line Anna – Kim – Lisa. Anna can't, so it goes to Kim. Anna keeps first place."
+],
+"q6:L:keeplose": [
+"VD: Kim được giữ làm khách builder gel và bị tính 1 turn như khách thường.",
+"E.g. Kim is kept for the builder gel customer and gets 1 turn like any customer."
+],
+"q6:L:asreq": [
+"VD: khách builder gel giao Kim, tính như khách gọi tên Kim (theo câu \"khách gọi đích danh\" ở trên).",
+"E.g. the builder gel customer goes to Kim, counted like a customer who asked for Kim (see the question above)."
+],
+"q7:1": [
+"VD: tiệm mở cửa 10 giờ. Thợ tới sớm 9 giờ làm khách → không tính turn. Khách bắt đầu từ 9:16 trở đi mới tính turn.",
+"E.g. the salon opens at 10. A tech who comes in at 9 and does a customer → no turn. From 9:16 on, turns count."
+],
+"q7:0": [
+"VD: thợ tới 9 giờ làm khách đầu tiên → tính turn luôn, dù tiệm chưa mở cửa.",
+"E.g. a tech does the first customer at 9 → it counts, even before opening."
+],
+"q7:L:othertime": [
+"VD: tiệm mở 9 giờ, muốn khách bắt đầu trước 8:30 không tính → ghi \"8:30\" ở ô ghi chú bên dưới.",
+"E.g. the salon opens at 9 and customers before 8:30 should not count → write \"8:30\" in the note below."
+],
+"q8:1": [
+"VD: tới lượt Anna nhưng Anna không nhận khách → Anna xuống cuối hàng, khách giao người kế.",
+"E.g. it is Anna's turn but she says no → Anna goes to the end, the customer goes to the next tech."
+],
+"q8:N": [
+"VD: ghi 2. Anna từ chối 2 lần trong ngày vẫn giữ chỗ; lần thứ 3 thì xuống cuối hàng.",
+"E.g. 2. Anna says no twice in a day and keeps her place; the 3rd time she goes to the end."
+],
+"q8:0": [
+"VD: Anna từ chối bao nhiêu lần cũng giữ nguyên chỗ, khách giao người kế.",
+"E.g. however often Anna says no, she keeps her place; the customer goes to the next tech."
+],
+"q9:0": [
+"VD: Anna đi ăn 1 tiếng, về vẫn đứng đúng chỗ cũ trong hàng.",
+"E.g. Anna takes an hour for lunch and comes back to the same place in line."
+],
+"q9:N": [
+"VD: ghi 30. Anna nghỉ 20 phút về vẫn giữ chỗ; nghỉ 45 phút thì xuống cuối hàng.",
+"E.g. 30. A 20-minute break keeps her place; 45 minutes → end of the line."
+],
+"q10:L:giveback": [
+"VD: khách của Anna làm được 5 phút thì bỏ về → Anna không bị tính turn, giữ chỗ như cũ.",
+"E.g. Anna's customer leaves after 5 minutes → no turn for Anna, she keeps her place."
+],
+"q10:L:keep": [
+"VD: khách của Anna bỏ về giữa chừng → Anna vẫn bị tính 1 turn.",
+"E.g. Anna's customer leaves midway → Anna still gets 1 turn."
+],
+"q11:=split": [
+"VD: Anna làm pedicure, Jenny làm manicure cho cùng 1 khách → mỗi người tính turn theo dịch vụ mình làm.",
+"E.g. Anna does the pedicure and Jenny the manicure for one customer → each by their own service."
+],
+"q11:L:half": [
+"VD: Anna và Jenny cùng làm 1 khách → mỗi người 0.5 turn.",
+"E.g. Anna and Jenny on one customer → half a turn each."
+],
+"q11:L:main": [
+"VD: Anna làm chính, Jenny phụ → Anna 1 turn, Jenny không tính.",
+"E.g. Anna is the main tech, Jenny helps → Anna 1 turn, Jenny nothing."
+],
+"q12:1": [
+"VD: khách walk-in check-in xong, app tự báo \"tới lượt\" trên điện thoại của thợ đứng đầu hàng.",
+"E.g. a walk-in checks in and the first tech in line gets \"your turn\" on her phone."
+],
+"q12:0": [
+"VD: app hiện \"Anna đứng đầu\", lễ tân xem rồi tự bấm chọn thợ cho khách.",
+"E.g. the app shows \"Anna is first\"; the desk picks the tech."
+],
+"q13:=nofix": [
+"VD: khách quay lại sửa 1 móng bị bong → thợ sửa không bị tính turn.",
+"E.g. a customer comes back to fix one lifted nail → no turn for the tech."
+],
+"q13:L:otherhalf": [
+"VD: thợ cũ nghỉ, Jenny sửa giúp → Jenny được 0.5 turn.",
+"E.g. the first tech is off and Jenny fixes it → Jenny gets half a turn."
+],
+"q13:L:count": [
+"VD: sửa cũng tính 1 turn như khách thường.",
+"E.g. a fix counts 1 turn like any customer."
+]
+};
+/* ---------- the questions: same ids, order and options as the setup link page (q3 does not exist there) ---------- */
+function QS() { return [
+  { id: 'q1', t: V('Bằng số turn nhau thì ai đứng trước?', 'Same number of turns – who goes first?'), o: [
+    ['clock', V('Ai clock in trước', 'Who clocked in first'), 1], ['done', V('Ai làm xong khách trước', 'Who finished their customer first')],
+    ['L:fixed', V('Thứ tự cố định (thâm niên / chủ xếp)', 'A fixed order (seniority / owner)')], ['L:rotate', V('Xoay vòng theo ngày', 'Rotate by day')],
+    ['L:yesterday', V('Tiếp thứ tự của hôm qua', 'Continue yesterday’s order')], ['L:start', V('Về cuối hàng khi BẮT ĐẦU làm', 'To the end of the line when STARTING')]] },
+  { id: 'q2', t: V('Cách tính turn', 'How turns are counted'), o: [
+    ['cust', V('Mỗi khách = 1 turn (dưới mức $ bên dưới thì theo dòng "Khách dưới mức")', 'Each customer = 1 turn (under the $ line below: see "Under the line")'), 1],
+    ['svc', V('Mỗi dịch vụ từ $X = 1 turn', 'Each service from $X = 1 turn'), 0, 'svc'], ['per', V('Theo tổng tiền: mỗi $X = 1 turn', 'By money: every $X = 1 turn'), 0, 'per'],
+    ['L:minutes', V('Theo thời gian làm (phút)', 'By minutes worked')], ['L:15', V('Trên $Y = 1.5 turn', 'Over $Y = 1.5 turns')]], extra: 'q2' },
+  { id: 'q4', t: V('Khách gọi đích danh thợ (request) / khách hẹn có thợ', 'A customer who asks for a tech by name / booked with a tech'), o: [
+    ['none', V('Không tính turn', 'No turn'), 1], ['count', V('Tính như khách thường', 'Counts like any customer')], ['half', V('Nửa turn', 'Half a turn')],
+    ['L:keepfirst', V('Không tính, nhưng thợ đang đứng đầu thì mất lượt đầu', 'No turn, but a tech first in line loses that first place')]],
+    line: V('Khách hẹn KHÔNG phải request, trừ khi khách gọi đúng tên thợ (ví dụ “Tôi muốn làm với Jenny”).', 'A booked customer is NOT a request unless they ask for the tech by name (e.g. “I want Jenny”).') },
+  { id: 'q5', t: V('Giữ thợ cho khách hẹn', 'Keep a tech for a booked customer'), num: ['hold', 0, 120, V('Không nhận walk-in khi hẹn bắt đầu trong … phút (0 = chỉ giữ đúng giờ hẹn)', 'No walk-in when the booking starts within … min (0 = only at the booking time)')] },
+  { id: 'q6', t: V('Thợ làm dịch vụ hiếm (vd builder gel)', 'A tech who does a rare service (e.g. builder gel)'), o: [
+    ['1', V('Giữ thợ đó cho khách cần, KHÔNG mất turn', 'Keep that tech for the customer who needs it – no turn lost')], ['0', V('Không giữ: khách cần thì giao thợ biết làm đầu hàng, người bị bỏ qua giữ chỗ', 'Do not keep: the first tech in line who can do it; the ones skipped keep their place')],
+    ['L:keeplose', V('Giữ nhưng mất turn', 'Keep, but lose the turn')], ['L:asreq', V('Tính như request', 'Counts as a request')]] },
+  { id: 'q7', t: V('Buổi sáng tính turn từ lúc nào', 'Morning: turns count from when'), o: [
+    ['1', V('Khách bắt đầu lúc 9:15 sáng hoặc sớm hơn (trước giờ mở cửa) không tính', 'A customer started at 9:15 AM or earlier (before opening) counts nothing')],
+    ['0', V('Tính từ khách đầu tiên / từ lúc mở cửa', 'From the first customer / from opening')], ['L:othertime', V('Không tính trước một giờ khác (ghi giờ ở ghi chú)', 'Not counted before another time (write it in the note)')]] },
+  { id: 'q8', t: V('Thợ từ chối khách', 'A tech turns a customer down'), o: [
+    ['1', V('Mất lượt, xuống cuối hàng', 'Loses the turn, to the end of the line'), 1], ['N', V('Giữ chỗ, quá … lần/ngày thì xuống cuối', 'Keeps the place; after … times a day to the end')], ['0', V('Luôn giữ chỗ', 'Always keeps the place')]] },
+  { id: 'q9', t: V('Thợ đi ăn / nghỉ', 'A tech on a break'), o: [
+    ['0', V('Giữ chỗ, nghỉ bao lâu cũng được', 'Keeps the place however long'), 1], ['N', V('Nghỉ quá … phút thì xuống cuối hàng', 'Over … min: to the end of the line')]] },
+  { id: 'q10', t: V('Khách bỏ về / đổi thợ giữa chừng', 'A customer leaves / changes tech midway'), o: [['L:giveback', V('Trả lại turn cho thợ cũ', 'Give the turn back to the first tech')], ['L:keep', V('Vẫn tính cho thợ cũ', 'Still counts for the first tech')]] },
+  { id: 'q11', t: V('2 thợ cùng làm 1 khách', 'Two techs on one customer'), o: [['=split', V('Mỗi thợ tính theo phần dịch vụ của mình', 'Each tech by their own services'), 1], ['L:half', V('Mỗi người 1/2 turn', 'Half a turn each')], ['L:main', V('Thợ chính 1 turn, thợ phụ 0', 'Main tech 1, helper 0')]] },
+  { id: 'q12', t: V('Ai chọn thợ cho khách walk-in', 'Who picks the tech for a walk-in'), o: [['1', V('App tự giao người đầu hàng', 'The app gives it to the first in line'), 1], ['0', V('Lễ tân chọn, app chỉ gợi ý', 'The desk picks, the app suggests')]], extra: 'q12' },
+  { id: 'q13', t: V('Khách quay lại SỬA miễn phí', 'A customer back for a FREE fix'), o: [['=nofix', V('Không tính turn', 'No turn'), 1], ['L:otherhalf', V('Thợ khác sửa được nửa turn', 'Another tech fixing gets half a turn')], ['L:count', V('Tính bình thường', 'Counts as usual')]] }
+]; }
+/* the usual choice ("Phổ biến") is the sample; questions without one take the salon's known rule */
+var DEF = { a: { q1: 'clock', q2: 'cust', q4: 'none', q6: '1', q7: '1', q8: '1', q9: '0', q10: 'L:giveback', q11: '=split', q12: '1', q13: '=nofix' },
+  x: { min: 20, under: 'half', svc: 35, per: 35, hold: 15, skipN: 2, brkN: 30, pick: 0 }, n: {} };
+function copy(o) { return JSON.parse(JSON.stringify(o)); }
+function load() { var s = copy(DEF); try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o && typeof o === 'object') { ['a', 'x', 'n'].forEach(function (k) { if (o[k] && typeof o[k] === 'object') for (var f in o[k]) if (k === 'n' || f in s[k]) s[k][f] = o[k][f]; }); } } catch (e) {} return s; }
+var S = load(), ACTS = [];
+function num(v, lo, hi, d) { v = Math.round(+v); return isFinite(v) && v >= lo && v <= hi ? v : d; }
+/* ---------- question HTML ---------- */
+function ex(q, v) { var t = EX[q + ':' + v]; return t ? '<small class="ex">' + esc(V(t[0], t[1])) + '</small>' : ''; }
+function numIn(k, lo, hi, lab) { return '<input class="n" type="number" inputmode="numeric" min="' + lo + '" max="' + hi + '" data-x="' + k + '" value="' + esc(S.x[k]) + '" aria-label="' + esc(lab) + '">'; }
+function qHtml(q, i) {
+  var h = '<div class="q" id="' + q.id + '"><h3><span class="no">' + (i + 1) + '.</span>' + esc(q.t) + '</h3>';
+  if (q.line) h += '<div class="line1">' + esc(q.line) + '</div>';
+  if (q.num) h += '<div class="f"><span>' + esc(q.num[3]) + '</span>' + numIn(q.num[0], q.num[1], q.num[2], q.t) + ' ' + esc(V('phút', 'min')) + ex(q.id, '') + '</div>';
+  else h += q.o.map(function (o) {
+    var v = o[0], later = v.indexOf('L:') === 0, same = v.charAt(0) === '=', on = S.a[q.id] === v, n = '';
+    if (v === 'N') n = numIn(q.id === 'q8' ? 'skipN' : 'brkN', 1, q.id === 'q8' ? 19 : 600, o[1]);
+    if (o[3]) n = '$' + numIn(o[3], 1, 1000, o[1]);
+    return '<label class="o' + (on ? ' on' : '') + '"><input type="radio" name="' + q.id + '" value="' + esc(v) + '"' + (on ? ' checked' : '') + '><span><span class="t">' + esc(o[1]) + '</span>' + (n ? ' ' + n : '')
+      + ((o[2] || later || same) ? '<span class="tags">' + (o[2] ? '<span class="tag pop">' + V('Phổ biến', 'Common') + '</span>' : '') + (same ? '<span class="tag built">' + V('App làm sẵn', 'Built in') + '</span>' : '') + (later ? '<span class="tag later">' + V('NailFlow sẽ liên hệ cài thêm', 'NailFlow will set this up') + '</span>' : '') + '</span>' : '')
+      + ex(q.id, v) + '</span></label>';
+  }).join('');
+  if (q.extra === 'q2') h += '<div class="f"><span>' + V('Mức $ cho 1 turn (0 = khách nào cũng tính)', '$ for 1 turn (0 = every customer counts)') + '</span>$' + numIn('min', 0, 1000, V('Mức $ cho 1 turn', '$ for 1 turn')) + '</div>'
+    + '<div class="f"><span>' + V('Khách dưới mức đó', 'A customer under that') + '</span><select data-x="under" aria-label="' + esc(V('Khách dưới mức đó', 'A customer under that')) + '">' + UNDER().map(function (u) { return '<option value="' + u[0] + '"' + (S.x.under === u[0] ? ' selected' : '') + '>' + esc(u[1]) + '</option>'; }).join('') + '</select></div>'
+    + '<div class="line1">' + esc(V('Nửa turn: mỗi lần cộng 0,5; hai nửa = 1 turn. Hàng xếp theo số turn, nên người có 0,5 đứng sau người 0 và trước người 1. Cuối ngày còn 0,5 chỉ ghi trong báo cáo ngày đó; sáng mai ai cũng bắt đầu lại từ 0.', 'Half a turn: adds 0.5 each time; two halves = 1 turn. The line is ordered by turns, so a tech with 0.5 stands after 0 and before 1. A 0.5 left at day’s end only stays in that day’s report; tomorrow everyone starts again at 0.')) + '</div>';
+  if (q.extra === 'q12') h += '<label class="o' + (+S.x.pick ? ' on' : '') + '"><input type="checkbox" data-x="pick"' + (+S.x.pick ? ' checked' : '') + '><span><span class="t">' + V('Khách được tự chọn thợ trên iPad check-in (= request)', 'Customers may pick a tech on the check-in iPad (= a request)') + '</span></span></label>';
+  return h + '<textarea data-note="' + q.id + '" maxlength="500" placeholder="' + esc(V('Khác / ghi chú', 'Other / note')) + '" aria-label="' + esc(q.t + ' – ' + V('ghi chú', 'note')) + '">' + esc(S.n[q.id] || '') + '</textarea></div>';
+}
+function UNDER() { return [['half', V('Nửa turn', 'Half a turn')], ['bonus', V('Bonus (hàng riêng, không tính turn)', 'Bonus (own rotation, no turn)')], ['none', V('Không tính', 'Nothing')]]; }
+
+/* ---------- small simulator: replays the button presses with the current answers ---------- */
+var TECHS = ['Anna', 'Jenny', 'Lisa', 'Kim'], OPEN = 600, OWNER = ['Anna', 'Jenny', 'Lisa', 'Kim'];
+function fresh() { var st = { now: OPEN, cnt: 0, t: {} }; TECHS.forEach(function (n, i) { st.t[n] = { turns: 0, bonus: 0, seq: OPEN - 20 + i * 5, clockIn: OPEN - 20 + i * 5, done: null, refuse: 0 }; }); if (S.a.q1 === 'L:fixed') OWNER.forEach(function (n, i) { st.t[n].seq = i; }); return st; }
+function order(st) { return TECHS.slice().sort(function (a, b) { var x = st.t[a], y = st.t[b]; return (Math.max(x.turns, x.floor || 0) - Math.max(y.turns, y.floor || 0)) || (x.seq - y.seq) || (TECHS.indexOf(a) - TECHS.indexOf(b)); }); }
+function mode2() { return S.a.q2 === 'svc' || S.a.q2 === 'per' ? S.a.q2 : 'cust'; }
+function turnsFor(p) { var m = mode2(), x = S.x; if (m === 'svc') return p >= +x.svc ? 1 : 0; if (m === 'per') return Math.floor(p / Math.max(1, +x.per)); if (+x.min > 0 && p < +x.min) return x.under === 'half' ? 0.5 : 0; return 1; }
+function isBonus(p) { return mode2() === 'cust' && +S.x.min > 0 && p < +S.x.min && S.x.under === 'bonus'; }
+/* to the end of the line: behind everyone now (place only – her turns counted do not change) until her next customer */
+function toEnd(st, n) { var mx = 0; TECHS.forEach(function (m) { if (m !== n) mx = Math.max(mx, st.t[m].turns, st.t[m].floor || 0); }); st.t[n].floor = mx; st.t[n].seq = 100000 + (++st.cnt); }
+function serve(st, n, p, w, mins) { var t = st.t[n]; t.floor = 0; t.turns += w; if (isBonus(p) && w === 0) t.bonus++; t.done = st.now + mins; if (S.a.q1 === 'done') t.seq = t.done * 10 + (++st.cnt % 10); if (S.a.q1 === 'L:start') toEnd(st, n); }
+/* one press -> { vi, en } text; changes st */
+function step(st, a) {
+  var o = order(st), f = o[0], s = o[1], r, w;
+  if (a === 'walk') { w = turnsFor(40); serve(st, f, 40, w, 45); r = [f + ' nhận khách walk-in làm chân $40 → ' + wv(w) + (S.a.q12 === '0' ? ' (lễ tân chọn theo gợi ý của app)' : ''), f + ' gets a $40 pedicure walk-in → ' + we(w) + (S.a.q12 === '0' ? ' (the desk picks, as the app suggests)' : '')]; }
+  else if (a === 'small') { w = turnsFor(15); serve(st, f, 15, w, 15); r = [f + ' làm dịch vụ nhỏ $15 (sơn lại) → ' + (isBonus(15) ? 'bonus, không tính turn' : wv(w)), f + ' does a small $15 service (polish change) → ' + (isBonus(15) ? 'bonus, no turn' : we(w))]; }
+  else if (a === 'req') { var q4 = S.a.q4; w = q4 === 'count' ? turnsFor(40) : q4 === 'half' ? 0.5 : 0; serve(st, f, 40, w, 45); if (q4 === 'L:keepfirst') toEnd(st, f); r = ['Khách gọi tên ' + f + ' (đang đứng đầu) → ' + wv(w) + (q4 === 'L:keepfirst' ? ', và mất chỗ đứng đầu' : ''), 'A customer asks for ' + f + ' (first in line) → ' + we(w) + (q4 === 'L:keepfirst' ? ', and she loses first place' : '')]; }
+  else if (a === 'refuse') { var t = st.t[f]; t.refuse++; var go = S.a.q8 === '1' || (S.a.q8 === 'N' && t.refuse > +S.x.skipN); if (go) toEnd(st, f); w = turnsFor(40); serve(st, s, 40, w, 45);
+    r = [f + ' không nhận khách (lần ' + t.refuse + ' hôm nay) → ' + (go ? 'xuống cuối hàng' : 'giữ chỗ') + '. ' + s + ' nhận khách → ' + wv(w), f + ' turns the customer down (time ' + t.refuse + ' today) → ' + (go ? 'to the end of the line' : 'keeps the place') + '. ' + s + ' takes it → ' + we(w)]; }
+  else if (a === 'break') { var go2 = S.a.q9 === 'N' && 45 > +S.x.brkN; if (go2) toEnd(st, f); r = [f + ' đi ăn 45 phút rồi quay lại → ' + (go2 ? 'xuống cuối hàng' : 'giữ chỗ'), f + ' takes a 45-minute break → ' + (go2 ? 'to the end of the line' : 'keeps the place')]; }
+  else if (a === 'two') { var q11 = S.a.q11, w1 = q11 === 'L:half' ? 0.5 : q11 === 'L:main' ? 1 : turnsFor(40), w2 = q11 === 'L:half' ? 0.5 : q11 === 'L:main' ? 0 : turnsFor(25); serve(st, f, 40, w1, 45); serve(st, s, 25, w2, 30);
+    r = [f + ' làm chân $40, ' + s + ' làm tay $25 cho cùng 1 khách → ' + f + ' ' + wv(w1) + ', ' + s + ' ' + wv(w2), f + ' does the $40 pedicure, ' + s + ' the $25 manicure for one customer → ' + f + ' ' + we(w1) + ', ' + s + ' ' + we(w2)]; }
+  st.now += 15; return r;
+}
+function wv(w) { return w === 0 ? 'không tính turn' : 'tính ' + fmt(w) + ' turn'; }
+function we(w) { return w === 0 ? 'no turn' : fmt(w) + (w === 1 ? ' turn' : ' turns'); }
+function replay() { var st = fresh(), prev = null, r = null; ACTS.forEach(function (a, i) { if (i === ACTS.length - 1) prev = copy(st); r = step(st, a); }); return { st: st, prev: prev, r: r }; }
+function chips(list, prev) { return '<ol class="chips">' + list.map(function (n, i) { return '<li class="chip' + (prev && prev.indexOf(n) !== i ? ' mv' : '') + '"><b>' + (i + 1) + '</b>' + esc(n) + '</li>'; }).join('') + '</ol>'; }
+function simHtml() {
+  var R = replay(), st = R.st, o = order(st);
+  var h = '<div class="sim" id="sim"><div class="clock">' + V('Giờ thử: ', 'Test time: ') + tm(st.now) + '</div>';
+  var lab = V('Hàng chờ (số 1 nhận khách kế tiếp)', 'Waiting line (no. 1 gets the next customer)');
+  if (R.prev) { var po = order(R.prev), ch = TECHS.filter(function (n) { return R.prev.t[n].turns !== st.t[n].turns; });
+    h += '<div class="ev"><p><b>' + esc(V(R.r[0], R.r[1])) + '</b></p><div class="lab">' + lab + '</div><div class="row"><span>' + V('Trước', 'Before') + '</span>' + chips(po) + '</div><div class="arrow">↓</div><div class="row"><span>' + V('Sau', 'After') + '</span>' + chips(o, po) + '</div>'
+      + '<div class="cnt"><b>' + V('Turn đã tính: ', 'Turns counted: ') + '</b>' + esc(ch.length ? ch.map(function (n) { return n + ' ' + fmt(R.prev.t[n].turns) + ' → ' + fmt(st.t[n].turns); }).join(' · ') : V('không ai đổi', 'nobody changed')) + '</div></div>'; }
+  else h += '<div class="lab">' + lab + '</div>' + chips(o) + '<p class="sub">' + V('Bấm một nút dưới đây để xem hàng TRƯỚC và SAU.', 'Tap a button below to see the line BEFORE and AFTER.') + '</p>';
+  h += '<div class="cnt"><b>' + V('Turn đã tính bây giờ: ', 'Turns counted now: ') + '</b>' + esc(TECHS.map(function (n) { return n + ' ' + fmt(st.t[n].turns) + (st.t[n].bonus ? ' (+' + st.t[n].bonus + ' bonus)' : ''); }).join(' · ')) + '</div>';
+  h += '<div class="tim"><b>' + V('Giờ làm xong: ', 'Time finished: ') + '</b>' + esc(TECHS.map(function (n) { return n + ' ' + (st.t[n].done != null ? tm(st.t[n].done) : '–'); }).join(' · ')) + '</div>';
+  var f = o[0];
+  h += '<div class="acts"><button type="button" class="btn wide" data-s="walk">' + V('Khách walk-in $40', 'Walk-in $40') + '</button>'
+    + '<button type="button" class="btn" data-s="req">' + esc(V('Khách gọi tên ', 'Request for ') + f) + '</button>'
+    + '<button type="button" class="btn" data-s="small">' + V('Dịch vụ nhỏ $15', 'Small service $15') + '</button>'
+    + '<button type="button" class="btn" data-s="refuse">' + esc(f + V(' không nhận', ' turns it down')) + '</button>'
+    + '<button type="button" class="btn" data-s="break">' + esc(f + V(' nghỉ 45 phút', ' breaks 45 min')) + '</button>'
+    + '<button type="button" class="btn" data-s="two">' + V('2 thợ làm 1 khách', 'Two techs, 1 customer') + '</button>'
+    + '<button type="button" class="btn" data-s="undo"' + (ACTS.length ? '' : ' disabled') + '>' + V('Bỏ bước vừa rồi', 'Undo last step') + '</button>'
+    + '<button type="button" class="btn wide" data-s="new">' + V('Ngày thử mới', 'New test day') + '</button></div>';
+  var notes = [];
+  if (S.a.q1.indexOf('L:') === 0 && S.a.q1 !== 'L:fixed' && S.a.q1 !== 'L:start') notes.push(V('Câu 1: lựa chọn này NailFlow cài thêm sau – bản thử dùng "Ai clock in trước".', 'Question 1: NailFlow sets this up later – the test uses "Who clocked in first".'));
+  if (S.a.q1 === 'L:fixed') notes.push(V('Câu 1: thứ tự mẫu của chủ: ', 'Question 1: sample owner order: ') + OWNER.join(' – ') + '.');
+  if (S.a.q2.indexOf('L:') === 0) notes.push(V('Câu 2: lựa chọn này NailFlow cài thêm sau – bản thử dùng "Mỗi khách = 1 turn".', 'Question 2: NailFlow sets this up later – the test uses "Each customer = 1 turn".'));
+  h += notes.map(function (x) { return '<div class="note">' + esc(x) + '</div>'; }).join('');
+  return h + '</div>';
+}
+/* ---------- the "Will save" sheet: one plain sentence per answer ---------- */
+function fill(lab, q) { if (q === 'q8') return lab.replace('…', S.x.skipN); if (q === 'q9') return lab.replace('…', S.x.brkN); return lab; }
+function sentences() {
+  return QS().map(function (q) {
+    var s, sp = /\?$/.test(q.t) ? ' → ' : ': ';
+    if (q.num) s = q.t + sp + (+S.x.hold ? V('ngưng walk-in ' + S.x.hold + ' phút trước giờ hẹn.', 'no walk-in ' + S.x.hold + ' min before the booking.') : V('chỉ giữ đúng giờ hẹn.', 'only at the booking time.'));
+    else { var o = q.o.filter(function (x) { return x[0] === S.a[q.id]; })[0]; var lab = o ? fill(o[1], q.id) : '–'; if (o && o[3]) lab = lab.replace('$X', '$' + S.x[o[3]]);
+      s = q.t + sp + lab + (o && o[0].indexOf('L:') === 0 ? V(' (NailFlow sẽ liên hệ cài thêm)', ' (NailFlow will set this up)') : '') + '.'; }
+    if (q.extra === 'q2') s += ' ' + V('Mức $ cho 1 turn: $', '$ for 1 turn: $') + S.x.min + (+S.x.min ? V('; khách dưới mức đó: ', '; a customer under that: ') + UNDER().filter(function (u) { return u[0] === S.x.under; })[0][1].toLowerCase() : V(' (khách nào cũng tính)', ' (every customer counts)')) + '.';
+    if (q.extra === 'q12') s += ' ' + (+S.x.pick ? V('Khách được tự chọn thợ trên iPad check-in (= request).', 'Customers may pick a tech on the check-in iPad (= a request).') : V('Khách không tự chọn thợ trên iPad check-in.', 'Customers do not pick a tech on the check-in iPad.'));
+    if ((S.n[q.id] || '').trim()) s += ' ' + V('Ghi chú: ', 'Note: ') + S.n[q.id].trim();
+    return s;
+  });
+}
+function openSheet(html) { $('#sheetIn').innerHTML = html; $('#sheet').style.display = 'flex'; }
+function closeSheet() { $('#sheet').style.display = 'none'; }
+function saveSheet() {
+  openSheet('<h2>' + V('Sẽ lưu', 'Will save') + '</h2><p class="sub">' + V('Chỉ lưu bản xem thử trên trình duyệt này – chưa áp dụng vào tiệm.', 'Saved only as a preview in this browser – not applied to the salon.') + '</p><ul>' + sentences().map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>'
+    + '<button type="button" class="btn" id="go">' + V('Lưu bản xem thử', 'Save preview') + '</button><button type="button" class="btn alt" id="back">' + V('Quay lại sửa', 'Back') + '</button>');
+  $('#back').onclick = closeSheet;
+  $('#go').onclick = function () { try { localStorage.setItem(KEY, JSON.stringify(S)); toast(V('Đã lưu bản xem thử', 'Preview saved')); } catch (e) { toast(V('Trình duyệt này không lưu được', 'This browser cannot save')); } closeSheet(); };
+}
+/* ---------- page ---------- */
+function render() {
+  document.documentElement.lang = L; document.title = V('Luật chia turn – Xem thử', 'Turn rules – Preview');
+  $('#banner').textContent = V('CHỈ XEM THỬ – CHƯA ÁP DỤNG VÀO TIỆM', 'PREVIEW ONLY – NOT APPLIED TO THE SALON');
+  $('#bSave').textContent = V('Lưu bản xem thử', 'Save preview'); $('#bReset').textContent = V('Xoá, làm lại', 'Reset');
+  $('#app').innerHTML = '<header><h1>' + V('Luật chia turn', 'Turn rules') + '</h1><button type="button" class="lang" id="lang">' + (L === 'vi' ? 'English' : 'Tiếng Việt') + '</button></header>'
+    + '<p class="sub">' + V('Giống trang cài đặt của tiệm: mỗi câu chọn 1 dòng. Dòng nhỏ màu xám là ví dụ. Thử ở cuối trang rồi bấm Lưu.', 'Like the salon setup page: pick one line per question. The small grey line is an example. Try it at the bottom, then Save.') + '</p>'
+    + '<div class="three">' + esc(V('3 điều khác nhau: Turn đã tính (số turn) ≠ Vị trí trong hàng (đứng số mấy) ≠ Giờ làm xong (giờ xong khách gần nhất).', '3 different things: turns counted (how many) ≠ place in line (which number) ≠ time finished (when the last customer was done).')) + '</div>'
+    + QS().map(qHtml).join('')
+    + '<h2>' + V('Thử chia khách', 'Try it') + '</h2><p class="sub">' + V('Anna, Jenny, Lisa, Kim. Hàng xếp theo số turn ít trước; bằng turn thì theo câu 1. Đổi câu trả lời ở trên thì phần thử tự tính lại.', 'Anna, Jenny, Lisa, Kim. The line goes by fewest turns first; equal turns follow question 1. Change an answer above and the test recalculates.') + '</p><div id="simBox">' + simHtml() + '</div>';
+}
+function drawSim() { $('#simBox').innerHTML = simHtml(); }
+document.addEventListener('change', function (e) {
+  var x = e.target;
+  if (x.type === 'radio' && /^q\d+$/.test(x.name)) { S.a[x.name] = x.value; $$('input[name="' + x.name + '"]').forEach(function (r) { r.closest('label').classList.toggle('on', r.checked); }); drawSim(); return; }
+  if (x.dataset.x) { var k = x.dataset.x;
+    if (k === 'under') S.x.under = x.value;
+    else if (k === 'pick') { S.x.pick = x.checked ? 1 : 0; x.closest('label').classList.toggle('on', x.checked); }
+    else { var lim = { min: [0, 1000], svc: [1, 1000], per: [1, 1000], hold: [0, 120], skipN: [1, 19], brkN: [1, 600] }[k]; S.x[k] = num(x.value, lim[0], lim[1], S.x[k]); x.value = S.x[k]; }
+    drawSim(); }
+});
+document.addEventListener('input', function (e) { var x = e.target; if (x.dataset && x.dataset.note) S.n[x.dataset.note] = x.value.slice(0, 500); });
+document.addEventListener('click', function (e) {
+  if (e.target.id === 'lang') { L = L === 'vi' ? 'en' : 'vi'; try { localStorage.setItem(LKEY, L); } catch (er) {} render(); return; }
+  var b = e.target.closest('[data-s]'); if (b) { var a = b.dataset.s; if (a === 'new') ACTS = []; else if (a === 'undo') ACTS.pop(); else ACTS.push(a); drawSim(); return; }
+});
+$('#bSave').addEventListener('click', saveSheet);
+$('#bReset').addEventListener('click', function () {
+  openSheet('<h2>' + V('Xoá, làm lại?', 'Reset?') + '</h2><p>' + V('Xoá bản đã lưu và trở về lựa chọn mẫu (Phổ biến).', 'Clear the saved preview and go back to the sample (Common) choices.') + '</p><button type="button" class="btn" id="go">' + V('Xoá, làm lại', 'Reset') + '</button><button type="button" class="btn alt" id="back">' + V('Quay lại', 'Back') + '</button>');
+  $('#back').onclick = closeSheet;
+  $('#go').onclick = function () { try { localStorage.removeItem(KEY); } catch (er) {} S = copy(DEF); ACTS = []; closeSheet(); render(); toast(V('Đã xoá – về lựa chọn mẫu', 'Cleared – back to the sample choices')); };
+});
+$('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') closeSheet(); });
+window.__v8 = { S: function () { return S; }, order: function () { return order(replay().st); }, st: function () { return replay().st; } };
+render();
+})();
+</script>
+</body>
+</html>
