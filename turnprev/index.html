@@ -66,7 +66,7 @@ details.more[open]>summary::before{transform:rotate(90deg)}
 .tq .st{font-size:13px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;background:#E5E7EB;color:#374151}
 .st.free{background:#DCFCE7;color:#166534}.st.busy{background:#DBEAFE;color:#1E40AF}.st.brk{background:#FEF3C7;color:#92400E}.st.out{background:#F3F4F6;color:#6B7280}.st.pen{background:#FEE2E2;color:#991B1B}
 .tq .stats{font-size:14px;color:var(--muted);margin-top:2px}
-.tq .acts{display:grid;gap:6px}
+.tq .acts{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px}.tq .acts .btn{flex:1 1 40%}
 .btn{min-height:44px;border-radius:12px;border:1px solid #CBD2DE;background:#fff;font:inherit;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;padding:6px 10px}
 .btn:disabled{opacity:.35}
 .btn.pri{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -94,6 +94,20 @@ details.more[open]>summary::before{transform:rotate(90deg)}
 .sheet .box{background:#fff;width:100%;max-width:640px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
 .sheet h3{margin:0 0 6px;font-size:21px}
 .choices{display:grid;gap:8px;margin:10px 0}
+.opt.dis{opacity:.55;cursor:not-allowed}
+#outErr,#penErr,.err{color:var(--red);font-weight:700}#outErr:empty,#penErr:empty,.err:empty{display:none}
+.st.away{background:#FFEDD5;color:#9A3412}
+.tq .awayl{margin-top:4px;font-size:15px;font-weight:700;color:#9A3412}.tq .last{margin-top:4px;font-size:14px}
+.steps{margin:8px 0;padding-left:22px;font-size:15px}.steps li.done{color:var(--green)}
+.fl{display:block;font-weight:700;margin:10px 0 4px}
+.fi2{width:100%;min-height:48px;border:2px solid #CBD2DE;border-radius:10px;padding:8px 10px;font:inherit;font-size:18px;background:var(--card);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chip{min-height:44px;border-radius:999px;border:1px solid #CBD2DE;background:var(--card);color:var(--ink);font:inherit;font-size:15px;padding:4px 12px;cursor:pointer}
+.conf{margin:10px 0;padding:10px 12px;border-radius:10px;background:var(--soft)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;margin:4px 0 0;font-size:15px}.kv dt{font-weight:700;color:var(--muted)}.kv dd{margin:0;overflow-wrap:anywhere}
+.reps{display:grid;gap:8px;margin:6px 0 0}.rep{padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.rep>b{display:block;font-size:17px}.rep .btn{margin-top:8px}
+.rep .adjl{margin:6px 0 0;padding-left:18px;font-size:14px}
+.radio2{display:flex;flex-wrap:wrap;gap:4px 16px;margin:6px 0}.radio2 label{display:flex;align-items:center;gap:8px;min-height:44px;font-size:16px}.radio2 input{width:22px;height:22px;accent-color:var(--blue)}
+[hidden]{display:none!important}
 @media (prefers-color-scheme:dark){
  :root{--bar:#1E2A44;--bg:#0F141E;--card:#1A2132;--ink:#E6EAF2;--muted:#A3ACBD;--line:#2C3546;--soft:#1E2A44;--note:#141B29}
  .btn,.num button,.tq{background:#1A2132;color:var(--ink);border-color:#3F4D64}
@@ -156,7 +170,7 @@ function tm(m) { var h = Math.floor(m / 60), mm = m % 60, s2 = (mm < 10 ? '0' : 
 function tnum(k, min, max, step) { return '<div class="num"><button type="button" data-dn="' + k + '" data-step="' + (-step) + '" data-min="' + min + '" data-max="' + max + '" aria-label="' + esc(L('Sớm hơn', 'Earlier')) + '">−</button><output>' + esc(tm(+cfg[k])) + '</output><button type="button" data-dn="' + k + '" data-step="' + step + '" data-min="' + min + '" data-max="' + max + '" aria-label="' + esc(L('Trễ hơn', 'Later')) + '">+</button></div>'; }
 /* the choices – blank page = the sample values */
 var SAMPLE = { method: 'line', dollarScope: 'all', reqW: '0', reqPos: 'keep', apptW: '1', hold: '15', smallUnder: 20, smallW: '0.5', combo: 'one', twoTech: 'half',
-  breakBack: 'keep', late: 'end', refuse: 'end', queues: 'one', whoMoves: 'owner', reason: 'yes', startDay: 'clock', tie: 'clock', bigOver: 50, openTime: 600, early: 'A' };
+  breakBack: 'keep', late: 'end', refuse: 'end', queues: 'one', whoMoves: 'owner', reason: 'yes', startDay: 'clock', tie: 'clock', bigOver: 50, openTime: 600, early: 'A', outMax: 60, outOver: 'end', outPen: 1 };
 var cfg = load();
 function load() { try { var o = JSON.parse(localStorage.getItem(KEY) || 'null'); if (o) { var c = copy(SAMPLE); for (var k in o) if (k in c) c[k] = o[k]; return c; } } catch (e) {} return copy(SAMPLE); }
 var isLine = function () { return cfg.method === 'line'; }, isManual = function () { return cfg.method === 'manual'; };
@@ -166,7 +180,7 @@ function wText(w) { w = String(w); return w === '0' ? L('không cộng lượt',
 function mName(m) { return { line: L('Lần lượt theo hàng', 'Take turns in line'), dollar: L('Ưu tiên thợ có ít tiền dịch vụ hơn', 'Lowest service money first'), manual: L('Chủ tiệm / lễ tân tự chọn thợ', 'Owner / front desk picks'), count: L('Ưu tiên thợ làm ít khách hơn', 'Fewest customers first'), time: L('Ưu tiên thợ có ít phút làm hơn', 'Fewest service minutes first'), points: L('Ưu tiên thợ có ít điểm hơn', 'Fewest points first') }[m]; }
 
 /* ---------- building blocks ---------- */
-function opt(name, val, title, note) { return '<label class="opt"><input type="radio" name="' + name + '" value="' + val + '"' + (String(cfg[name]) === String(val) ? ' checked' : '') + '><div><b>' + esc(title) + '</b>' + (note ? '<span>' + esc(note) + '</span>' : '') + '</div></label>'; }
+function opt(name, val, title, note, dis) { return '<label class="opt' + (dis ? ' dis' : '') + '"><input type="radio" name="' + name + '" value="' + val + '"' + (String(cfg[name]) === String(val) ? ' checked' : '') + (dis ? ' disabled' : '') + '><div><b>' + esc(title) + '</b>' + (note ? '<span>' + esc(note) + '</span>' : '') + '</div></label>'; }
 function q(t, n) { return '<div class="q">' + esc(t) + '</div>' + (n ? '<div class="qn">' + esc(n) + '</div>' : ''); }
 function ex(t) { return '<div class="ex"><b>' + esc(L('Ví dụ', 'Example')) + '</b>' + esc(t) + '</div>'; }
 function now(t) { return '<div class="now">' + esc(L('Với lựa chọn hiện tại, hệ thống sẽ ', 'With the current choice, the system will ')) + esc(t) + '</div>'; }
@@ -279,8 +293,208 @@ function part5() {
     b += '<div class="qn">' + esc(isLine() ? L('Xếp cuối hàng hiện tại.', 'Placed at the end of the current line.') : cfg.late === 'avg' ? L('Bắt đầu bằng mức trung bình của các thợ đang làm (chỉnh ở Cài đặt thêm).', 'Starts at the average of the others (see More settings).') : L('Bắt đầu từ 0 nên sẽ được đề nghị nhiều khách trước (chỉnh ở Cài đặt thêm).', 'Starts at 0, so they are offered customers first (see More settings).')) + '</div>';
     b += now(L('bỏ qua thợ bận, ', 'skip busy techs, ') + (cfg.breakBack === 'keep' ? L('cho thợ nghỉ xong giữ vị trí, ', 'let a tech back from a break keep the place, ') : L('cho thợ nghỉ xong xuống cuối hàng, ', 'send a tech back from a break to the end, ')) + L('và xếp thợ vào ca sau ', 'and place a later tech ') + (isLine() || cfg.late === 'end' ? L('ở cuối hàng.', 'at the end.') : L('ở mức trung bình.', 'at the average.')));
   } else b += na(L('Chủ tiệm tự chọn thợ nên không cần luật nghỉ và vào ca.', 'The owner picks, so break and start rules are not needed.'));
+  b += outBlock();
   b += earlyBlock();
   return sec(5, L('Thợ bận, nghỉ hoặc vào ca muộn', 'Busy, on a break or starting late'), b);
+}
+/* ---------- step out on an errand (preview only) ---------- */
+function outEff() { var o = cfg.outOver; if (o === 'pen' && !usesTurns()) return 'end'; if (o === 'end' && isManual()) return 'keep'; return o; }
+function snapNow() { return { max: +cfg.outMax, over: outEff(), pen: +cfg.outPen, line: isLine(), manual: isManual() }; }
+function overText(sn) {
+  if (sn.over === 'keep') return L('giữ vị trí, không phạt', 'keeps the place, no penalty');
+  if (sn.over === 'end') return sn.line ? L('xuống cuối hàng, không cộng lượt phạt', 'goes to the end of the line, no penalty turn') : L('đứng sau các thợ khác cho tới khi nhận khách kế tiếp, không cộng lượt phạt', 'stands after the others until the next customer, no penalty turn');
+  return sn.manual ? L('ghi ', 'records ') + fmt(sn.pen) + L(' lượt phạt để chủ tiệm xem', ' penalty turn(s) for the owner to see') : L('cộng ', 'adds ') + fmt(sn.pen) + L(' lượt phạt và chuyển xuống cuối hàng', ' penalty turn(s) and moves to the end of the line');
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+function outBlock() {
+  var mx = +cfg.outMax, sn = snapNow(), b = q(L('Thợ ra ngoài có việc', 'A tech steps out on an errand'));
+  b += '<div class="qn">' + esc(L('Khi ra ngoài có việc, thợ phải ghi lý do và clock out trên iPad front desk. Khi về tiệm, thợ clock in lại trên cùng hệ thống. Thời gian vắng mặt và cách xử lý lượt được ghi rõ cho chủ tiệm.', 'To step out on an errand, the tech enters a reason and clocks out on the front desk iPad. Back at the salon, the tech clocks in again on the same system. The time away and how turns are handled are recorded for the owner.')) + '</div>';
+  b += '<div class="must">' + esc(L('Ba việc khác nhau, ba nút riêng:', 'Three different things, three separate buttons:')) + '<br>• ' + esc(L('"Nghỉ giải lao" – nghỉ ngắn trong tiệm, vẫn trong ca.', '"Break" – a short rest inside the salon, still on shift.')) + '<br>• ' + esc(L('"Clock out – Ra ngoài" – ra ngoài có việc, sẽ quay lại.', '"Clock out – Step out" – leaves on an errand, will come back.')) + '<br>• ' + esc(L('"Clock out – Kết thúc ca" – nghỉ làm hết ngày.', '"Clock out – End shift" – done for the day.')) + '</div>';
+  b += '<div class="q smq"><label for="outIn">' + esc(L('A. Được ra ngoài tối đa', 'A. May step out for up to')) + '</label> <span class="money"><input id="outIn" type="text" inputmode="numeric" autocomplete="off" value="' + mx + '" aria-label="' + esc(L('Số phút được ra ngoài', 'Minutes allowed out')) + '"><span>' + esc(L('phút', 'min')) + '</span></span> <span>' + esc(L('mà không bị ảnh hưởng lượt.', 'without affecting turns.')) + '</span></div>';
+  b += '<div class="num sm"><button type="button" data-dn="outMax" data-step="-5" data-min="1" data-max="600" aria-label="' + esc(L('Bớt 5 phút', '5 minutes less')) + '">− 5</button><button type="button" data-dn="outMax" data-step="5" data-min="1" data-max="600" aria-label="' + esc(L('Thêm 5 phút', '5 minutes more')) + '">+ 5</button><span class="hint2">' + esc(L('hoặc gõ số phút vào ô', 'or type the minutes in the box')) + '</span></div><div class="qn" id="outErr" role="alert"></div>';
+  b += '<div class="qn">' + esc(L('Số phút nguyên lớn hơn 0. 60 phút chỉ là số mẫu – chủ tiệm đổi được.', 'Whole minutes above 0. 60 minutes is only a sample – the owner can change it.')) + '</div>';
+  b += q(L('B. Quay lại quá thời gian thì xử lý thế nào?', 'B. Back later than allowed – what happens?'));
+  b += opt('outOver', 'keep', L('Giữ vị trí, không phạt', 'Keep the place, no penalty'), L('Chỉ ghi thời gian vượt để chủ tiệm xem.', 'The extra time is only recorded for the owner.'));
+  if (isManual()) b += opt('outOver', 'end', L('Xuống cuối hàng, không cộng lượt phạt', 'End of the line, no penalty turn'), L('Không dùng được: chủ tiệm tự chọn thợ nên không có hàng để xuống cuối.', 'Not available: the owner picks, so there is no line.'), true);
+  else if (isLine()) b += opt('outOver', 'end', L('Xuống cuối hàng, không cộng lượt phạt', 'End of the line, no penalty turn'), L('Chỉ đổi vị trí, không tăng số lượt.', 'Only the place changes; turns do not go up.'));
+  else b += opt('outOver', 'end', L('Đứng sau các thợ khác, không cộng lượt phạt', 'Stand after the others, no penalty turn'), L('Cách chia đang chọn không có hàng. Thợ đứng sau các thợ khác cho tới khi nhận khách kế tiếp. Không cộng tiền, khách hay phút giả.', 'The chosen way has no line. The tech stands after the others until the next customer. No fake money, customers or minutes.'));
+  if (!usesTurns()) b += opt('outOver', 'pen', L('Cộng lượt phạt và xuống cuối hàng', 'Add penalty turns and go to the end'), L('Không dùng được: cách chia đang chọn không dùng số lượt nên không có lượt phạt. Hệ thống không cộng tiền, khách hay phút giả để phạt.', 'Not available: the chosen way does not use turns, so there are no penalty turns. The system never adds fake money, customers or minutes as a penalty.'), true);
+  else b += opt('outOver', 'pen', isManual() ? L('Ghi lượt phạt để chủ tiệm xem', 'Record penalty turns for the owner') : L('Cộng lượt phạt và xuống cuối hàng', 'Add penalty turns and go to the end'), isManual() ? L('Chủ tiệm tự chọn thợ nên không có hàng; lượt phạt chỉ ghi để chủ xem khi chọn thợ.', 'The owner picks, so there is no line; penalty turns are shown to the owner.') : '');
+  if (cfg.outOver === 'pen' && usesTurns()) {
+    b += '<div class="q smq"><label for="penIn">' + esc(L('Số lượt phạt', 'Penalty turns')) + '</label> <span class="money"><input id="penIn" type="text" inputmode="decimal" autocomplete="off" value="' + esc(fmt(cfg.outPen)) + '" aria-label="' + esc(L('Số lượt phạt', 'Penalty turns')) + '"><span>' + esc(L('lượt', 'turn(s)')) + '</span></span></div>';
+    b += '<div class="num sm"><button type="button" data-dn="outPen" data-step="-0.5" data-min="0.5" data-max="10" aria-label="' + esc(L('Bớt nửa lượt', 'Half a turn less')) + '">− ' + fmt(0.5) + '</button><button type="button" data-dn="outPen" data-step="0.5" data-min="0.5" data-max="10" aria-label="' + esc(L('Thêm nửa lượt', 'Half a turn more')) + '">+ ' + fmt(0.5) + '</button><span class="hint2">' + esc(L('bước 0,5: 0,5 – 1 – 1,5 – 2…', 'steps of 0.5: 0.5 – 1 – 1.5 – 2…')) + '</span></div><div class="qn" id="penErr" role="alert"></div>';
+  }
+  if (sn.over !== cfg.outOver) b += na(L('Lựa chọn đang lưu không dùng được với cách chia này. Khi quay lại quá giờ, bản thử áp dụng: ', 'The saved choice does not work with this way of sharing. When back late, the preview applies: ') + overText(sn) + '.');
+  b += '<div class="must">• ' + esc(L('"Xuống cuối hàng" chỉ đổi vị trí, không tăng số lượt.', '"End of the line" only changes the place, turns do not go up.')) + '<br>• ' + esc(L('"Lượt phạt" được ghi riêng, không phải khách đã làm, không gộp vào nửa lượt dịch vụ đang chờ.', 'Penalty turns are recorded separately, are not customers served, and are never mixed with a waiting half turn.')) + '<br>• ' + esc(L('Không tạo doanh thu, tip, hoa hồng hoặc tiền công từ lượt phạt.', 'Penalty turns never create revenue, tips, commission or pay.')) + '<br>• ' + esc(L('Chỉ phạt một lần cho mỗi lần ra ngoài; không tự phạt tăng dần theo giờ.', 'At most one penalty per time out; it never grows hour by hour.')) + '<br>• ' + esc(L('Tính bằng thời gian thực từ clock out tới clock in, không làm tròn. Về trước hạn hoặc đúng hạn: không phạt.', 'Real time from clock out to clock in, never rounded. Back early or exactly on time: no penalty.')) + '<br>• ' + esc(L('Hết giờ không tự clock in; thợ phải bấm "Clock in – Quay lại".', 'No automatic clock in when time is up; the tech must tap "Clock in – Back".')) + '<br>• ' + esc(L('Chủ đổi cấu hình lúc thợ đang ra ngoài: lần ra ngoài đó vẫn theo luật đã chốt lúc clock out.', 'If the owner changes these settings while a tech is out, that time out keeps the rule fixed at clock out.')) + '</div>';
+  b += '<div class="qn">' + esc(L('Lúc ra ngoài: thợ nhập PIN → chọn "Ra ngoài có việc" → nhập lý do (bắt buộc) → xem lại tên, lý do, thời gian được phép, cách xử lý nếu quá giờ → bấm "Clock out – Ra ngoài". Không cần chủ duyệt trước; hệ thống gửi thông báo cho chủ tiệm. Thợ còn khách đang làm phải làm xong hoặc bàn giao có ghi nhận trước; hệ thống không tự kết thúc dịch vụ, thanh toán hay chuyển khách.', 'Stepping out: the tech enters the PIN → picks "Step out" → types a reason (required) → checks name, reason, time allowed and what happens if late → taps "Clock out – Step out". No owner approval needed first; the owner gets a notice. A tech still serving a customer must finish or hand over (recorded) first; the system never ends a service, takes payment or moves a customer by itself.')) + '</div>';
+  b += '<div class="qn">' + esc(L('Trong lúc vắng: không đề nghị hay giao khách cho thợ, không tính là từ chối. Các thợ khác nhận khách bình thường. Giữ nguyên lượt, nửa lượt đang chờ, lượt phạt cũ, tiền, tip, công, lịch sử và thứ tự so với các thợ khác (không đóng băng cả hàng, không tự đưa lên đầu).', 'While away: the tech is never offered or given customers, and this is not a refusal. The others take customers as usual. Turns, a waiting half turn, earlier penalties, money, tips, pay, history and the order relative to the others stay as they were (the line is not frozen, and the tech is not moved to the front).')) + '</div>';
+  b += '<div class="qn">' + esc(L('Lúc quay lại: thợ nhập PIN → bấm "Clock in – Quay lại". Hệ thống đóng đúng lần ra ngoài đang mở, tính thời gian vắng thực tế, báo cho chủ tiệm, mở đoạn chấm công tiếp theo trong cùng ngày. Không áp dụng luật "thợ vào ca muộn", không reset lượt, nửa lượt, tiền hay lịch sử.', 'Coming back: the tech enters the PIN → taps "Clock in – Back". The system closes that open time out, measures the real time away, notifies the owner and opens the next time-clock segment on the same work day. The late-start rule does not apply; turns, halves, money and history are not reset.')) + '</div>';
+  var due = 600 + mx, e;
+  if (isLine()) {
+    e = L('Cho phép ', 'Allowed: ') + mx + L(' phút. Hàng: Lan → Mai → Nhân → Dân. Mai ra ngoài lúc ', ' minutes. Line: Lan → Mai → Nhân → Dân. Mai steps out at ') + tm(600) + L(' (cần về trước ', ' (back by ') + tm(due) + L('). Trong lúc Mai vắng có 2 khách: Lan nhận rồi Nhân nhận (Mai được bỏ qua, không tính từ chối) → hàng: Mai → Dân → Lan → Nhân. ', '). Two customers come while Mai is away: Lan, then Nhân (Mai is skipped, not a refusal) → line: Mai → Dân → Lan → Nhân. ');
+    e += L('Mai về lúc ', 'Mai back at ') + tm(due) + L(' (đúng ', ' (exactly ') + mx + L(' phút) → không phạt, hàng giữ nguyên. Mai về lúc ', ' min) → no penalty, line unchanged. Mai back at ') + tm(due + 10) + L(' (', ' (') + (mx + 10) + L(' phút, vượt 10 phút) → ', ' min, 10 over) → ');
+    e += sn.over === 'keep' ? L('giữ vị trí: Mai → Dân → Lan → Nhân (Mai vẫn đứng trước Dân như lúc đi; Lan và Nhân ở sau vì vừa nhận khách).', 'keeps the place: Mai → Dân → Lan → Nhân (Mai is still ahead of Dân as before; Lan and Nhân are behind because they just took customers).') : sn.over === 'end' ? L('xuống cuối: Dân → Lan → Nhân → Mai, số lượt không đổi.', 'to the end: Dân → Lan → Nhân → Mai, turns unchanged.') : L('cộng ', 'adds ') + fmt(sn.pen) + L(' lượt phạt (ghi riêng) và xuống cuối: Dân → Lan → Nhân → Mai.', ' penalty turn(s) (kept separate) and to the end: Dân → Lan → Nhân → Mai.');
+  } else if (isManual()) {
+    e = L('Cho phép ', 'Allowed: ') + mx + L(' phút. Mai ra ngoài lúc ', ' minutes. Mai steps out at ') + tm(600) + L(' → lễ tân không chọn được Mai cho tới khi Mai clock in lại. Mai về lúc ', ' → the desk cannot pick Mai until she clocks in again. Mai back at ') + tm(due + 10) + L(' (vượt 10 phút) → ', ' (10 over) → ') + overText(sn) + '.';
+  } else {
+    e = L('Cho phép ', 'Allowed: ') + mx + L(' phút. Mai ra ngoài lúc ', ' minutes. Mai steps out at ') + tm(600) + L('. Trong lúc vắng, khách giao cho Lan và Nhân theo ', '. While she is away, customers go to Lan and Nhân by ') + mName(cfg.method).toLowerCase() + L('; Mai không được đề nghị. Về trước hoặc đúng ', '; Mai is not offered any. Back within ') + tm(due) + L(' → so sánh lại như bình thường. Về lúc ', ' → compared as usual. Back at ') + tm(due + 10) + L(' (vượt 10 phút) → ', ' (10 over) → ') + overText(sn) + '.';
+  }
+  b += ex(e);
+  b += ex(L('Thông báo khi về trễ: "Ra ngoài ', 'Message when late: "Out for ') + (mx + 10) + L(' phút, vượt mức cho phép 10 phút. ', ' minutes, 10 minutes over the limit. ') + cap(overText(sn)) + '."');
+  b += '<div class="must">' + esc(L('Chỉ clock out ra ngoài và clock in quay lại trên iPad front desk đã được chủ tiệm đăng ký, bằng PIN cá nhân. Không cho thợ xác nhận từ điện thoại cá nhân. Khi tích hợp thật, server kiểm tra thiết bị front desk và quyền của thợ cho từng thao tác (không dựa vào kích thước màn hình, tên trình duyệt hay user-agent) và dùng giờ server. PIN không hiện trong lịch sử hay báo cáo. Bản xem thử chỉ MÔ PHỎNG iPad front desk và dùng đồng hồ thử – chưa có giới hạn thiết bị thật.', 'Stepping out and coming back only on a front desk iPad registered by the owner, with the tech\'s own PIN. Never from a personal phone. When this goes live, the server checks the front desk device and the tech\'s rights for every action (never by screen size, browser name or user-agent) and uses server time. The PIN never shows in history or reports. This preview only SIMULATES the front desk iPad and uses a test clock – there is no real device check yet.')) + '</div>';
+  b += '<div class="qn">' + esc(L('Chủ tiệm được clock out / clock in thay khi thợ quên, sửa giờ ghi sai, miễn hoặc chỉnh lượt phạt, sửa vị trí. Mỗi điều chỉnh ghi người làm, thời điểm, giá trị trước và sau, và lý do (bắt buộc). Lịch sử gốc không bị xóa. Thợ không tự sửa giờ, miễn phạt hay chỉnh vị trí. Thời gian vắng ghi riêng trong chấm công; không đổi cách tính lương/payroll hiện có.', 'The owner may clock out / in for a tech who forgot, fix wrong times, waive or change penalty turns and fix places. Every change records who, when, before and after, and a reason (required). The original history is never deleted. Techs cannot fix times, waive penalties or move places themselves. Time away is kept separately in the time clock; the current payroll rules are not changed.')) + '</div>';
+  b += now(L('cho thợ ra ngoài tối đa ', 'let a tech step out for up to ') + mx + L(' phút; về trễ hơn thì ', ' minutes; back later than that, the tech ') + overText(sn) + '.');
+  return b;
+}
+function evById(id) { return sim.outs.filter(function (e) { return e.id === id; })[0]; }
+function evOut(e) { return e.fix && e.fix.out != null ? e.fix.out : e.out; }
+function evBack(e) { return e.fix && e.fix.back != null ? e.fix.back : e.back; }
+function goOut(n, reason, by, ownWhy) {
+  var t = T(n); reason = String(reason || '').trim(); ownWhy = String(ownWhy || '').trim();
+  if (!t || !t.on || t.out || t.busy || !reason || (by === 'owner' && !ownWhy)) return null;
+  var sn = snapNow(), ev = { id: ++sim.oseq, t: n, reason: reason.slice(0, 80), out: sim.now, back: null, sn: sn, st: 'open', by: by || 'tech', ownWhy: ownWhy, res: '', penApplied: 0, waived: false, adj: [] };
+  t.out = ev.id; t.brk = false; t.lastMsg = ''; sim.outs.push(ev);
+  sim.log.unshift({ b: tm(sim.now) + ' · ' + n + L(' clock out – ra ngoài có việc', ' clock out – stepped out'), m: L('lý do: ', 'reason: ') + ev.reason + L(' · được phép ', ' · allowed ') + sn.max + L(' phút, cần quay lại trước ', ' min, back by ') + tm(sim.now + sn.max) + L(' · quá giờ thì ', ' · if late, ') + overText(sn) + L(' · lượt, nửa lượt, tiền và vị trí giữ nguyên', ' · turns, halves, money and place kept') + (ev.by === 'owner' ? L(' · chủ tiệm bấm thay: ', ' · done by the owner: ') + ownWhy : '') });
+  sim.log.unshift({ b: '🔔 ' + L('Thông báo cho chủ tiệm', 'Notice to the owner'), m: n + L(' ra ngoài lúc ', ' stepped out at ') + tm(sim.now) + ' – ' + ev.reason });
+  return ev;
+}
+function comeBack(n, by, ownWhy) {
+  var t = T(n), ev = t && t.out ? evById(t.out) : null; ownWhy = String(ownWhy || '').trim();
+  if (!ev || ev.st !== 'open') { if (t) sim.log.unshift({ b: n + L(': đã clock in rồi', ': already clocked in'), m: L('không ghi thêm lần quay lại, không phạt lần hai', 'no second return recorded, no second penalty') }); return null; }
+  if (by === 'owner' && !ownWhy) return null;
+  var before = lineStr(); ev.back = sim.now; ev.st = 'back'; ev.backBy = by || 'tech'; ev.backWhy = ownWhy; t.out = null;
+  var dur = ev.back - ev.out, over = dur - ev.sn.max, res;
+  if (over <= 0) { ev.res = 'ok'; res = L('Ra ngoài ', 'Out for ') + dur + L(' phút, trong mức cho phép ', ' minutes, within the ') + ev.sn.max + L(' phút. Không phạt, giữ vị trí.', ' minutes allowed. No penalty, place kept.'); }
+  else {
+    ev.res = ev.sn.over;
+    if (ev.sn.over === 'end') { if (ev.sn.line) toEnd(t); else if (!ev.sn.manual) t.pen = true; }
+    if (ev.sn.over === 'pen') { t.penT += ev.sn.pen; ev.penApplied = ev.sn.pen; if (ev.sn.line) toEnd(t); }
+    res = L('Ra ngoài ', 'Out for ') + dur + L(' phút, vượt mức cho phép ', ' minutes, ') + over + L(' phút. ', ' minutes over the limit. ') + cap(overText(ev.sn)) + '.';
+  }
+  var changed = JSON.stringify(snapNow()) !== JSON.stringify(ev.sn);
+  ev.msg = res; t.lastMsg = res + L(' Lý do ra ngoài: ', ' Reason: ') + ev.reason + '.';
+  sim.log.unshift({ b: tm(sim.now) + ' · ' + n + L(' clock in – quay lại', ' clock in – back'), m: res + (changed ? L(' · Áp dụng luật đã chốt lúc clock out (', ' · Uses the rule fixed at clock out (') + ev.sn.max + L(' phút; ', ' min; ') + overText(ev.sn) + L('); cấu hình mới không áp dụng cho lần này', '); the new settings do not apply to this time out') : '') + L(' · lượt, nửa lượt, tiền, lịch sử không reset · không áp dụng luật vào ca muộn', ' · turns, halves, money and history not reset · late-start rule not used') + (ev.sn.line ? L(' · trước: ', ' · before: ') + before + L(' · sau: ', ' · after: ') + lineStr() : '') + (ev.backBy === 'owner' ? L(' · chủ tiệm bấm thay: ', ' · done by the owner: ') + ownWhy : '') });
+  sim.log.unshift({ b: '🔔 ' + L('Thông báo cho chủ tiệm', 'Notice to the owner'), m: res.replace(/^./, function (c) { return n + ': ' + c.toLowerCase(); }) });
+  return ev;
+}
+function endShift(n) {
+  var t = T(n); if (!t || !t.on || t.busy || t.out) return false;
+  t.on = false; t.ended = true; t.brk = false; var i = sim.line.indexOf(n); if (i >= 0) sim.line.splice(i, 1);
+  sim.log.unshift({ b: tm(sim.now) + ' · ' + n + L(' clock out – kết thúc ca', ' clock out – end of shift'), m: L('nghỉ làm hết ngày, ra khỏi hàng', 'done for the day, leaves the line') + (isLine() ? L(' · hàng: ', ' · line: ') + (lineStr() || '–') : '') });
+  return true;
+}
+function endDay() {
+  var open = sim.outs.filter(function (e) { return e.st === 'open'; });
+  open.forEach(function (e) { e.st = 'unconf'; });
+  sim.dayOver = true;
+  sim.log.unshift({ b: L('Hết ngày thử', 'End of the test day'), m: open.length ? open.map(function (e) { return e.t; }).join(', ') + L(': chưa xác nhận quay lại – chủ tiệm cần xử lý; không tự tạo giờ về', ': return not confirmed – the owner must handle it; no return time is made up') : L('không có ai còn đang ra ngoài', 'nobody is still out') });
+  return open.length;
+}
+function ownerAdj(id, what, val, why) {
+  var ev = evById(id), t = ev && T(ev.t); why = String(why || '').trim();
+  if (!ev || !why) return false;
+  var a = { by: L('Chủ tiệm', 'Owner'), at: sim.now, why: why }, ln = function () { return lineStr() || '–'; };
+  if (what === 'waive') {
+    if (!(ev.penApplied > 0) || ev.waived) return false;
+    a.what = L('Miễn lượt phạt', 'Waive penalty'); a.before = fmt(t.penT); t.penT = Math.max(0, t.penT - ev.penApplied); ev.waived = true; a.after = fmt(t.penT);
+  } else if (what === 'out' || what === 'back') {
+    var m = +val; if (!(m >= 0 && m <= sim.now)) return false;
+    var o2 = what === 'out' ? m : evOut(ev), b2 = what === 'back' ? m : evBack(ev);
+    if (what === 'back' && ev.st === 'open') return false;
+    if (b2 != null && b2 <= o2) return false;
+    ev.fix = ev.fix || {}; a.what = what === 'out' ? L('Sửa giờ clock out', 'Fix clock-out time') : L('Sửa / ghi giờ clock in', 'Fix / enter clock-in time');
+    var cur = what === 'out' ? evOut(ev) : evBack(ev); a.before = cur == null ? '–' : tm(cur); ev.fix[what] = m; a.after = tm(m);
+    if (what === 'back' && ev.st === 'unconf') { ev.st = 'ownerBack'; if (t.out === ev.id) t.out = null; }
+    a.note = L('lượt không tự tính lại; nếu cần, chủ chọn "Miễn lượt phạt" hoặc "Sửa vị trí"', 'turns are not recalculated; if needed, the owner uses "Waive penalty" or "Fix place"');
+  } else if (what === 'pos') {
+    var i = sim.line.indexOf(ev.t), j = +val; if (i < 0 || !(j >= 0 && j < sim.line.length)) return false;
+    a.what = L('Sửa vị trí trong hàng', 'Fix place in line'); a.before = ln(); sim.line.splice(i, 1); sim.line.splice(j, 0, ev.t); a.after = ln();
+  } else return false;
+  ev.adj.push(a);
+  sim.log.unshift({ b: tm(sim.now) + ' · ' + L('Chủ tiệm điều chỉnh: ', 'Owner change: ') + a.what + ' – ' + ev.t, m: L('trước: ', 'before: ') + a.before + L(' · sau: ', ' · after: ') + a.after + L(' · lý do: ', ' · reason: ') + why + L(' · lịch sử gốc giữ nguyên', ' · original history kept') });
+  return true;
+}
+function openSheet(html) { var sh = $('#sheet'), bx = $('#sheetBox'); bx.innerHTML = html; sh.hidden = false; bx.querySelectorAll('[data-x]').forEach(function (x) { x.addEventListener('click', function () { sh.hidden = true; }); }); return bx; }
+function kv(rows) { return '<dl class="kv">' + rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('') + '</dl>'; }
+function whoBox() { return '<div class="radio2" role="radiogroup"><label><input type="radio" name="who" value="tech" checked>' + esc(L('Thợ tự bấm (PIN)', 'The tech (PIN)')) + '</label><label><input type="radio" name="who" value="owner">' + esc(L('Chủ tiệm bấm thay', 'The owner, on behalf')) + '</label></div><div id="ownBox" hidden><label class="fl" for="oOwn">' + esc(L('Lý do chủ bấm thay (bắt buộc)', 'Why the owner does it (required)')) + '</label><input class="fi2" id="oOwn" maxlength="80" autocomplete="off"></div>'; }
+function ipadHead(steps) { return '<h3>📱 ' + esc(L('iPad front desk (mô phỏng)', 'Front desk iPad (simulated)')) + '</h3><div class="qn">' + esc(L('Bản xem thử không hỏi PIN thật. Khi tích hợp, thợ nhập PIN cá nhân trên iPad front desk đã đăng ký; PIN không hiện trong lịch sử hay báo cáo.', 'This preview never asks for a real PIN. When live, the tech enters a personal PIN on a registered front desk iPad; the PIN never shows in history or reports.')) + '</div><ol class="steps">' + steps.map(function (s) { return '<li' + (s[1] ? ' class="done"' : '') + '>' + esc(s[0]) + '</li>'; }).join('') + '</ol>'; }
+function bindWho(bx) { bx.querySelectorAll('[name=who]').forEach(function (r) { r.addEventListener('change', function () { $('#ownBox', bx).hidden = r.value !== 'owner' || !r.checked; }); }); }
+function whoVal(bx) { var r = bx.querySelector('[name=who]:checked'); return r ? r.value : 'tech'; }
+function busyInfo(t, what) { openSheet('<h3>' + esc(t.name + L(' đang làm khách', ' is serving a customer')) + '</h3><div class="qn">' + esc(L('Cần làm xong hoặc bàn giao khách (có ghi nhận) trước khi ', 'Finish or hand over the customer (recorded) before ') + what + L('. Hệ thống không tự kết thúc dịch vụ, thanh toán hay chuyển khách.', '. The system never ends a service, takes payment or moves a customer by itself.')) + '</div><button type="button" class="btn blk" data-x>' + esc(L('Đóng', 'Close')) + '</button>'); }
+function outSheet(n) {
+  var t = T(n); if (t.busy) { busyInfo(t, L('ra ngoài', 'stepping out')); return; }
+  var sn = snapNow(), chips = LANG === 'en' ? ['Bank', 'Pick up kids', 'Get food', 'Family matter'] : ['Đi ngân hàng', 'Đón con', 'Mua đồ ăn', 'Việc gia đình'];
+  var bx = openSheet(ipadHead([[L('Thợ nhập PIN: ', 'PIN entered: ') + n + ' ✓ (' + L('mô phỏng', 'simulated') + ')', 1], [L('Chọn "Ra ngoài có việc" ✓', 'Picked "Step out" ✓'), 1], [L('Nhập lý do ngắn (bắt buộc)', 'Type a short reason (required)'), 0], [L('Bấm "Clock out – Ra ngoài"', 'Tap "Clock out – Step out"'), 0]])
+    + whoBox() + '<label class="fl" for="oReason">' + esc(L('Lý do ra ngoài (bắt buộc)', 'Reason for stepping out (required)')) + '</label><input class="fi2" id="oReason" maxlength="80" autocomplete="off">'
+    + '<div class="chips">' + chips.map(function (c) { return '<button type="button" class="chip" data-chip="' + esc(c) + '">' + esc(c) + '</button>'; }).join('') + '</div>'
+    + '<div class="err" id="oErr" role="alert"></div><div class="conf" id="oConf"></div>'
+    + '<button type="button" class="btn pri blk" id="oGo">' + esc(L('Clock out – Ra ngoài', 'Clock out – Step out')) + '</button><div style="height:8px"></div><button type="button" class="btn blk" data-x>' + esc(L('Đóng', 'Close')) + '</button>');
+  var conf = function () { var r = $('#oReason', bx).value.trim(); $('#oConf', bx).innerHTML = '<b>' + esc(L('Xem lại trước khi xác nhận', 'Check before confirming')) + '</b>' + kv([[L('Thợ', 'Tech'), n], [L('Lý do', 'Reason'), r || L('(chưa nhập)', '(not entered)')], [L('Được phép', 'Allowed'), sn.max + L(' phút – cần quay lại trước ', ' min – back by ') + tm(sim.now + sn.max)], [L('Nếu quay lại quá giờ', 'If back late'), overText(sn)]]); };
+  conf(); bindWho(bx);
+  $('#oReason', bx).addEventListener('input', conf);
+  bx.querySelectorAll('[data-chip]').forEach(function (c) { c.addEventListener('click', function () { $('#oReason', bx).value = c.dataset.chip; conf(); }); });
+  $('#oGo', bx).addEventListener('click', function () {
+    var r = $('#oReason', bx).value.trim(), w = whoVal(bx), ow = $('#oOwn', bx).value.trim();
+    if (!r) { $('#oErr', bx).textContent = L('Cần nhập lý do ra ngoài.', 'Please enter a reason.'); return; }
+    if (w === 'owner' && !ow) { $('#oErr', bx).textContent = L('Chủ bấm thay cần ghi lý do.', 'The owner must give a reason.'); return; }
+    $('#sheet').hidden = true; goOut(n, r, w, ow); draw();
+  });
+}
+function backSheet(n) {
+  var t = T(n), ev = evById(t.out); if (!ev) return;
+  var dur = sim.now - ev.out, over = dur - ev.sn.max, changed = JSON.stringify(snapNow()) !== JSON.stringify(ev.sn);
+  var bx = openSheet(ipadHead([[L('Thợ nhập PIN: ', 'PIN entered: ') + n + ' ✓ (' + L('mô phỏng', 'simulated') + ')', 1], [L('Bấm "Clock in – Quay lại"', 'Tap "Clock in – Back"'), 0]]) + whoBox()
+    + '<div class="conf">' + kv([[L('Thợ', 'Tech'), n], [L('Lý do', 'Reason'), ev.reason], [L('Clock out', 'Clock out'), tm(ev.out)], [L('Bây giờ', 'Now'), tm(sim.now)], [L('Đã vắng', 'Away'), dur + L(' phút', ' min')], [L('Được phép', 'Allowed'), ev.sn.max + L(' phút', ' min')], [L('Kết quả', 'Result'), over > 0 ? L('vượt ', '') + over + L(' phút → ', ' min over → ') + overText(ev.sn) : L('trong mức cho phép → không phạt', 'within the limit → no penalty')]]) + '</div>'
+    + (changed ? '<div class="must">' + esc(L('Cấu hình đã đổi sau khi ', 'The settings changed after ') + n + L(' ra ngoài. Lần này vẫn theo luật đã chốt lúc clock out.', ' stepped out. This time out keeps the rule fixed at clock out.')) + '</div>' : '')
+    + '<div class="err" id="oErr" role="alert"></div><button type="button" class="btn pri blk" id="oGo">' + esc(L('Clock in – Quay lại', 'Clock in – Back')) + '</button><div style="height:8px"></div><button type="button" class="btn blk" data-x>' + esc(L('Đóng', 'Close')) + '</button>');
+  bindWho(bx);
+  $('#oGo', bx).addEventListener('click', function () { var w = whoVal(bx), ow = $('#oOwn', bx).value.trim(); if (w === 'owner' && !ow) { $('#oErr', bx).textContent = L('Chủ bấm thay cần ghi lý do.', 'The owner must give a reason.'); return; } $('#sheet').hidden = true; comeBack(n, w, ow); draw(); });
+}
+function hhmm(m) { var h = Math.floor(m / 60), x = m % 60; return (h < 10 ? '0' : '') + h + ':' + (x < 10 ? '0' : '') + x; }
+function adjSheet(id) {
+  var ev = evById(id); if (!ev) return;
+  var ch = [];
+  if (ev.penApplied > 0 && !ev.waived) ch.push(['waive', L('Miễn lượt phạt (', 'Waive penalty (') + fmt(ev.penApplied) + L(' lượt)', ' turn)')]);
+  ch.push(['out', L('Sửa giờ clock out', 'Fix clock-out time')]);
+  if (ev.st !== 'open') ch.push(['back', ev.st === 'unconf' ? L('Ghi giờ clock in (thợ quên bấm)', 'Enter clock-in time (tech forgot)') : L('Sửa giờ clock in', 'Fix clock-in time')]);
+  if (isLine() && sim.line.indexOf(ev.t) >= 0) ch.push(['pos', L('Sửa vị trí trong hàng', 'Fix place in line')]);
+  var bx = openSheet('<h3>' + esc(L('Chủ tiệm điều chỉnh – ', 'Owner change – ') + ev.t) + '</h3><div class="qn">' + esc(L('Chỉ chủ tiệm được điều chỉnh. Ghi người làm, thời điểm, trước/sau và lý do. Lịch sử gốc giữ nguyên.', 'Only the owner can change this. Who, when, before/after and the reason are recorded. The original history is kept.')) + '</div>'
+    + '<div class="radio2" role="radiogroup">' + ch.map(function (c, i) { return '<label><input type="radio" name="adjW" value="' + c[0] + '"' + (i ? '' : ' checked') + '>' + esc(c[1]) + '</label>'; }).join('') + '</div>'
+    + '<div id="aTime"><label class="fl" for="aT">' + esc(L('Giờ đúng', 'Correct time')) + '</label><input class="fi2" id="aT" type="time" value="' + hhmm(ev.st === 'open' || ev.st === 'unconf' ? sim.now : evBack(ev) || sim.now) + '"></div>'
+    + '<div id="aPos"><label class="fl" for="aP">' + esc(L('Vị trí mới', 'New place')) + '</label><select class="fi2" id="aP">' + sim.line.map(function (x, i) { return '<option value="' + i + '"' + (x === ev.t ? ' selected' : '') + '>' + (i + 1) + '</option>'; }).join('') + '</select></div>'
+    + '<label class="fl" for="aWhy">' + esc(L('Lý do điều chỉnh (bắt buộc)', 'Reason for the change (required)')) + '</label><input class="fi2" id="aWhy" maxlength="80" autocomplete="off">'
+    + '<div class="err" id="aErr" role="alert"></div><button type="button" class="btn pri blk" id="aGo">' + esc(L('Lưu điều chỉnh', 'Save the change')) + '</button><div style="height:8px"></div><button type="button" class="btn blk" data-x>' + esc(L('Đóng', 'Close')) + '</button>');
+  var sel = function () { var w = (bx.querySelector('[name=adjW]:checked') || {}).value; $('#aTime', bx).hidden = !(w === 'out' || w === 'back'); $('#aPos', bx).hidden = w !== 'pos'; if (w === 'out') $('#aT', bx).value = hhmm(evOut(ev)); if (w === 'back') $('#aT', bx).value = hhmm(evBack(ev) != null ? evBack(ev) : sim.now); };
+  bx.querySelectorAll('[name=adjW]').forEach(function (r) { r.addEventListener('change', sel); }); sel();
+  $('#aGo', bx).addEventListener('click', function () {
+    var w = (bx.querySelector('[name=adjW]:checked') || {}).value, why = $('#aWhy', bx).value.trim(), v = null;
+    if (!why) { $('#aErr', bx).textContent = L('Cần ghi lý do điều chỉnh.', 'Please enter a reason.'); return; }
+    if (w === 'out' || w === 'back') { var p = /^(\d{1,2}):(\d{2})$/.exec($('#aT', bx).value || ''); if (!p) { $('#aErr', bx).textContent = L('Giờ không hợp lệ.', 'Invalid time.'); return; } v = +p[1] * 60 + +p[2]; }
+    if (w === 'pos') v = +$('#aP', bx).value;
+    if (!ownerAdj(id, w, v, why)) { $('#aErr', bx).textContent = L('Không lưu được: giờ clock in phải sau giờ clock out và không sau giờ thử hiện tại.', 'Not saved: clock in must be after clock out and not after the current test time.'); return; }
+    $('#sheet').hidden = true; draw();
+  });
+}
+function outReport() {
+  if (!sim.outs.length) return '';
+  var h = '<div class="q">' + esc(L('Báo cáo ra ngoài cho chủ tiệm', 'Time-out report for the owner')) + '</div><div class="reps">';
+  sim.outs.slice().reverse().forEach(function (e) {
+    var o = evOut(e), bk = evBack(e), stt, dur, over, hand, pen;
+    if (e.st === 'open') { dur = sim.now - o; over = dur - e.sn.max; stt = L('Đang ra ngoài', 'Out now'); }
+    else if (e.st === 'unconf') { dur = sim.now - o; over = dur - e.sn.max; stt = L('Chưa xác nhận quay lại', 'Return not confirmed'); }
+    else { dur = bk - o; over = dur - e.sn.max; stt = e.st === 'ownerBack' ? L('Chủ tiệm ghi giờ về', 'Return entered by the owner') : L('Đã quay lại', 'Back'); }
+    var ovt = over > 0 ? over + L(' phút', ' min') : L('không', 'none');
+    if (e.st === 'open') { ovt = over > 0 ? L('đã quá hạn ', 'already ') + over + L(' phút (chưa ghi phạt – chờ quay lại)', ' min over (no penalty yet – waiting for the return)') : L('chưa quá hạn (còn ', 'not yet (') + (-over) + L(' phút)', ' min left)'); hand = L('chờ thợ clock in', 'waiting for the clock in'); }
+    else if (e.st === 'unconf') { hand = L('chủ tiệm cần xử lý; không tự tạo giờ về', 'the owner must handle it; no return time is made up'); }
+    else if (e.st === 'ownerBack') hand = L('không tự tính phạt – chủ quyết định', 'no automatic penalty – the owner decides');
+    else hand = e.res === 'ok' ? L('trong mức cho phép – không phạt', 'within the limit – no penalty') : overText(e.sn);
+    pen = e.penApplied ? fmt(e.penApplied) + (e.waived ? L(' (đã miễn)', ' (waived)') : '') : '0';
+    var times = function (orig, cur) { return orig == null ? (cur == null ? '–' : tm(cur) + L(' (chủ ghi)', ' (by owner)')) : cur !== orig ? tm(cur) + L(' (chủ sửa; gốc ', ' (fixed by owner; original ') + tm(orig) + ')' : tm(orig); };
+    h += '<div class="rep"><b>' + esc(e.t + ' — ' + stt) + '</b>' + kv([[L('Lý do ra ngoài', 'Reason'), e.reason], [L('Giờ clock out', 'Clock out'), times(e.out, o) + (e.by === 'owner' ? L(' · chủ bấm thay', ' · by owner') : '')], [L('Giờ clock in', 'Clock in'), times(e.back, bk) + (e.backBy === 'owner' ? L(' · chủ bấm thay', ' · by owner') : '')], [e.st === 'back' || e.st === 'ownerBack' ? L('Tổng thời gian', 'Total time') : L('Đã vắng', 'Away so far'), dur + L(' phút', ' min')], [L('Được phép', 'Allowed'), e.sn.max + L(' phút', ' min')], [L('Thời gian vượt', 'Over by'), ovt], [L('Cách xử lý', 'Handling'), hand], [L('Lượt phạt', 'Penalty turns'), pen], [L('Chấm công', 'Time clock'), L('đoạn trước kết thúc ', 'segment ends ') + tm(o) + (bk != null ? L(' · đoạn sau bắt đầu ', ' · next segment starts ') + tm(bk) + L(', cùng ngày làm việc', ', same work day') : '') + L(' · thời gian vắng ghi riêng', ' · time away kept separately')], [L('Điều chỉnh của chủ', 'Owner changes'), e.adj.length ? e.adj.length + L(' lần (xem dưới)', ' (see below)') : L('chưa có', 'none')]]);
+    if (e.adj.length) h += '<ul class="adjl">' + e.adj.map(function (a) { return '<li>' + esc(tm(a.at) + ' · ' + a.by + ' · ' + a.what + ' · ' + L('trước: ', 'before: ') + a.before + L(' → sau: ', ' → after: ') + a.after + ' · ' + L('lý do: ', 'reason: ') + a.why + (a.note ? ' · ' + a.note : '')) + '</li>'; }).join('') + '</ul>';
+    h += '<button type="button" class="btn" data-adj="' + e.id + '">' + esc(L('Chủ tiệm điều chỉnh', 'Owner change')) + '</button></div>';
+  });
+  return h + '</div><div class="qn">' + esc(L('Không thay đổi cách tính lương/payroll hiện có.', 'The current payroll rules are not changed.')) + '</div>';
 }
 function earlyBlock() {
   var o = tm(+cfg.openTime), b = q(L('Khách làm trước giờ mở cửa', 'Customers served before opening'));
@@ -290,7 +504,7 @@ function earlyBlock() {
   b += opt('early', 'A', L('A. Không tính lượt trước giờ mở cửa', 'A. No turns before opening'), L('Khách bắt đầu được phục vụ trước giờ mở cửa không cộng lượt. Khách bắt đầu đúng giờ mở cửa hoặc sau đó áp dụng luật thông thường.', 'A customer whose service starts before opening adds no turn. From the opening time on, the normal rules apply.'));
   b += opt('early', 'B', L('B. Tính lượt từ khách đầu tiên', 'B. Turns from the first customer'), L('Khách làm trước giờ mở cửa vẫn cộng lượt theo luật của tiệm: không cộng, nửa lượt hoặc một lượt tùy loại khách và dịch vụ.', 'Early customers still count by the salon\'s rules: no turn, half or one turn depending on the customer and service.'));
   b += opt('early', 'C', L('C. Chỉ tính lượt khi có từ hai thợ vào ca', 'C. Turns only once two or more techs are on shift'), L('Khi chỉ có một thợ vào ca, khách không cộng lượt. Khi có từ hai thợ vào ca, khách mới bắt đầu được tính lượt. Từ giờ mở cửa trở đi luôn áp dụng luật thông thường.', 'With only one tech on shift, customers add no turn. With two or more, customers start to count. From opening on, the normal rules always apply.'));
-  if (cfg.early === 'C') b += '<div class="must">' + esc(L('Đếm thợ đã bấm vào ca và chưa kết thúc ca. Thợ đang làm khách hoặc đang nghỉ giải lao vẫn là thợ trong ca. Không đếm thợ chưa vào ca. Thợ thứ hai vào ca không làm thay đổi lượt của khách đã bắt đầu.', 'Counts techs who started and have not ended the shift. A tech serving a customer or on a break is still on shift. Techs not on shift yet are not counted. A second tech starting does not change customers already started.')) + '</div>';
+  if (cfg.early === 'C') b += '<div class="must">' + esc(L('Đếm thợ đã bấm vào ca và chưa kết thúc ca. Thợ đang làm khách hoặc đang nghỉ giải lao vẫn là thợ trong ca. Không đếm thợ chưa vào ca. Thợ đang ra ngoài (đã clock out) không được đếm. Thợ thứ hai vào ca không làm thay đổi lượt của khách đã bắt đầu.', 'Counts techs who started and have not ended the shift. A tech serving a customer or on a break is still on shift. Techs not on shift yet, or stepped out (clocked out), are not counted. A second tech starting does not change customers already started.')) + '</div>';
   b += '<div class="must">' + esc(L('Luật được xác định tại lúc "Bắt đầu phục vụ" – không dùng giờ đặt hẹn, giờ check-in, giờ thanh toán hay giờ bấm "Làm xong". Lúc bắt đầu phục vụ, hệ thống ghi lại số lượt của khách đó và không tự tính lại khi thợ khác vào ca hay khi tới giờ mở cửa. Ví dụ: khách bắt đầu 9:00, làm xong 10:15 → vẫn là khách bắt đầu trước giờ mở cửa.', 'The rule is decided at "Start service" – not the booking time, check-in, payment or "Finished". At that moment the system records that customer\'s turns and never recalculates them when another tech starts or when opening time comes. E.g. started 9:00, finished 10:15 → still a before-opening customer.')) + '</div>';
   if (!usesTurns()) b += na(L('Với cách chia đang chọn: khách sớm không được tính lượt thì cũng KHÔNG đưa vào ', 'With the chosen way: an early customer with no turn is also NOT added to the ') + { dollar: L('tiền dịch vụ', 'service money'), count: L('số khách', 'customer count'), time: L('số phút', 'minutes'), points: L('số điểm', 'points') }[cfg.method] + L(' dùng để chia khách. Khách sớm được tính lượt thì đưa vào như bình thường. Tiền thật và báo cáo lương vẫn giữ đầy đủ, tách khỏi chỉ số chia khách.', ' used to share customers. An early customer that counts is added as usual. Real money and payroll stay complete, separate from the sharing numbers.'));
   var e = L('Tiệm mở cửa ', 'The salon opens at ') + o + L('. Lan vào ca và bắt đầu làm khách lúc 9:00. Mai vào ca lúc 9:30. ', '. Lan starts the shift and a customer at 9:00. Mai starts at 9:30. ');
@@ -367,6 +581,7 @@ function summary() {
     s.push(L('Thợ từ chối khách ', 'A tech who says no ') + (cfg.refuse === 'keep' ? L('giữ vị trí.', 'keeps the place.') : cfg.refuse === 'end' ? L('xuống cuối hàng.', 'goes to the end.') : L('bị cộng một lượt và xuống cuối hàng.', 'adds one turn and goes to the end.')));
   }
   s.push((cfg.early === 'A' ? L('Khách bắt đầu trước giờ mở cửa ', 'Customers started before ') + tm(+cfg.openTime) + L(' không cộng lượt.', ' opening add no turn.') : cfg.early === 'B' ? L('Khách trước giờ mở cửa vẫn tính lượt theo luật thường.', 'Customers before opening count by the normal rules.') : L('Trước giờ mở cửa chỉ tính lượt khi có từ hai thợ trong ca.', 'Before opening, turns count only with two or more techs on shift.')) + L(' Đầu giờ mở cửa xếp hàng theo ', ' At opening the line follows ') + (cfg.startDay === 'clock' ? L('giờ bấm vào ca.', 'shift start times.') : L('thứ tự chủ tiệm đã xếp.', 'the owner\'s order.')));
+  s.push(L('Thợ được ra ngoài tối đa ', 'A tech may step out for up to ') + cfg.outMax + L(' phút. Quay lại quá giờ: ', ' minutes. Back late: ') + overText(snapNow()) + '.');
   s.push(L('Khách hủy: trừ lại đúng phần đã cộng. Sửa miễn phí: không cộng. Sửa có thu tiền: tính như dịch vụ nhỏ.', 'Cancel: take back exactly what was added. Free fix: nothing added. Paid fix: like a small service.'));
   return '<b>' + esc(L('Tiệm đang chọn luật như sau', 'The salon\'s rules right now')) + '</b>' + s.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('');
 }
@@ -375,10 +590,10 @@ function summary() {
 var sim;
 function fresh(mode) {
   var o = +cfg.openTime, early = mode === 'early';
-  return { t: TECHS.map(function (n, i) { var on = !early && n !== 'Dân'; return { name: n, ord: i, on: on, clockIn: on ? o - 20 + i * 5 : null, busy: null, brk: false, turns: 0, pend: 0, money: 0, real: 0, cust: 0, min: 0, pts: 0, pen: false }; }),
-    line: early ? [] : ['Lan', 'Mai', 'Nhân'], log: [], recs: [], n: 0, seq: 0, now: early ? o - 90 : o, opened: !early, mode: early ? 'early' : 'open' };
+  return { t: TECHS.map(function (n, i) { var on = !early && n !== 'Dân'; return { name: n, ord: i, on: on, clockIn: on ? o - 20 + i * 5 : null, busy: null, brk: false, turns: 0, pend: 0, money: 0, real: 0, cust: 0, min: 0, pts: 0, pen: false, penT: 0, out: null, ended: false, lastMsg: '' }; }),
+    line: early ? [] : ['Lan', 'Mai', 'Nhân'], log: [], recs: [], outs: [], oseq: 0, dayOver: false, n: 0, seq: 0, now: early ? o - 90 : o, opened: !early, mode: early ? 'early' : 'open' };
 }
-function onShift() { return sim.t.filter(function (t) { return t.on; }).length; }
+function onShift() { return sim.t.filter(function (t) { return t.on && !t.out; }).length; }
 function earlyCheck() {
   var o = +cfg.openTime, st = tm(sim.now), ot = tm(o);
   if (sim.now >= o) return { count: true, why: L('bắt đầu ', 'started ') + st + L(', từ giờ mở cửa – luật thường', ', from opening – normal rules') };
@@ -398,7 +613,7 @@ function advance(m) { sim.now = Math.min(sim.now + m, 23 * 60); openNow(); draw(
 function T(n) { return sim.t.filter(function (x) { return x.name === n; })[0]; }
 function lineStr() { return sim.line.join(' → '); }
 function toEnd(t) { var i = sim.line.indexOf(t.name); if (i >= 0) sim.line.splice(i, 1); sim.line.push(t.name); }
-function free(t) { return t.on && !t.brk && !t.busy; }
+function free(t) { return t.on && !t.out && !t.brk && !t.busy; }
 function small(s) { return s.price < +cfg.smallUnder; }
 function weightOf(kind, s) {
   if (kind === 'freefix') return 0;
@@ -456,19 +671,24 @@ function drawTry() {
     + '<div class="cbtn"><button type="button" class="btn" data-clk="1">+1 ' + esc(L('phút', 'min')) + '</button><button type="button" class="btn" data-clk="15">+15 ' + esc(L('phút', 'min')) + '</button><button type="button" class="btn" data-clk="open"' + (sim.now >= +cfg.openTime ? ' disabled' : '') + '>' + esc(L('Tới giờ mở cửa', 'Go to opening')) + '</button></div></div><div class="queue">';
   rows.forEach(function (t) {
     var pos = sim.line.indexOf(t.name);
-    var st = !t.on ? '<span class="st out">' + esc(L('Chưa vào ca', 'Not on shift')) + '</span>' : t.brk ? '<span class="st brk">' + esc(L('Đang nghỉ', 'On break')) + '</span>' : t.busy ? '<span class="st busy">' + esc(L('Đang làm', 'Busy')) + '</span>' : '<span class="st free">' + esc(L('Rảnh', 'Free')) + '</span>';
+    var ev0 = t.out ? evById(t.out) : null;
+    var st = t.ended ? '<span class="st out">' + esc(L('Đã kết thúc ca', 'Shift ended')) + '</span>' : !t.on ? '<span class="st out">' + esc(L('Chưa vào ca', 'Not on shift')) + '</span>' : ev0 ? '<span class="st away">' + esc(ev0.st === 'unconf' ? L('Chưa xác nhận quay lại', 'Return not confirmed') : L('Ra ngoài có việc', 'Stepped out')) + '</span>' : t.brk ? '<span class="st brk">' + esc(L('Đang nghỉ', 'On break')) + '</span>' : t.busy ? '<span class="st busy">' + esc(L('Đang làm', 'Busy')) + '</span>' : '<span class="st free">' + esc(L('Rảnh', 'Free')) + '</span>';
     if (t.pen) st += '<span class="st pen">' + esc(L('Đứng sau', 'Behind')) + '</span>';
-    var stats = (usesTurns() ? L('Lượt ', 'Turns ') + fmt(t.turns) + (t.pend ? ' (+½ ' + L('chờ', 'waiting') + ')' : '') + ' · ' : '') + '$' + fmt(t.money) + (t.real !== t.money ? ' (' + L('tiền thật $', 'real $') + fmt(t.real) + ')' : '') + ' · ' + t.cust + L(' khách · ', ' cust · ') + t.min + L(' phút', ' min') + (cfg.method === 'points' ? ' · ' + fmt(t.pts) + L(' điểm', ' pts') : '') + (t.busy ? ' · ' + L('đang làm: ', 'doing: ') + sname(t.busy) : '');
-    var acts = !t.on ? '<button type="button" class="btn" data-in="' + t.name + '">' + esc(L('Bấm vào ca', 'Start shift')) + '</button>'
-      : '<button type="button" class="btn" data-done="' + t.name + '"' + (t.busy ? '' : ' disabled') + '>' + esc(L('Làm xong', 'Finished')) + '</button>' + (isManual() ? '' : '<button type="button" class="btn" data-brk="' + t.name + '"' + (t.busy && !t.brk ? ' disabled' : '') + '>' + esc(t.brk ? L('Quay lại', 'Back') : L('Nghỉ', 'Break')) + '</button>');
-    h += '<div class="tq' + (nx && nx.name === t.name ? ' next' : '') + '"><div class="pos">' + (isLine() && pos >= 0 ? pos + 1 : '·') + '</div><div><span class="nm">' + esc(t.name) + '</span>' + st + '<div class="stats">' + esc(stats) + '</div></div><div class="acts">' + acts + '</div></div>';
+    var stats = (usesTurns() ? L('Lượt ', 'Turns ') + fmt(t.turns) + (t.pend ? ' (+½ ' + L('chờ', 'waiting') + ')' : '') + (t.penT ? ' · ' + L('Lượt phạt ', 'Penalty ') + fmt(t.penT) : '') + ' · ' : '') + '$' + fmt(t.money) + (t.real !== t.money ? ' (' + L('tiền thật $', 'real $') + fmt(t.real) + ')' : '') + ' · ' + t.cust + L(' khách · ', ' cust · ') + t.min + L(' phút', ' min') + (cfg.method === 'points' ? ' · ' + fmt(t.pts) + L(' điểm', ' pts') : '') + (t.busy ? ' · ' + L('đang làm: ', 'doing: ') + sname(t.busy) : '');
+    var awayl = ev0 ? '<div class="awayl">' + esc(L('Ra ngoài từ ', 'Out since ') + tm(ev0.out) + L(' — được phép ', ' — allowed ') + ev0.sn.max + L(' phút — cần quay lại trước ', ' min — back by ') + tm(ev0.out + ev0.sn.max) + '. ' + L('Đã vắng ', 'Away ') + (sim.now - ev0.out) + L(' phút', ' min') + (sim.now - ev0.out > ev0.sn.max ? L(' · quá hạn ', ' · over by ') + (sim.now - ev0.out - ev0.sn.max) + L(' phút', ' min') : '') + '.') + '</div>' : t.lastMsg ? '<div class="last">' + esc(L('Sau khi về: ', 'After coming back: ') + t.lastMsg) + '</div>' : '';
+    var acts = t.ended ? '' : !t.on ? '<button type="button" class="btn" data-in="' + t.name + '">' + esc(L('Bấm vào ca', 'Start shift')) + '</button>'
+      : ev0 ? (ev0.st === 'open' ? '<button type="button" class="btn pri" data-back="' + t.name + '">' + esc(L('Clock in – Quay lại', 'Clock in – Back')) + '</button>' : '')
+      : '<button type="button" class="btn" data-done="' + t.name + '"' + (t.busy ? '' : ' disabled') + '>' + esc(L('Làm xong', 'Finished')) + '</button>' + (isManual() ? '' : '<button type="button" class="btn" data-brk="' + t.name + '"' + (t.busy && !t.brk ? ' disabled' : '') + '>' + esc(t.brk ? L('Hết nghỉ giải lao', 'End break') : L('Nghỉ giải lao', 'Break')) + '</button>')
+      + '<button type="button" class="btn" data-out="' + t.name + '">' + esc(L('Clock out – Ra ngoài', 'Clock out – Step out')) + '</button><button type="button" class="btn" data-end="' + t.name + '">' + esc(L('Clock out – Kết thúc ca', 'Clock out – End shift')) + '</button>';
+    h += '<div class="tq' + (nx && nx.name === t.name ? ' next' : '') + '"><div class="pos">' + (isLine() && pos >= 0 ? pos + 1 : '·') + '</div><div><span class="nm">' + esc(t.name) + '</span>' + st + '<div class="stats">' + esc(stats) + '</div>' + awayl + '</div>' + (acts ? '<div class="acts">' + acts + '</div>' : '') + '</div>';
   });
   h += '</div><div class="nextline">' + esc(isManual() ? L('Chủ tiệm tự chọn thợ cho từng khách.', 'The owner picks a tech for each customer.') : nx ? L('Khách không hẹn kế tiếp: ', 'Next walk-in: ') + nx.name + (order.length > 1 && !isLine() ? L(' · sau đó ', ' · then ') + order.filter(function (n) { return n !== nx.name; }).join(', ') : '') + (isLine() ? L(' · hàng: ', ' · line: ') + lineStr() : '') : L('Hiện không có thợ nào rảnh.', 'Nobody is free right now.')) + '</div>';
   h += '<div class="acts2"><button type="button" class="btn pri wide" data-a="walk">🚶 ' + esc(L('Khách không hẹn – bắt đầu phục vụ', 'Walk-in – start service')) + '</button>'
     + '<button type="button" class="btn" data-a="req">⭐ ' + esc(L('Khách yêu cầu thợ', 'Asks for a tech')) + '</button><button type="button" class="btn" data-a="appt">📅 ' + esc(L('Khách hẹn tới', 'Booked customer')) + '</button>'
     + '<button type="button" class="btn" data-a="two">👯 ' + esc(L('Hai thợ làm 1 khách', 'Two techs, 1 customer')) + '</button><button type="button" class="btn" data-a="fix">🔧 ' + esc(L('Sửa miễn phí', 'Free fix')) + '</button>'
     + (isManual() ? '' : '<button type="button" class="btn red" data-a="refuse">✋ ' + esc(L('Thợ kế tiếp từ chối', 'Next tech says no')) + '</button>') + '<button type="button" class="btn red" data-a="cancel">🚫 ' + esc(L('Khách hủy / không tới', 'Cancel / no-show')) + '</button>'
-    + '<button type="button" class="btn" data-a="clear">↺ ' + esc(L('Ngày thử mới (từ giờ mở cửa)', 'New test day (from opening)')) + '</button><button type="button" class="btn" data-a="early">🌅 ' + esc(L('Ngày thử mới từ sáng sớm', 'New test day, early morning')) + '</button></div>';
+    + '<button type="button" class="btn" data-a="clear">↺ ' + esc(L('Ngày thử mới (từ giờ mở cửa)', 'New test day (from opening)')) + '</button><button type="button" class="btn" data-a="early">🌅 ' + esc(L('Ngày thử mới từ sáng sớm', 'New test day, early morning')) + '</button><button type="button" class="btn wide" data-a="endday">🌙 ' + esc(L('Hết ngày thử (kiểm tra ai chưa quay lại)', 'End the test day (check who is not back)')) + '</button></div>';
+  h += outReport();
   h += '<ul class="log">' + sim.log.slice(0, 50).map(function (x) { return '<li><b>' + esc(x.b) + '</b><small>' + esc(x.m) + '</small></li>'; }).join('') + '</ul>';
   $('#tryBody').innerHTML = h;
 }
@@ -480,7 +700,7 @@ function pick(title, opts, cb) {
   bx.querySelector('[data-x]').addEventListener('click', function () { sh.hidden = true; });
 }
 function pickSvc(title, cb) { pick(title, SVC.map(function (s) { return { t: sname(s) + ' – $' + s.price + ' · ' + s.min + L(' phút', ' min'), v: s }; }), cb); }
-function pickTech(title, onlyFree, cb) { pick(title, sim.t.map(function (t) { var why = !t.on ? L('chưa vào ca', 'not on shift') : t.brk ? L('đang nghỉ', 'on break') : t.busy ? L('đang làm', 'busy') : ''; return { t: t.name + (why ? ' (' + why + ')' : ''), v: t.name, dis: onlyFree && !!why }; }), cb); }
+function pickTech(title, onlyFree, cb) { pick(title, sim.t.map(function (t) { var why = t.out ? L('đang ra ngoài', 'stepped out') : !t.on ? (t.ended ? L('đã kết thúc ca', 'shift ended') : L('chưa vào ca', 'not on shift')) : t.brk ? L('đang nghỉ', 'on break') : t.busy ? L('đang làm', 'busy') : ''; return { t: t.name + (why ? ' (' + why + ')' : ''), v: t.name, dis: onlyFree && !!why }; }), cb); }
 function act(a) {
   if (a === 'walk') pickSvc(L('Khách không hẹn – làm dịch vụ gì?', 'Walk-in – which service?'), walkIn);
   if (a === 'req') pickTech(L('Khách yêu cầu thợ nào?', 'Which tech is asked for?'), true, function (n) { pickSvc(L('Dịch vụ cho khách của ', 'Service for ') + n, function (s) { var res = apply(T(n), s, 'req', 1, usesTurns() ? weightOf('req', s) : 0); logGive(res, s, 'req'); draw(); }); });
@@ -515,6 +735,7 @@ function act(a) {
       sim.log.unshift({ b: L('Khách của ', 'Customer of ') + r.t + L(' hủy', ' cancelled'), m: (usesTurns() ? (r.w ? L('trừ lại ', 'takes back ') + fmt(r.w) + L(' lượt', ' turn') : L('chưa cộng lượt nên không trừ', 'no turn was added, nothing taken back')) : L('trừ lại phần đã cộng', 'takes back what was added')) + (isLine() ? ' · ' + L('vị trí không đổi, hàng: ', 'place unchanged, line: ') + lineStr() : '') }); draw();
     });
   }
+  if (a === 'endday') { endDay(); draw(); }
   if (a === 'clear') { sim = fresh(); draw(); toast(L('Đã bắt đầu ngày thử mới', 'New test day started')); }
   if (a === 'early') { sim = fresh('early'); draw(); toast(L('Ngày thử mới: ', 'New test day: ') + tm(sim.now) + L(', chưa thợ nào vào ca', ', nobody on shift yet')); }
 }
@@ -547,12 +768,18 @@ function draw() {
 document.addEventListener('change', function (e) { var x = e.target;
   if (x.id === 'smallIn') { var raw = String(x.value).trim().replace(',', '.').replace(/^\$/, ''); var ok = /^\d{1,4}(\.\d{1,2})?$/.test(raw) && +raw > 0;
     if (!ok) { $('#smallErr').textContent = L('Nhập số tiền lớn hơn 0, tối đa 2 chữ số thập phân (ví dụ 25 hoặc 19.99).', 'Enter an amount above 0 with at most 2 decimals (e.g. 25 or 19.99).'); x.value = money2(cfg.smallUnder); return; }
-    cfg.smallUnder = Math.round(+raw * 100) / 100; var y0 = window.scrollY; draw(); window.scrollTo(0, y0); return; } if (x.type === 'radio' && x.name in cfg) { cfg[x.name] = x.value; if (x.name === 'method') sim = fresh(); var y = window.scrollY; draw(); window.scrollTo(0, y); } });
-document.addEventListener('keydown', function (e) { if (e.target.id === 'smallIn' && e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
+    cfg.smallUnder = Math.round(+raw * 100) / 100; var y0 = window.scrollY; draw(); window.scrollTo(0, y0); return; }
+  if (x.id === 'outIn') { var r1 = String(x.value).trim(); if (!/^\d{1,3}$/.test(r1) || +r1 < 1 || +r1 > 600) { $('#outErr').textContent = L('Nhập số phút nguyên lớn hơn 0 (ví dụ 45 hoặc 60; tối đa 600).', 'Enter whole minutes above 0 (e.g. 45 or 60; at most 600).'); x.value = cfg.outMax; return; } cfg.outMax = +r1; var y1 = window.scrollY; draw(); window.scrollTo(0, y1); return; }
+  if (x.id === 'penIn') { var r2 = String(x.value).trim().replace(',', '.'); if (!/^\d{1,2}(\.\d)?$/.test(r2) || +r2 <= 0 || +r2 > 10 || (+r2 * 2) % 1 !== 0) { $('#penErr').textContent = L('Nhập số lượt lớn hơn 0, theo bước 0,5 (ví dụ 0,5 – 1 – 1,5 – 2).', 'Enter turns above 0 in steps of 0.5 (e.g. 0.5 – 1 – 1.5 – 2).'); x.value = fmt(cfg.outPen); return; } cfg.outPen = +r2; var y2 = window.scrollY; draw(); window.scrollTo(0, y2); return; } if (x.type === 'radio' && x.name in cfg) { cfg[x.name] = x.value; if (x.name === 'method') sim = fresh(); var y = window.scrollY; draw(); window.scrollTo(0, y); } });
+document.addEventListener('keydown', function (e) { if ((e.target.id === 'smallIn' || e.target.id === 'outIn' || e.target.id === 'penIn') && e.key === 'Enter') { e.preventDefault(); e.target.blur(); } });
 document.addEventListener('click', function (e) {
   var d = e.target.closest('[data-dn]'); if (d) { if (d.dataset.dn === 'openTime') { cfg.openTime = Math.max(+d.dataset.min, Math.min(+d.dataset.max, +cfg.openTime + +d.dataset.step)); sim = fresh(sim.mode); var yy = window.scrollY; draw(); window.scrollTo(0, yy); return; }
   var k = d.dataset.dn; cfg[k] = Math.round(Math.max(+d.dataset.min, Math.min(+d.dataset.max, +cfg[k] + +d.dataset.step)) * 100) / 100; var y = window.scrollY; draw(); window.scrollTo(0, y); return; }
   var a = e.target.closest('[data-a]'); if (a) { act(a.dataset.a); return; }
+  var go = e.target.closest('[data-out]'); if (go) { outSheet(go.dataset.out); return; }
+  var gb = e.target.closest('[data-back]'); if (gb) { backSheet(gb.dataset.back); return; }
+  var ge = e.target.closest('[data-end]'); if (ge) { var te = T(ge.dataset.end); if (te.busy) busyInfo(te, L('kết thúc ca', 'ending the shift')); else { endShift(te.name); draw(); } return; }
+  var ga = e.target.closest('[data-adj]'); if (ga) { adjSheet(+ga.dataset.adj); return; }
   var dn = e.target.closest('[data-done]'); if (dn) { var t = T(dn.dataset.done); sim.recs.forEach(function (r) { if (r.t === t.name && r.s === t.busy) r.done = true; }); t.busy = null; sim.log.unshift({ b: t.name + L(' làm xong', ' finished'), m: L('rảnh lại', 'free again') + (isLine() ? ' · ' + L('hàng: ', 'line: ') + lineStr() : '') }); draw(); return; }
   var bk = e.target.closest('[data-brk]'); if (bk) { var t2 = T(bk.dataset.brk); t2.brk = !t2.brk; var before = lineStr(); if (!t2.brk && cfg.breakBack === 'end') { if (isLine()) toEnd(t2); else t2.pen = true; }
     sim.log.unshift({ b: t2.name + (t2.brk ? L(' đi nghỉ', ' takes a break') : L(' nghỉ xong quay lại', ' is back from the break')), m: t2.brk ? L('không được giao khách khi đang nghỉ; vị trí giữ nguyên', 'gets no customers while on break; place kept') : (cfg.breakBack === 'keep' ? L('giữ vị trí', 'keeps the place') : L('xuống cuối hàng', 'goes to the end')) + (isLine() ? ' · ' + L('trước: ', 'before: ') + before + L(' · sau: ', ' · after: ') + lineStr() : '') }); draw(); return; }
@@ -566,7 +793,7 @@ $('#bSave').addEventListener('click', function () { try { localStorage.setItem(K
 $('#bReset').addEventListener('click', function () { try { localStorage.removeItem(KEY); } catch (e) {} cfg = copy(SAMPLE); sim = fresh(); draw(); toast(L('Đã xoá bản thử', 'Preview reset')); });
 document.querySelectorAll('.lang [data-lang]').forEach(function (b) { b.addEventListener('click', function () { LANG = b.dataset.lang; try { localStorage.setItem(LKEY, LANG); } catch (e) {} drawStatic(); draw(); }); });
 $('#sheet').addEventListener('click', function (e) { if (e.target.id === 'sheet') e.currentTarget.hidden = true; });
-window.__tr = { cfg: function () { return cfg; }, sim: function () { return sim; }, act: act, walkIn: walkIn, advance: advance, SVC: SVC, T: function (n) { return T(n); } };
+window.__tr = { cfg: function () { return cfg; }, sim: function () { return sim; }, act: act, walkIn: walkIn, advance: advance, SVC: SVC, goOut: goOut, comeBack: comeBack, draw: function () { draw(); }, endShift: endShift, endDay: endDay, ownerAdj: ownerAdj, snapNow: snapNow, evById: function (i) { return evById(i); }, T: function (n) { return T(n); } };
 sim = fresh(); drawStatic(); draw();
 })();
 </script>
