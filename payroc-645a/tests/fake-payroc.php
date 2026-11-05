@@ -7,7 +7,7 @@ $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $st['calls'][] = $m . ' ' . $u; $save = function () use (&$st, $S) { file_put_contents($S, json_encode($st)); };
 $out = function (int $c, $j = null) use ($save) { $save(); http_response_code($c); header('Content-Type: application/json'); if ($j !== null) echo json_encode($j); exit; };
 $prob = fn($c, $t, $d = '') => $out($c, ['type' => 'https://docs.payroc.com/api/errors#x', 'title' => $t, 'status' => $c, 'detail' => $d]);
-if ($u === '/authorize') { if (($h['x-api-key'] ?? '') !== 'TESTKEY-1234567890abcd') $prob(401, 'Unauthorized'); $out(200, ['access_token' => 'tok' . (++$st['n']), 'expires_in' => 3600, 'token_type' => 'Bearer']); }
+if ($u === '/authorize') { if (stripos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') === false) $prob(415, 'Unsupported Media Type'); if (($h['x-api-key'] ?? '') !== 'TESTKEY-1234567890abcd') $prob(401, 'Unauthorized'); $out(200, ['access_token' => 'tok' . (++$st['n']), 'expires_in' => 3600, 'token_type' => 'Bearer']); }
 if (!preg_match('/^Bearer tok\d+$/', $h['authorization'] ?? '')) $prob(401, 'Unauthorized');
 $base = 'http://127.0.0.1:18998/v1';
 if ($m === 'POST' && preg_match('~^/v1/devices/([^/]+)/(payment|refund)-instructions$~', $u, $x)) {

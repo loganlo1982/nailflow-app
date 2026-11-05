@@ -63,7 +63,7 @@ function pr_raw(string $method, string $url, array $headers, ?string $data, int 
 function pr_token(bool $fresh = false, string &$why = ''): string {
     if (!$fresh) { $t = json_decode(ad_dec((string)setting('pr_tok')), true); if (is_array($t) && ($t['exp'] ?? 0) > time() + 120 && ($t['tok'] ?? '') !== '') return (string)$t['tok']; }
     $c = pr_creds(); if ($c['key'] === '') { $why = 'not set up'; return ''; }
-    $h = pr_raw('POST', pr_idurl(), ['x-api-key: ' . $c['key'], 'Accept: application/json', 'Content-Length: 0'], '', 20);
+    $h = pr_raw('POST', pr_idurl(), ['x-api-key: ' . $c['key'], 'Accept: application/json', 'Content-Type: application/json'], '', 20);
     $tok = (string)($h['j']['access_token'] ?? '');
     if ($h['net'] || $h['http'] !== 200 || $tok === '') { $why = $h['net'] ? $h['err'] : 'identity HTTP ' . $h['http'] . (($h['j']['title'] ?? '') !== '' ? ' ' . mb_substr((string)$h['j']['title'], 0, 80) : ''); set_setting('pr_tok', ''); return ''; }
     set_setting('pr_tok', ad_enc(json_encode(['tok' => $tok, 'exp' => time() + max(60, (int)($h['j']['expires_in'] ?? 3600))])));
