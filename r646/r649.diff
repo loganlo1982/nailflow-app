@@ -1,0 +1,30 @@
+diff -ruN -x error_log -x '*.sqlite' int648/inc/calls-tx.php int649/inc/calls-tx.php
+--- int648/inc/calls-tx.php	2026-11-05 02:59:04.337063574 -0600
++++ int649/inc/calls-tx.php	2026-11-05 12:52:52.938656560 -0600
+@@ -229,7 +229,13 @@
+ function tx_status(array $in): void {
+     $sid = mb_substr(tx_f($in, ['CallSid', 'call_sid']), 0, 64); $st = strtolower(tx_f($in, ['CallStatus', 'call_status']));
+     if ($sid === '' || !in_array($st, ['completed', 'canceled', 'no-answer', 'busy', 'failed'], true)) return;
+-    tx_table(); if ((string)q("SELECT kind FROM calls WHERE call_sid = ? AND status = 'ring'", [$sid])->fetchColumn() === 'call') tx_missed($sid, 'Missed – hung up');
++    tx_table(); $r = q("SELECT kind, screen FROM calls WHERE call_sid = ? AND status = 'ring'", [$sid])->fetch();
++    if (!$r || (string)$r['kind'] !== 'call') return;
++    /* (2.99.649 - anh Logan 05/11 12:05 + 12:46 "sao ko bat duoc hen"): the iPhone leg WAS answered (screen is set only after it answers: the 1 s listen /
++       the AMD) and the CALLER hung up first -> the Dial's action never comes, so this was marked missed: a "Sorry we missed your call" text went out
++       and the recording (?a=rec, comes after this) was skipped -> no booking read from it. Now: left for ?a=rec (it reads the recording like any answered call). */
++    if (trim((string)($r['screen'] ?? '')) !== '') { tx_log('status-answered', ['screen' => (string)$r['screen']]); return; }
++    tx_missed($sid, 'Missed – hung up');
+ }
+ 
+ /* the Telnyx API (Bearer = the API key) */
+diff -ruN -x error_log -x '*.sqlite' int648/inc/core.php int649/inc/core.php
+--- int648/inc/core.php	2026-11-05 03:10:41.285807456 -0600
++++ int649/inc/core.php	2026-11-05 12:52:53.112502453 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.648');
++define('APP_VERSION', '2.99.649');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
