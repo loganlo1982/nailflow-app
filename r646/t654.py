@@ -83,11 +83,11 @@ def settle(sid, want):
             except OSError: time.sleep(0.1)
         fh.close()
     time.sleep(0.15)
-def piece(sid, txt, track=None, final='true', fast=False, wait=True, js=False):
+def piece(sid, txt, track=None, final='true', fast=False, wait=True, js=False, tname='Track'):
     if not fast: unthrottle(sid)
     want = nlines(sid) + 1; b = {'CallSid': sid, 'Transcript': txt, 'AccountSid': 'ACC1'}
     if final is not None: b['IsFinal'] = final
-    if track: b['Track'] = track
+    if track: b[tname] = track
     c, x = req('tr', b, xs(sid), js=js)
     if wait and c == 200: settle(sid, want)   # (an old release without ?a=tr answers 404: nothing to wait for)
     return c
@@ -325,6 +325,27 @@ piece(SJ, 'Hi this is Cora, gel manicure tomorrow', final=False, js=True, wait=F
 ok('16 JSON body with "IsFinal": false → ignored (not saved)', nlines(SJ) == 0, nlines(SJ))
 piece(SJ, 'Hi this is Cora, gel manicure', final=True, js=True)
 ok('16 … JSON "IsFinal": true → saved', nlines(SJ) == 1, nlines(SJ))
+
+# ---------- 17. (2.99.656) real call #190 05/11 22:31: "… a manicure … I want to add another person for a pedicure" -> the AI said intent "add" ----------
+SX, PX = 'v3:L17', '+15555550199'; Q17 = 'Yes, tomorrow at 2 p.m. is okay.'
+call_in(SX, PX); req('amd', {'CallSid': SX + 'L', 'AnsweredBy': 'machine_start', 'AccountSid': 'ACC1'}, xs(SX))  # the AMD guessed vm (as #190)
+setai(291, ai(customer_name='Tess', service_ids=[GM], time='14:00', salon_quote=Q17))
+piece(SX, '#S291 Hi this is Tess, an appointment for tomorrow at 2 for a manicure', track='inbound', tname='TranscriptionTrack'); piece(SX, Q17, track='outbound', tname='TranscriptionTrack')
+b17 = booked(PX); L17 = b17[0]['id'] if len(b17) == 1 else 0
+ok('17 (#190) booked on the call (1 person) with the Telnyx field TranscriptionTrack', L17 > 0, b17)
+J292 = ai(intent='add', customer_name='Tess', time='14:00', people=2, add_n=1, party=[{'name': 'Tess', 'service_ids': [GM], 'service_text': 'manicure', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote='Yes, that will be fine.')
+setai(292, J292)
+piece(SX, '#S292 I want to add another person for a pedicure at the same time', track='inbound', tname='TranscriptionTrack'); piece(SX, 'Yes, that will be fine.', track='outbound', tname='TranscriptionTrack')
+b17b = booked(PX)
+ok('17 the AI says intent "add" with everybody in the party → booked again as ONE group of 2 on the call (the 1-person one cancelled)', len(b17b) == 2 and appt(L17).get('status') == 'cancelled' and b17b[0]['group_id'] != '' and b17b[0]['group_id'] == b17b[1]['group_id'], (b17b, appt(L17)))
+G17 = [b['id'] for b in b17b]
+hangup(SX); setstt('#S292 Hi this is Tess, a manicure tomorrow at 2, add another person for a pedicure', 'Yes, that will be fine.')
+r17 = rec(SX, 'RECL17'); time.sleep(0.5)
+ok('17 … the recording says "add" too (the same 2 people) → the group kept (same ids), booked, ONE text, no "Check booking"', [b['id'] for b in booked(PX)] == G17 and r17.get('status') == 'booked' and len(texts(PX)) == 1 and not (r17.get('reason') or ''), (booked(PX), r17.get('status'), r17.get('reason'), texts(PX)))
+# the AI is told: everything in THIS call = one booking (on the call and after it)
+open(D + '/h656.php', 'w').write("<?php require '%s/inc/core.php'; require_once '%s/inc/calls-job.php'; echo json_encode([isset(txl_ai_ctx(['call_sid' => 'zz-none'])['ai_extra']), str_contains(TXL_AI_NOTE, 'is ONE booking'), str_contains((string)file_get_contents('%s/inc/calls-job.php'), \"(string)(\\$c['ai_extra'] ?? '')\")]);" % (A, A, A))
+nt = sh('php', D + '/h656.php').stdout
+ok('17 TXL_AI_NOTE ("ONE booking, intent book") goes in the AI prompt (cl_ai) only for a call booked on the call (none for other calls)', nt.strip() == '[false,true,true]', nt)
 
 # ---------- demo site ----------
 SD, PDm = 'v3:LDEMO', '+15555550187'

@@ -1,0 +1,81 @@
+diff -ruN int655/inc/calls-job.php int656/inc/calls-job.php
+--- int655/inc/calls-job.php	2026-11-05 21:44:09.592279270 -0600
++++ int656/inc/calls-job.php	2026-11-05 22:34:26.532770162 -0600
+@@ -102,7 +102,7 @@
+         }
+         $c = cl_ivr_merge($c); // (2.99.602) questions first, then the free voicemail: both are read
+         if (trim((string)$c['text_c']) === '' && trim((string)$c['text_s']) === '') return cl_end($c, $c['kind'] === 'vm' ? 'callback' : 'review', 'Nothing could be heard.', '', true);
+-        $ai = cl_weekday_fix($c, cl_ai_after($c, cl_ai($c))); /* (CHAT 01/11 606w) weekday wins */ // (2.99.602B) no day / time said → none (never the AI's guess) + the phone answers' Confidence
++        $ai = cl_weekday_fix($c, cl_ai_after($c, cl_ai(txl_ai_ctx($c)))); /* (2.99.656) booked on the call: read as ONE whole booking */ /* (CHAT 01/11 606w) weekday wins */ // (2.99.602B) no day / time said → none (never the AI's guess) + the phone answers' Confidence
+         q('UPDATE calls SET ai_json = ? WHERE id = ?', [json_encode($ai, JSON_UNESCAPED_UNICODE), $id]);
+         return cl_decide(q('SELECT * FROM calls WHERE id = ?', [$id])->fetch(), $ai);
+     } catch (Throwable $e) {
+@@ -360,6 +360,7 @@
+     $prompt = "You read a phone call to a nail salon and fill in a booking request. Now: " . date('D Y-m-d H:i', $now) . " ($tz). The caller's number: " . ((string)$c['from_phone'] ?: 'unknown') . ".\n"
+         . "Salon days (next 14):\n" . implode("\n", $days) . "\nServices (id: name):\n" . implode("\n", $svc) . "\nNail techs (id: name):\n" . implode("\n", $tech) . "\n\n" . $said . "\n\n"
+         . CL_AI_RULES . ($vm ? "This is a voicemail: salon_agreed = false, salon_quote = \"\", salon_side = \"none\".\n" : "")
++        . (string)($c['ai_extra'] ?? '') /* (2.99.656) a call booked while they talked: the whole booking (calls-live.php TXL_AI_NOTE) */
+         . "Answer with ONE JSON object only (no other text), every field filled in:\n" . CL_AI_SHAPE; // (2.99.591 – LỖI 591) no example values any more: a model copied "confidence":0.0 / "salon_agreed":false from the old example
+     if (!cai_on()) return cl_ai_oai($prompt); // (2.99.587 - LENH 587) no Claude key in AN HQ: the OpenAI key of Speech-to-text reads it (same prompt, same PHP checks)
+     $body = json_encode(['model' => CL_AI_MODEL, 'max_tokens' => 800, 'messages' => [['role' => 'user', 'content' => $prompt]]], JSON_UNESCAPED_UNICODE);
+diff -ruN int655/inc/calls-live.php int656/inc/calls-live.php
+--- int655/inc/calls-live.php	2026-11-05 22:09:28.985625760 -0600
++++ int656/inc/calls-live.php	2026-11-05 22:34:26.533017718 -0600
+@@ -14,6 +14,22 @@
+ const TXL_MODEL = 'deepgram/nova-3';
+ const TXL_GAP = 3;      // seconds between two readings of the same call (the words keep coming)
+ const TXL_MAX_N = 60;   // readings per call at most (cost guard)
++/* (2.99.656 - real call #190 05/11 22:31: "make an appointment… for a manicure… I want to add another person for a pedicure" -> the AI said intent "add"
++   (add to an appointment they have) and the 2nd person was never booked on the call; after the call "Check booking". A call read while they talk / a call
++   booked on it is ONE booking: everything agreed in this call. */
++const TXL_AI_NOTE = "THIS CALL IS READ WHILE THEY TALK (or was booked while they talked): everything asked for in THIS call is ONE booking - intent \"book\" "
++    . "(never \"add\" or \"change\" for a person, service or time asked for earlier in this SAME call), people = everybody in it (the caller + every person added in this call), "
++    . "party = one entry per person (the caller first, with that person's services), date / time = the LAST day / time agreed. "
++    . "Only an appointment made BEFORE this call (another day / another call) keeps intent \"cancel\" / \"change\" / \"add\".\n";
++/** The call as the AI reads it after the call: with TXL_AI_NOTE when a booking was made on it (not decided yet). */
++function txl_ai_ctx(array $c): array { $sid = (string)($c['call_sid'] ?? ''); if ($sid !== '' && is_file(txl_file($sid, 'json'))) { $st = txl_state($sid); if (empty($st['done']) && !empty($st['ids'])) $c['ai_extra'] = TXL_AI_NOTE; } return $c; }
++/** (2.99.656) An "add" that still came for a booking made on this call, with everybody in the party = the whole booking. */
++function txl_add_whole(array $j): array {
++    if (strtolower(trim((string)($j['intent'] ?? ''))) !== 'add') return $j;
++    $party = array_values(array_filter((array)($j['party'] ?? []), 'is_array'));
++    if (count($party) >= 2 && count($party) >= (int)($j['people'] ?? 0)) { $j['intent'] = 'book'; $j['people'] = count($party); }
++    return $j;
++}
+ 
+ function txl_on(): bool { return setting('tx_live') === '1'; }
+ /** The TeXML before the iPhone's <Dial>: the words of both legs to ?a=tr. */
+@@ -96,11 +112,11 @@
+         if (count($L) <= (int)($st['n'] ?? 0) || (int)($st['reads'] ?? 0) >= TXL_MAX_N || time() - (int)($st['at'] ?? 0) < TXL_GAP) return;
+         [$tc, $ts] = txl_texts($L); $st['n'] = count($L); $st['at'] = time();
+         if (!cl_ivr_has_when($tc . ' ' . $ts) || !cl_ai_ready()) { txl_save($sid, $st); return; }
+-        $cc = $c; $cc['text_c'] = $tc; $cc['text_s'] = $ts;
++        $cc = $c; $cc['text_c'] = $tc; $cc['text_s'] = $ts; $cc['ai_extra'] = TXL_AI_NOTE; /* (2.99.656) */
+         if (empty($st['counted'])) { if (!cl_count()) { $st['reads'] = TXL_MAX_N; txl_save($sid, $st); return; } $st['counted'] = 1; } /* (review) the day's AI cap: one per call */
+         $st['reads'] = (int)($st['reads'] ?? 0) + 1; txl_save($sid, $st);
+         $GLOBALS['actor'] = ['call', '📞 Call assistant'];
+-        $ai = cl_weekday_fix($cc, cl_ai_after($cc, cl_ai($cc)));
++        $ai = cl_weekday_fix($cc, cl_ai_after($cc, cl_ai($cc))); if (!empty($st['ids'])) $ai = txl_add_whole($ai); /* (2.99.656) */
+         if (strtolower(trim((string)($ai['intent'] ?? ''))) !== 'book') return;
+         $sig = txl_sig($ai); if ($sig === (string)($st['sig'] ?? '')) return;
+         $old = txl_rows((array)($st['ids'] ?? []));
+@@ -124,7 +140,7 @@
+         if (!$rows) return null;
+         if (!empty($st['done'])) return 'booked'; /* (review) read again (a retry): already decided - never a 2nd booking */
+         $st['done'] = 1; txl_save($sid, $st); @unlink(txl_file($sid, 'jsonl')); /* (review #8) the words are not kept */
+-        $intent = strtolower(trim((string)($j['intent'] ?? '')));
++        $j = txl_add_whole($j); /* (2.99.656) */ $intent = strtolower(trim((string)($j['intent'] ?? '')));
+         if ($intent === 'book' && txl_sig($j) === (string)($st['sig'] ?? '') && txl_ok($c, $j)) return txl_keep($c, $rows, true, (array)($st['ask'] ?? []));
+         if ($intent === 'book' && txl_sig($j) !== (string)($st['sig'] ?? '')) {
+             txl_drop($rows, 'Replaced by the recording of the call');
+diff -ruN int655/inc/core.php int656/inc/core.php
+--- int655/inc/core.php	2026-11-05 22:09:28.990675933 -0600
++++ int656/inc/core.php	2026-11-05 22:34:26.704782527 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.655');
++define('APP_VERSION', '2.99.656');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
