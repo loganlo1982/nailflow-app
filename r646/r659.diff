@@ -303,7 +303,7 @@ diff -ruN int657/call_tx.php int659/call_tx.php
     · ?a=vars the AI's facts for this caller · ?a=tool the AI's tools (the SAME code as SignalWire) · ?a=post the transcript · ?a=status call status (logged)
 diff -ruN int657/cron/tx-mp3.php int659/cron/tx-mp3.php
 --- int657/cron/tx-mp3.php	2026-11-02 17:02:57.000000000 -0600
-+++ int659/cron/tx-mp3.php	2026-11-06 00:24:55.711057527 -0600
++++ int659/cron/tx-mp3.php	2026-11-06 00:39:31.629466000 -0600
 @@ -6,9 +6,10 @@
  require dirname(__DIR__) . '/inc/core.php';
  if (!is_installed()) exit;
@@ -312,7 +312,7 @@ diff -ruN int657/cron/tx-mp3.php int659/cron/tx-mp3.php
 +if ((string)setting('tx_on') !== '1') exit;
  require_once dirname(__DIR__) . '/inc/calls.php';
  require_once dirname(__DIR__) . '/inc/calls-tx.php';
-+if (tx_key() === '') exit; /* (2.99.659) its own key or HQ's shared Telnyx account */
++if (tx_key_src() === '') exit; /* (2.99.659) a key is set: its own or HQ's shared Telnyx account (set = the same test as before 659: the texts here need no key, only the MP3 download does) */
  $lk = @fopen(sys_get_temp_dir() . '/nf-tx-mp3-' . md5(__DIR__ . pub_url()) . '.lock', 'c'); if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) exit;
  /* (2.99.629 - LENH 629) the missed-call text back + YOU'RE BOOKED after the 10 minutes: here too, every 15 s, IN this CLI process (no web call).
     Before, only call_in.php?a=tick (SignalWire / the turn cron's web poke) or the owner's page did it -> on Telnyx a text waited up to ~1 hour.
@@ -511,7 +511,7 @@ diff -ruN int657/inc/calls-live.php int659/inc/calls-live.php
  /** (review #4) The call ends in review / callback before the recording could decide (long call, no key, the AI cap, errors…): a booking made on it is kept, no text, the owner checks it. */
 diff -ruN int657/inc/calls-tx.php int659/inc/calls-tx.php
 --- int657/inc/calls-tx.php	2026-11-05 21:44:09.593676414 -0600
-+++ int659/inc/calls-tx.php	2026-11-06 00:24:55.711364965 -0600
++++ int659/inc/calls-tx.php	2026-11-06 00:39:35.609528265 -0600
 @@ -1,5 +1,6 @@
  <?php
 -/* (2.99.612 - LENH 612) TELNYX (test) for the AI receptionist: the test number (515) 513-6667 runs SIDE BY SIDE with SignalWire.
@@ -576,7 +576,7 @@ diff -ruN int657/inc/calls-tx.php int659/inc/calls-tx.php
  /* the cron (every minute, cron/turn.php): AI calls of the last 30 minutes still without their transcript -> a=sweep (a web request, like the calls tick) */
  function tx_due(): bool {
 -    try { if ((string)setting('tx_schema') !== '1' || (string)setting('tx_key') === '') return false;
-+    try { if ((string)setting('tx_schema') !== '1' || tx_key() === '') return false; /* (2.99.659) own or HQ's shared key */
++    try { if ((string)setting('tx_schema') !== '1' || tx_key_src() === '') return false; /* (2.99.659) own or HQ's shared key */
          return (bool)q("SELECT 1 FROM calls WHERE prov = 'tx' AND kind = 'agent' AND (text_c IS NULL OR text_c = '') AND (text_s IS NULL OR text_s = '') AND created_at BETWEEN ? AND ? LIMIT 1", [date('Y-m-d H:i:s', time() - 1800), date('Y-m-d H:i:s', time() - 60)])->fetchColumn();
      } catch (Throwable $e) { return false; }
  }
@@ -585,7 +585,7 @@ diff -ruN int657/inc/calls-tx.php int659/inc/calls-tx.php
     (the cron, PHP CLI, every minute: mpg123 runs), then queued -> read by the usual job (cl_cron_poke). Calls of the last 30 minutes only. */
  function tx_cli_mp3(): void {
 -    if ((string)setting('tx_key') === '') return; tx_table(); tx_tmp_clean();
-+    if (tx_key() === '') return; tx_table(); tx_tmp_clean(); /* (2.99.659) own or HQ's shared key */
++    if (tx_key_src() === '') return; tx_table(); tx_tmp_clean(); /* (2.99.659) own or HQ's shared key */
      try { tx_cli_airec(); } catch (Throwable $e) { error_log('646 tx airec: ' . $e->getMessage()); }
      $l = q("SELECT id, rec_sid FROM calls WHERE prov = 'tx' AND status = 'review' AND reason LIKE 'Telnyx recording:%' AND rec_sid <> '' AND (file IS NULL OR file = '') AND created_at >= ? ORDER BY id LIMIT 3", [date('Y-m-d H:i:s', time() - 1800)])->fetchAll();
      if (!$l) return; $n = 0;
@@ -594,7 +594,7 @@ diff -ruN int657/inc/calls-tx.php int659/inc/calls-tx.php
     then deletes it on Telnyx. At most once a minute, 3 calls a time, 6 tries per call (the file may need a few minutes), calls of the last 3 hours. */
  function tx_cli_airec(): void {
 -    if ((string)setting('tx_key') === '' || time() - (int)setting('tx_airec_at') < 60) return; set_setting('tx_airec_at', (string)time());
-+    if (tx_key() === '' || time() - (int)setting('tx_airec_at') < 60) return; /* (2.99.659) own or HQ's shared key */ set_setting('tx_airec_at', (string)time());
++    if (tx_key_src() === '' || time() - (int)setting('tx_airec_at') < 60) return; /* (2.99.659) own or HQ's shared key */ set_setting('tx_airec_at', (string)time());
      /* (2.99.647 - LENH 647) tx_airec_try = [id => [asks, failed downloads]]: "no finished recording on Telnyx yet" (a long call) is only an ask (up to 45),
         a failed download counts (up to 6); the calls asked least go first, so a few calls never block the others. */
      $tries = json_decode((string)setting('tx_airec_try'), true); $tries = is_array($tries) ? $tries : [];
