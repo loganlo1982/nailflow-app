@@ -1,7 +1,7 @@
 # LAMWEB test 2.99.654 – LIVE BOOKING while the owner is on a Telnyx call (<Start><Transcription> -> ?a=tr -> txl_in / txl_try; after the call txl_after).
 # Fake Telnyx (T612/fake_tx.py :19872) + fake STT / AI (T586/fake.py :19870, answers by the LAST '#S<n>' marker in the prompt). Test numbers 555-01xx only.
 # python3 t654.py <app tree>     (setup copied from T616/t616full.py)
-import subprocess, json, os, sys, time, urllib.request, urllib.parse, shutil, atexit, re, hashlib, fcntl, glob
+import datetime as _dt, subprocess, json, os, sys, time, urllib.request, urllib.parse, shutil, atexit, re, hashlib, fcntl, glob
 A = sys.argv[1]; D = '/tmp/claude-0/T654'; T5 = '/tmp/claude-0/T586'; T12 = '/tmp/claude-0/T612'; PORT = 19878; DB = D + '/db.sqlite'; CD = D + '/calls'
 os.makedirs(D, exist_ok=True); shutil.rmtree(CD, ignore_errors=True); os.makedirs(CD)
 R = []; out = open(D + '/test-654.txt', 'w')
@@ -205,7 +205,8 @@ setai(222, ai(customer_name='Opal', service_ids=[GM], time='', missing=['time'],
 setstt('#S222 Hi this is Opal, gel manicure tomorrow', Q10)
 r10 = rec(SC1, 'RECL10A'); time.sleep(0.5); pp = pushes(p0)
 ok('10a recording not bookable (no time) → the live booking stays booked (same id), NO text', L10 and [b['id'] for b in booked(PC1)] == [L10] and texts(PC1) == [], (L10, booked(PC1), texts(PC1)))
-ok('10a … calls.status booked, reason "Booked on the call – the recording did not confirm it…", push "📞 Check booking"', r10.get('status') == 'booked' and (r10.get('reason') or '').startswith('Booked on the call – the recording did not confirm it') and any(p['title'] == '📞 Check booking' for p in pp), (r10.get('status'), r10.get('reason'), pp))
+# (2.99.658 requirement changed, documented: the reason now says WHY - here the recording has no time)
+ok('10a … calls.status booked, reason "Booked on the call – the recording did not confirm it…", push "📞 Check booking"', r10.get('status') == 'booked' and (r10.get('reason') or '').startswith('Booked on the call – ') and 'check it (no text sent)' in (r10.get('reason') or '') and any(p['title'] == '📞 Check booking' for p in pp), (r10.get('status'), r10.get('reason'), pp))
 # 10b the recording: everything the same but the salon did NOT say OK
 SC2, PC2 = 'v3:L10B', '+15555550176'; Q10b = 'Sure, tomorrow at 1 works.'
 L10b = live_then(SC2, PC2, 223, 'Pearl', 13, Q10b); p0 = pmax()
@@ -362,6 +363,33 @@ b18 = booked(PY)
 ok('18 … once the caller says her own service (gel manicure) → booked on the call: 2 people, Gel Manicure + Pedicure', len(b18) == 2 and sorted(b['service_ids'] for b in b18) == sorted([str(GM), str(PD)]), b18)
 ok('18 the prompt rule "NEVER guess or copy a service" is in TXL_AI_NOTE', 'NEVER guess or copy a service' in open(A + '/inc/calls-live.php').read(), '')
 hangup(SY)
+
+# ---------- 19. (2.99.658) real call #195 05/11 23:32: "I care manicure for me and another person for a pedicure" -> both got the pedicure ----------
+SZ, PZ = 'v3:L19', '+15555550197'; Q19 = 'Sure, 8 is okay.'
+call_in(SZ, PZ); human(SZ)
+J311 = ai(customer_name='Zara', time='20:00', people=2, party=[{'name': 'Zara', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote=Q19)
+setai(311, J311); n0 = nai()
+piece(SZ, '#S311 I care manicure for me and another person for a pedicure tomorrow at 8', track='inbound', tname='TranscriptionTrack'); piece(SZ, Q19, track='outbound', tname='TranscriptionTrack')
+ok('19 (#195) 2 people, the SAME service for both but "both / the same" never said (same_services false) → read, NOT booked on the call', nai() >= n0 + 1 and not booked(PZ), (nai() - n0, booked(PZ)))
+J312 = ai(customer_name='Zara', time='20:00', people=2, same_services=True, party=[{'name': 'Zara', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote='Two pedicures, okay.')
+setai(312, J312)
+piece(SZ, '#S312 sorry, two pedicures, both of us', track='inbound', tname='TranscriptionTrack'); piece(SZ, 'Two pedicures, okay.', track='outbound', tname='TranscriptionTrack')
+b19 = booked(PZ); p0 = pmax()
+ok('19 … "both / two pedicures" (same_services true) → booked on the call (2 × Pedicure)', len(b19) == 2 and all(b['service_ids'] == str(PD) for b in b19), b19)
+D19 = (_dt.date.fromisoformat(d1) + _dt.timedelta(days=1)).isoformat()
+# the group line names EVERY person's services (push + calls.result)
+SG, PG = 'v3:L19B', '+15555550196'; Q19b = 'Sure, 4 is okay.'
+call_in(SG, PG); human(SG); p0 = pmax()
+setai(313, ai(customer_name='Gina', date=D19, time='16:00', people=2, party=[{'name': 'Gina', 'service_ids': [GM], 'service_text': 'gel manicure', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote=Q19b))
+piece(SG, '#S313 a gel manicure for me and a pedicure for my friend tomorrow at 4', track='inbound', tname='TranscriptionTrack'); piece(SG, Q19b, track='outbound', tname='TranscriptionTrack')
+pp = pushes(p0)
+ok('19 the push names every person\'s service: "Gina – Gel Manicure + Pedicure – … · 2 people"', len(booked(PG)) == 2 and any(p['title'] == '📞 Booked (on the call)' and 'Gel Manicure + Pedicure' in p['body'] and '2 people' in p['body'] for p in pp), pp)
+# the recording differs and its booking cannot be made -> "Check booking" says why
+hangup(SG); p0 = pmax()
+setai(314, ai(customer_name='Gina', date=D19, time='16:00', people=5, party=[{'name': 'Gina', 'service_ids': [GM], 'service_text': 'gel manicure', 'tech_id': 0, 'tech_text': ''}, {'name': 'A', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}, {'name': 'B', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}, {'name': 'C', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}, {'name': 'D', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], same_services=True, salon_quote=Q19b))
+setstt('#S314 a gel manicure for me and pedicures for my 4 friends tomorrow at 4', Q19b)
+r19 = rec(SG, 'RECL19'); time.sleep(0.5); pp = pushes(p0)
+ok('19 the recording differs but cannot be booked (5 people) → the call\'s booking kept, NO text, "📞 Check booking" says WHY (the recording says … but …)', len(booked(PG)) == 2 and texts(PG) == [] and any(p['title'] == '📞 Check booking' and 'the recording says' in p['body'] for p in pp) and 'the recording says' in (r19.get('reason') or ''), (booked(PG), texts(PG), r19.get('reason'), pp))
 
 # ---------- demo site ----------
 SD, PDm = 'v3:LDEMO', '+15555550187'

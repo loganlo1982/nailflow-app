@@ -1,0 +1,96 @@
+diff -ruN int657/inc/calls-job.php int658/inc/calls-job.php
+--- int657/inc/calls-job.php	2026-11-05 23:00:41.878098141 -0600
++++ int658/inc/calls-job.php	2026-11-05 23:39:50.253084357 -0600
+@@ -212,6 +212,12 @@
+     }
+     return $status;
+ }
++/** (2.99.658 - real call #195 05/11 23:32: "Test 4 – Regular Pedicure · 2 people" hid the other person's service) A group: the name, EVERY person's services, day, time. */
++function cl_group_line(array $rows): string {
++    if (!$rows) return ''; $a = $rows[0]; if (count($rows) === 1) return cl_line($a);
++    $l = []; foreach ($rows as $r) $l[] = appt_label($r) ?: 'Appointment';
++    return trim(cl_name((string)$a['customer_name'])) . ' – ' . implode(' + ', $l) . ' – ' . date('D n/j', strtotime((string)$a['appt_date'])) . ' ' . min_to_label((int)$a['start_min']) . ' · ' . count($rows) . ' people';
++}
+ function cl_who(array $c): string { $ph = (string)$c['from_phone']; $k = $ph !== '' ? customer_by_phone($ph) : null; $n = $k ? cl_name((string)$k['name']) : '';
+     $j = json_decode((string)($c['ai_json'] ?? ''), true); if ($n === '' && is_array($j)) $n = cl_name((string)($j['customer_name'] ?? ''));
+     return trim($n . ' ' . ($ph !== '' ? pretty_phone($ph) : '')) ?: 'Unknown number'; }
+@@ -598,9 +604,9 @@
+     $a = $rows[0];
+     q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], empty($GLOBALS['cl_live']) ? now_str() : '', $c['id']]); /* (2.99.654) */ // like one person (589): one YOU'RE BOOKED for the group, sent at once
+     if (empty($GLOBALS['cl_live'])) foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (2.99.654 #6) */
+-    cl_end($c, 'booked', '', cl_line($a) . ' · ' . count($rows) . ' people', false);
++    cl_end($c, 'booked', '', cl_group_line($rows), false); /* (2.99.658) every person's services */
+     cl_confirm_due(); // after 'booked' is saved (cl_confirm_due only takes booked calls)
+-    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_line($a) . ' · ' . count($rows) . ' people' . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); /* (2.99.654) */
++    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_group_line($rows) . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); /* (2.99.654) */
+     return 'booked';
+ }
+ 
+diff -ruN int657/inc/calls-live.php int658/inc/calls-live.php
+--- int657/inc/calls-live.php	2026-11-05 22:55:18.885204622 -0600
++++ int658/inc/calls-live.php	2026-11-05 23:43:43.094111892 -0600
+@@ -33,11 +33,18 @@
+     $who = $party ?: [['service_ids' => (array)($j['service_ids'] ?? []), 'service_text' => (string)($j['service_text'] ?? '')]];
+     foreach ($who as $p) {
+         $cand = trim((string)($p['service_text'] ?? '')); foreach ((array)($p['service_ids'] ?? []) as $id) $cand .= ' ' . ($names[(int)$id] ?? '');
+-        $hit = false; foreach (array_unique(explode(' ', cl_norm($cand))) as $t) if (strlen($t) >= 3 && !in_array($t, $skip, true) && str_contains($w, ' ' . $t . ' ')) { $hit = true; break; }
++        $hit = false; foreach (array_unique(explode(' ', cl_norm($cand))) as $t) if (strlen($t) >= 3 && !in_array($t, $skip, true) && preg_match('/ ' . preg_quote($t, '/') . '(s|es)? /', $w) /* (2.99.658) "two pedicures" = pedicure */) { $hit = true; break; }
+         if (!$hit) return false;
+     }
+     return true;
+ }
++/** (2.99.658) 2+ people with the SAME services although the caller never said "both / the same": the AI probably copied one person's service to another
++    (real call #195) -> not booked on the call (the recording after the call decides). */
++function txl_copied(array $j): bool {
++    if (!empty($j['same_services'])) return false;
++    $seen = []; foreach (array_values(array_filter((array)($j['party'] ?? []), 'is_array')) as $p) { $x = array_map('intval', (array)($p['service_ids'] ?? [])); sort($x); $k = implode(',', $x); if ($k === '') continue; if (isset($seen[$k])) return true; $seen[$k] = 1; }
++    return false;
++}
+ /** (2.99.656) An "add" that still came for a booking made on this call, with everybody in the party = the whole booking. */
+ function txl_add_whole(array $j): array {
+     if (strtolower(trim((string)($j['intent'] ?? ''))) !== 'add') return $j;
+@@ -134,6 +141,7 @@
+         $ai = cl_weekday_fix($cc, cl_ai_after($cc, cl_ai($cc))); if (!empty($st['ids'])) $ai = txl_add_whole($ai); /* (2.99.656) */
+         if (strtolower(trim((string)($ai['intent'] ?? ''))) !== 'book') return;
+         if (!txl_svc_said($ai, $tc . ' ' . $ts)) return; /* (2.99.657) a service nobody said: not booked on the call */
++        if (txl_copied($ai)) return; /* (2.99.658 - real call #195: "care manicure for me and another person for a pedicure" -> both got the pedicure) */
+         $sig = txl_sig($ai); if ($sig === (string)($st['sig'] ?? '')) return;
+         $old = txl_rows((array)($st['ids'] ?? []));
+         if ($old) txl_drop($old, 'Changed on the call – booked again with what the caller said');
+@@ -164,20 +172,22 @@
+             $GLOBALS['cl_txl_try'] = 1;
+             try { $r = cl_decide0($c, $j); } catch (Throwable $e) { txl_back($rows); throw $e; } finally { $GLOBALS['cl_txl_try'] = 0; }
+             if ($r === 'booked') return $r;
++            $rc = q('SELECT reason, result FROM calls WHERE id = ?', [$c['id']])->fetch() ?: []; /* (2.99.658) why the recording's booking could not be made: told to the owner */
+             txl_back($rows);
++            return txl_keep($c, $rows, false, [], 'the recording says ' . trim((string)($rc['result'] ?? '')) . ' but ' . lcfirst(rtrim(trim((string)($rc['reason'] ?? 'it could not be booked')), '.')));
+         }
+         return txl_keep($c, $rows, false);
+     } finally { txl_unlock($lk); }
+ }
+ /** The booking made on the call is the one: texted (the recording says the same) or kept for the owner to check (no text). */
+ function txl_keep(array $c, array $rows, bool $text, array $ask = [], string $why = ''): string {
+-    $a = $rows[0]; $line = cl_line($a) . (count($rows) > 1 ? ' · ' . count($rows) . ' people' : '');
++    $a = $rows[0]; $line = cl_group_line($rows); /* (2.99.658) */
+     q('UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = ? WHERE id = ?', [(int)$a['id'], $text ? now_str() : '', $text ? 0 : 1, $c['id']]);
+     foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (review #6) the techs: once, after the call */
+     $GLOBALS['cl_ask'] = $text ? $ask : []; /* (review #3) the type question only with the text, never a leftover */
+     cl_end($c, 'booked', $text ? '' : 'Booked on the call – ' . ($why !== '' ? rtrim($why, '.') . ' – ' : 'the recording did not confirm it – ') . 'check it (no text sent).', $line, false);
+     if ($text) cl_confirm_due();
+-    else cl_push((int)$c['id'], '📞 Check booking', $line . ' · booked on the call, not texted – check it');
++    else cl_push((int)$c['id'], '📞 Check booking', $line . ' · booked on the call, not texted' . ($why !== '' ? ' – ' . mb_substr($why, 0, 160) : '') . ' – check it'); /* (2.99.658) why */
+     return 'booked';
+ }
+ /** (review #4) The call ends in review / callback before the recording could decide (long call, no key, the AI cap, errors…): a booking made on it is kept, no text, the owner checks it. */
+diff -ruN int657/inc/core.php int658/inc/core.php
+--- int657/inc/core.php	2026-11-05 22:55:11.335072847 -0600
++++ int658/inc/core.php	2026-11-05 23:35:08.382323088 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.657');
++define('APP_VERSION', '2.99.658');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
