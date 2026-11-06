@@ -1,0 +1,54 @@
+diff -ruN -x '*.orig' -x error_log int663/inc/calls-job.php int664/inc/calls-job.php
+--- int663/inc/calls-job.php	2026-11-06 01:51:22.445386323 -0600
++++ int664/inc/calls-job.php	2026-11-06 13:01:31.405181441 -0600
+@@ -23,6 +23,7 @@
+     . "Relative days (today, tomorrow, this Saturday, thứ bảy, chủ nhật…) → the real date from the list above. A time like \"2\" or \"2 o'clock\" at a nail salon means 2:00 PM (14:00); \"11\" means 11:00 AM.\n"
+     . "service_ids: ids from the Services list. When the caller says a general word (\"pedicure\", \"manicure\", \"full set\", \"fill\", \"nails\", \"làm chân\", \"làm tay\", \"làm bột\"), "
+     . "choose the basic / regular / plain service of that kind from the list (e.g. \"pedicure\" → the regular Pedicure). Empty only when no service was said at all.\n"
++    . "Never guess a service (not from the caller's number, an earlier call or what they usually get): when nobody named a service in THIS call, service_ids = [], service_text = \"\", mani_type = \"none\", pedi_type = \"none\" and \"service\" is in missing.\n" /* (2.99.664 svc) real call #215: no service said -> the AI gave Regular Pedicure */
+     . "customer_name: the name the caller gave for the appointment (empty if none was said). customer_phone: only if the caller said a different number to use, else empty.\n"
+     . "tech_id: the id when the caller asked for a tech by name, else 0. tech_text: that name as said, else empty. "
+     . "tech_last: true only when the caller wants the SAME tech who did their nails before but does not know / remember the name (\"the lady who did my nails last time\", \"same girl as before\", \"I forgot her name\"), else false (then tech_id 0, tech_text empty). people: how many people want appointments (1 if one).\n"
+@@ -115,6 +116,8 @@
+ }
+ /** (2.99.602B – LỆNH 602B, Love Nails #4 "no day said" → booked-at-today-10:00 tried) A booking with no day / time the caller (or, on a real conversation, the salon)
+     really said: date / time emptied (missing: date, time) – the AI's "missing" is trusted too. The phone questions' Confidence + "name not clear" are kept in ai_json. */
++/* (2.99.664 svc) any word that names a nail service (English / Spanish / Vietnamese, accents off): one of them heard = a service was said (the AI's pick decides, as before); "nail" / "son" left out: the salon's own name ("American Nails") and the English "son" name no service */
++const CL_SVC_WORDS = '/ (pedi|mani|unas |acril|acryl|gel|dip|dipping|polvo|powder|shellac|polish|esmalte|full ?set|fill|refill|relleno|wax|cera|depil|builder|ombre|french|design|diseno|massage|masaje|eyebrow|ceja|lash|pestan|facial|toe|lam |chan |tay |bot |mong |nhung )/';
+ function cl_ai_after(array $c, array $ai): array {
+     if (!function_exists('cl_ivr_get')) require_once __DIR__ . '/calls-ivr.php';
+     $iv = cl_ivr_get($c); if ($iv) { if (!empty($iv['conf'])) $ai['ivr_conf'] = $iv['conf']; if (!empty($iv['noname'])) $ai['ivr_noname'] = true; }
+@@ -126,6 +129,12 @@
+     if ($none || array_intersect(['date', 'day'], $miss)) $ai['date'] = '';
+     if ($none || in_array('time', $miss, true)) $ai['time'] = '';
+     if ($none) $ai['missing'] = array_values(array_unique(array_merge((array)($ai['missing'] ?? []), ['date', 'time'])));
++    if (!function_exists('cla_kinds')) require_once __DIR__ . '/calls-ask.php';
++    if (!$iv && !preg_match(CL_SVC_WORDS, ' ' . cl_norm($w) . ' ') && !cl_guess_service($w) && !txl_svc_said($ai, $w)) { /* (2.99.664 svc) real call #215: nobody said a service -> none (never the AI's guess, never 602B's nearest one): "No service" as before */
++        $ai['service_ids'] = []; $ai['service_text'] = ''; $ai['mani_type'] = 'none'; $ai['pedi_type'] = 'none'; $ai['svc_unsaid'] = true;
++        foreach ((array)($ai['party'] ?? []) as $k => $p) if (is_array($p)) { $ai['party'][$k]['service_ids'] = []; $ai['party'][$k]['service_text'] = ''; }
++        $ai['missing'] = array_values(array_unique(array_merge((array)($ai['missing'] ?? []), ['service'])));
++    }
+     return $ai;
+ }
+ /** (602B) the phone answers: the pedicure first, then the manicure, then the rest (the salon does feet first – as 602 shares a party). */
+@@ -451,7 +460,7 @@
+     $act = []; foreach (cl_services() as $s) $act[(int)$s['id']] = $s; /* 639e */
+     $sids = array_values(array_unique(array_filter(array_map('intval', (array)($j['service_ids'] ?? [])), fn($i) => isset($act[$i]))));
+     if (!$sids && ($g = cl_guess_service(trim((string)($j['service_text'] ?? '')) !== '' ? (string)$j['service_text'] : (string)$c['text_c']))) $sids = [$g]; // (2.99.591) "pedicure" → the regular Pedicure
+-    if (!$sids) $sids = cl_type_service($j); // (2.99.602B) party empty but mani_type / pedi_type / the summary say manicure / pedicure → the nearest service (+ the 602 question)
++    if (!$sids && empty($j['svc_unsaid'])) $sids = cl_type_service($j); /* (2.99.664 svc) nobody said a service: no nearest one */ // (2.99.602B) party empty but mani_type / pedi_type / the summary say manicure / pedicure → the nearest service (+ the 602 question)
+     if ($sids) { [$sids, $GLOBALS['cl_ask']] = cla_fix($sids, $j); if (!empty($j['ivr_people'])) $sids = cl_foot_first($sids); } // (2.99.602) "dip" / "gel on real nails" / "gel on fake nails" → that service; only "manicure" / "pedicure" → kept + asked
+     $svc = services_by_ids($sids);
+     if (!$sids || !svc_has_main($sids, svc_info())) $why[] = 'no service';
+diff -ruN -x '*.orig' -x error_log int663/inc/core.php int664/inc/core.php
+--- int663/inc/core.php	2026-11-06 11:52:50.170992859 -0600
++++ int664/inc/core.php	2026-11-06 12:33:59.189142842 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.663');
++define('APP_VERSION', '2.99.664');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
