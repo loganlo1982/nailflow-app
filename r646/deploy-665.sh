@@ -1,5 +1,5 @@
 #!/bin/bash
-# 2.99.665 = the phone AI asks "any tech, or someone special?" once when the caller named no tech (talk AI, old switchboard, Telnyx assistant instructions).
+# 2.99.665 = the AI phone asks "any tech, or someone special?" once when no tech was said (talk AI, old switchboard, Telnyx assistant instructions).
 # A NEW release = live 2.99.664 + r665.diff (no new files).
 # switch to it (+ php-fpm reload). The hair demo (own copy, nailflow account) gets the same files patched in place (backup first).
 # demo (Apple review) stays on 2.99.353. Usage: DIFF_MD5=<md5> bash deploy-665.sh <sha> [DRY=1]     Rollback: bash rollback-665.sh <backup dir>
