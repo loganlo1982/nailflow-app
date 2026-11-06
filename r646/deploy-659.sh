@@ -31,9 +31,9 @@ echo "$WEBS" | while read -r id w; do [ -n "$w" ] || continue; c="$w/call_tx.php
 # American Nails keeps its Telnyx number (2.99.659 has no built-in number any more)
 for s in an lovenails; do $PHP -r '$c = require "'"$A"'/sites/'"$s"'/config.php"; $p = new PDO("mysql:host=" . ($c["db_host"] ?? "localhost") . ";dbname=" . $c["db_name"] . ";charset=utf8mb4", $c["db_user"], $c["db_pass"]); foreach ($p->query("SELECT k, LENGTH(v) l, IF(k IN (\"tx_number\",\"tx_on\",\"call_fwd\"), v, \"\") v FROM settings WHERE k IN (\"tx_number\",\"tx_on\",\"tx_key\",\"tx_pub\",\"call_fwd\")") as $r) echo "'"$s"' ", $r["k"], "=", $r["v"] !== "" ? $r["v"] : "(" . $r["l"] . " chars)", "\n";' || die "settings $s"; done
 echo "BUILD OK"
-[ -z "${DRY:-}" ] || { echo "DRY RUN - nothing changed"; rm -rf "$T"; exit 0; }
+[ -z "${DRY:-}" ] || { for f in $FILES; do if [ -e "$HD/$f" ]; then echo "$f"; fi; done >/dev/null; echo "DRY RUN - nothing changed"; rm -rf "$T"; exit 0; }
 [ ! -e "$NEW" ] || die "$NEW exists"
-TS=$(date +%m%d%H%M); BK=/root/backup/pre-659-$TS; mkdir -p "$BK"; OLDF=$(for f in $FILES; do [ -e "$HD/$f" ] && echo "$f"; done); (cd "$HD" && tar czf "$BK/hair-files.tgz" $OLDF); printf '%s\n' $OLDF > "$BK/FILES.txt"  # (654) only the files that were there (the new one stays, unused by 2.99.657)
+TS=$(date +%m%d%H%M); BK=/root/backup/pre-659-$TS; mkdir -p "$BK"; OLDF=$(for f in $FILES; do if [ -e "$HD/$f" ]; then echo "$f"; fi; done); (cd "$HD" && tar czf "$BK/hair-files.tgz" $OLDF); printf '%s\n' $OLDF > "$BK/FILES.txt"  # (654) only the files that were there (the new one stays, unused by 2.99.657)
 mv "$T/rel" "$NEW"; chown -R uyurpyzubx0m:uyurpyzubx0m "$NEW"
 AN_N=$($PHP -r '$c = require "'"$A"'/sites/an/config.php"; $p = new PDO("mysql:host=" . ($c["db_host"] ?? "localhost") . ";dbname=" . $c["db_name"] . ";charset=utf8mb4", $c["db_user"], $c["db_pass"]); echo (string)$p->query("SELECT v FROM settings WHERE k = \"tx_number\"")->fetchColumn();')
 [ -n "$AN_N" ] || $PHP -r '$c = require "'"$A"'/sites/an/config.php"; $p = new PDO("mysql:host=" . ($c["db_host"] ?? "localhost") . ";dbname=" . $c["db_name"] . ";charset=utf8mb4", $c["db_user"], $c["db_pass"]); $p->prepare("INSERT INTO settings (k, v) VALUES (\"tx_number\", ?) ON DUPLICATE KEY UPDATE v = VALUES(v)")->execute(["+15155136667"]); echo "AN tx_number saved\n";'
