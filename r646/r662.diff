@@ -1,0 +1,95 @@
+diff -ruN int661/assets/admin/appts.js int662/assets/admin/appts.js
+--- int661/assets/admin/appts.js	2026-11-05 03:05:01.457441796 -0600
++++ int662/assets/admin/appts.js	2026-11-06 10:47:01.160547771 -0600
+@@ -215,7 +215,7 @@
+         a.fast ? '<i class="b fast" title="Done much faster than usual">⚠</i>' : '', a.deposit > 0 ? '<i class="b dep" title="Deposit paid">💳</i>' : ''].join('');
+       h += `<button type="button" class="${cls}" data-id="${a.id}" style="top:${top}px;height:${ht}px;left:${left}%;width:${w}%;--ns-c:${a._c}">
+         ${(laned ? nsLane : nsSlots)(a, a.undecided ? [{ full: 'Not decided · ' + udDur(a.duration), short: 'Not decided' }] : svcLines(a, svcById), badges)}${d.checkoutOn && a.status === 'arrived' && (d.date < d.today || (d.date === d.today && d.now > a.start + a.duration + 120)) ? '<span class="nco" title="Checked in but not checked out (2+ hours after the end)">Not checked out</span>' : ''}${!d.checkoutOn && (a.status === 'arrived' || a.status === 'booked') && d.date < d.today ? '<span class="nco bco" title="Before Settings → Checkout, tax & payments → Start using Checkout on: not checked out on the web (kept as it was)">Before Checkout</span>' : ''}${a.status === 'booked' && a.noshowAuto === 3 ? '<span class="nco nrv" title="Not checked in by closing time – open it: Check in / No-show / leave it">Needs review</span>' : ''}${(() => { const st = a.status === 'arrived' && !a.started && d.turnBar && d.turnBar.autoOn ? (d.turnBar.auto || {})[a.id] : null; /* (2.99.83) why no tech yet */
+-          return !st ? '' : st.kind === 'qwait' ? '<span class="nco bco">⏳ Waiting for a free tech</span>' : st.kind === 'after' ? `<span class="nco bco">${esc(afterTxt(st))}</span>` : st.kind === 'nocan' ? `<span class="nco nrv">${esc(st.why)}</span>` : st.kind === 'wait' ? `<span class="nco bco">${st.allBusy ? 'Waiting – all techs busy · next ' + esc(st.name) : 'Waiting for ' + esc(st.name)} (~${st.min} min)</span>` : st.kind === 'offer' ? `<span class="nco bco">🔔 ${esc(st.name)} – waiting for Accept</span>` : st.kind === 'req' ? `<span class="nco bco">⏳ Waiting for ${esc(String(st.name).toUpperCase())}</span>` : ''; })()}</button>`; // (2.86) (2.99.5 Needs review)
++          return !st ? '' : st.kind === 'qwait' ? '<span class="nco bco">⏳ Waiting for a free tech</span>' : st.kind === 'after' ? `<span class="nco bco">${esc(afterTxt(st))}</span>` : st.kind === 'nocan' ? `<span class="nco nrv">${esc(st.why)}</span>` : st.kind === 'wait' ? `<span class="nco bco">${st.allBusy ? 'Waiting – all techs busy · next ' + esc(st.name) : 'Waiting for ' + esc(st.name)} (~${st.min} min)${st.kept ? ' · ' + esc(st.kept.name + ' kept for ' + st.kept.for) : '' /* (2.99.662 rare) */}</span>` : st.kind === 'offer' ? `<span class="nco bco">🔔 ${esc(st.name)} – waiting for Accept</span>` : st.kind === 'req' ? `<span class="nco bco">⏳ Waiting for ${esc(String(st.name).toUpperCase())}</span>` : ''; })()}</button>`; // (2.86) (2.99.5 Needs review)
+     }
+     h += '</div>';
+   });
+diff -ruN int661/assets/admin/checkin.js int662/assets/admin/checkin.js
+--- int661/assets/admin/checkin.js	2026-11-04 00:03:14.000000000 -0600
++++ int662/assets/admin/checkin.js	2026-11-06 10:47:01.159533997 -0600
+@@ -75,7 +75,7 @@
+     <div class="list">${here.length ? here.map(a => { const w = waitMin(a); const svc = svcLabel(a, d.services) || a.note; const sg = d.turnBar ? (d.turnBar.suggest || {})[a.id] : null; // (2.99.57) the turn line's pick
+       const st = !a.started && d.turnBar && d.turnBar.autoOn ? (d.turnBar.auto || {})[a.id] : null; // (2.99.60) YOUR TURN sent / waiting / nobody can do it
+       const tech = d.turnBar && a.anyone ? (sg ? sg.name : '') : a.staff ? (d.staff.find(s => s.id === a.staff)?.name || '') : 'ANYONE';
+-      const autoChip = st && st.kind === 'qwait' ? `<span class="chip warn">⏳ ${LV('Waiting for a free tech', 'Chờ thợ rảnh')}</span>` : st && st.kind === 'pass' ? `<span class="chip warn">⏳ ${LV('Nobody free – ', 'Không ai rảnh – ')}${esc(String(st.name).toUpperCase())}${LV(' goes on?', ' làm tiếp?')}</span>` : st && st.kind === 'after' ? `<span class="chip ta-after">${esc(afterTxt(st))}</span>` : st && (st.kind === 'ask' || st.kind === 'hold') ? `<span class="chip ta-ask">${esc(askTxt(st))}</span>` : st ? (st.kind === 'offer' ? `<span class="chip ta-ofr${st.late ? ' late' : ''}">🔔 ${esc(st.name)} – ${st.late ? 'time is up' : 'waiting for Accept'}</span>${st.offer ? ` <button type="button" class="btn small green" data-hacc="${st.offer}">✓ Accept for ${esc(st.name)}</button>${st.late && d.turnBar.timeoutDo !== 'next' ? ` <button type="button" class="btn small" data-hnext="${st.offer}">Next tech</button>` : ''}` : ''}` : st.kind === 'wait' ? `<span class="chip warn">${st.allBusy ? 'Waiting – all techs busy · next ' + esc(st.name) : 'Waiting for ' + esc(st.name)} (~${st.min} min)</span>` : st.kind === 'req' ? `<span class="chip warn">⏳ Waiting for ${esc(String(st.name).toUpperCase())}${st.why ? ' – ' + esc(st.why) : ''}${st.tries >= 3 ? ' · not accepted 3×' : ''}</span>` : `<span class="chip ta-no">${esc(st.why)}</span>`) : ''; // (2.99.92) asked for by name
++      const autoChip = st && st.kind === 'qwait' ? `<span class="chip warn">⏳ ${LV('Waiting for a free tech', 'Chờ thợ rảnh')}</span>` : st && st.kind === 'pass' ? `<span class="chip warn">⏳ ${LV('Nobody free – ', 'Không ai rảnh – ')}${esc(String(st.name).toUpperCase())}${LV(' goes on?', ' làm tiếp?')}</span>` : st && st.kind === 'after' ? `<span class="chip ta-after">${esc(afterTxt(st))}</span>` : st && (st.kind === 'ask' || st.kind === 'hold') ? `<span class="chip ta-ask">${esc(askTxt(st))}</span>` : st ? (st.kind === 'offer' ? `<span class="chip ta-ofr${st.late ? ' late' : ''}">🔔 ${esc(st.name)} – ${st.late ? 'time is up' : 'waiting for Accept'}</span>${st.offer ? ` <button type="button" class="btn small green" data-hacc="${st.offer}">✓ Accept for ${esc(st.name)}</button>${st.late && d.turnBar.timeoutDo !== 'next' ? ` <button type="button" class="btn small" data-hnext="${st.offer}">Next tech</button>` : ''}` : ''}` : st.kind === 'wait' ? `<span class="chip warn">${st.allBusy ? 'Waiting – all techs busy · next ' + esc(st.name) : 'Waiting for ' + esc(st.name)} (~${st.min} min)${st.kept ? ' · ' + esc(LV(st.kept.name + ' kept for ' + st.kept.for, st.kept.name + ' được giữ cho ' + st.kept.for)) : '' /* (2.99.662 rare) */}</span>` : st.kind === 'req' ? `<span class="chip warn">⏳ Waiting for ${esc(String(st.name).toUpperCase())}${st.why ? ' – ' + esc(st.why) : ''}${st.tries >= 3 ? ' · not accepted 3×' : ''}</span>` : `<span class="chip ta-no">${esc(st.why)}</span>`) : ''; // (2.99.92) asked for by name
+       const autoT2 = st && st.kind === 'qwait' ? LV('the first tech who gets free and can do it gets YOUR TURN – or Choose tech', 'thợ rảnh trước (làm được) nhận YOUR TURN – hoặc Choose tech') : st && st.kind === 'pass' ? 'OK below – or a tech who gets free first takes it' : st && st.kind === 'after' ? 'Goes to the turn line when that part is done' : st && (st.kind === 'ask' || st.kind === 'hold') ? `<span class="ta-left" data-left="${st.left}" data-suf="${st.kind === 'ask' ? ' to answer' : ' left'}">${Math.floor(st.left / 60)}:${String(st.left % 60).padStart(2, '0')}${st.kind === 'ask' ? ' to answer' : ' left'}</span>${st.freeName ? ' · then ' + esc(st.freeName) : ''}` : st ? (st.kind === 'offer' ? `<span class="ta-left" data-left="${st.left}">${Math.floor(st.left / 60)}:${String(st.left % 60).padStart(2, '0')} left${st.req ? ' · asked for by name' : ''}</span>` : st.kind === 'wait' ? 'ANYONE · by the turn line' : '<b class="cd-short">Choose a tech</b>') : '';
+       const hs = a.staff && (a.started || !a.anyone) ? d.staff.find(s => s.id === a.staff) : null; // (2.99.171 – order 360) the row in the tech's own color
+       return `<div class="item here-item${a.undecided ? ' undecided' : ''}${!a.started && (a.anyone || !a.staff) ? ' no-tech' : ''}${st && st.kind === 'nocan' ? ' ta-nocan' : ''}${st && st.kind === 'qwait' ? ' ta-qwait' : ''}${hs ? ` tci" style="${toneVars(hs.tone)}` : ''}" data-id="${a.id}"><span class="swatch" style="background:${pcOf(a)[2]}"></span><span class="time">${tlabel(a.start)}</span>
+diff -ruN int661/inc/core.php int662/inc/core.php
+--- int661/inc/core.php	2026-11-06 01:51:22.449684291 -0600
++++ int662/inc/core.php	2026-11-06 10:44:29.553906133 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.661');
++define('APP_VERSION', '2.99.662');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN int661/inc/turnauto-dispatch.php int662/inc/turnauto-dispatch.php
+--- int661/inc/turnauto-dispatch.php	2026-11-05 14:15:45.320366648 -0600
++++ int662/inc/turnauto-dispatch.php	2026-11-06 10:47:01.159032385 -0600
+@@ -193,7 +193,7 @@
+                     $etaHold[$hd] = 1; $asking[$hd] = (int)$a['id']; continue; }
+             }
+             $free = array_values(array_filter($capable, fn($sid) => !isset($busy[$sid]) && !isset($held[$sid]) && !ta_booked_soon($sid, $date, $wm))); // (2.99.92) a tech with a booked customer soon keeps the place, not given this walk-in
+-            if (!$isPass && !empty($TC['rareKeep']) && count($free) > 1) $free = ta_rare_keep($free, $a, $wm, $date, $skills, $L['order'], $wl, $nowM); // (2.99.583 - LENH 583) a rare-skill tech (Builder gel) kept for the customer who needs it
++            if (!$isPass && !empty($TC['rareKeep']) && count($free) > 1) $free = ta_rare_keep($free, $a, $wm, $date, $skills, $L['order'], $wl, $nowM, $tried); /* (2.99.662 rare) + $tried */ // (2.99.583 - LENH 583) a rare-skill tech (Builder gel) kept for the customer who needs it
+             if (!$free && !$isPass) { // (2.99.273 – order 483 mục 5 / 11) every free tech who can do it has a booked customer it would run into → the one booked the LATEST + the desk is told
+                 $fa = array_values(array_filter($capable, fn($sid) => !isset($busy[$sid]) && !isset($held[$sid]) && !in_array($sid, $triedOf($a), true)));
+                 if ($fa) { usort($fa, fn($x, $y) => ta_next_booked($y, $date) <=> ta_next_booked($x, $date)); $lt = $fa[0]; $free = [$lt]; $nb = ta_next_booked($lt, $date);
+diff -ruN int661/inc/turnauto-state.php int662/inc/turnauto-state.php
+--- int661/inc/turnauto-state.php	2026-11-05 14:15:45.319935226 -0600
++++ int662/inc/turnauto-state.php	2026-11-06 10:47:01.158424590 -0600
+@@ -31,9 +31,14 @@
+         $capable = array_values(array_filter($L['order'], fn($sid) => !isset($breaks[$sid]) && ta_can($skills, $sid, $sids)));
+         if (!$capable) { $hh = hours_for($date); $closed = $hh === null || ($date === date('Y-m-d') && (int)date('G') * 60 + (int)date('i') >= (int)$hh['close']); // (2.99.83) the reason on the card
+             $out[$id] = ['kind' => 'nocan', 'why' => $L['order'] ? 'Chờ thợ làm ' . (ta_main_label($a) ?: 'dịch vụ này') . ' · no tech in line can do it' : ($closed ? 'Salon closed – no auto turn (no tech clocked in)' : 'No tech clocked in')]; continue; }
+-        $best = null; foreach ($capable as $sid) { $t = isset($busy[$sid]) || isset($open['by_staff'][$sid]) ? tech_free_at($sid, $date) : time(); if ($best === null || $t < $best[1]) $best = [$sid, $t]; }
++        /* (2.99.662 rare) a free tech kept for a booking that needs a rare service: shown on the card, the next tech is the one waited for */
++        $kept = []; foreach (q("SELECT detail FROM appt_log WHERE appt_id = ? AND action = 'turn_rare' ORDER BY id DESC", [$id])->fetchAll(PDO::FETCH_COLUMN) as $dt)
++            if (preg_match('/#rk(\d+)-(\d+)$/', (string)$dt, $m) && in_array((int)$m[1], $capable, true) && !isset($busy[(int)$m[1]]) && !isset($kept[(int)$m[1]]) && ($bk = q("SELECT customer_name, start_min FROM appointments WHERE id = ? AND status = 'booked' AND arrived_at = '' AND started_at = '' AND start_min >= ?", [(int)$m[2], (int)date('G') * 60 + (int)date('i') - 15])->fetch()))
++                $kept[(int)$m[1]] = ['name' => ta_cap(staff_name((int)$m[1])), 'for' => short_name((string)$bk['customer_name']) . ' ' . min_to_label((int)$bk['start_min'])];
++        $cb = array_values(array_diff($capable, array_keys($kept))) ?: $capable;
++        $best = null; foreach ($cb as $sid) { $t = isset($busy[$sid]) || isset($open['by_staff'][$sid]) ? tech_free_at($sid, $date) : time(); if ($best === null || $t < $best[1]) $best = [$sid, $t]; }
+         $allBusy = !array_filter($capable, fn($sid) => !isset($busy[$sid]) && !isset($open['by_staff'][$sid])); // (2.99.168) "Waiting – all techs busy"
+-        $out[$id] = ['kind' => 'wait', 'staff' => $best[0], 'name' => staff_name($best[0]), 'min' => max(1, (int)ceil(($best[1] - time()) / 60)), 'allBusy' => $allBusy];
++        $out[$id] = ['kind' => 'wait', 'staff' => $best[0], 'name' => staff_name($best[0]), 'min' => max(1, (int)ceil(($best[1] - time()) / 60)), 'allBusy' => $allBusy, 'kept' => $kept ? array_values($kept)[0] : null]; /* (2.99.662 rare) */
+     }
+     return $out;
+ }
+@@ -132,7 +137,7 @@
+         Settings -> Services. A short service that ends before that booking is still given to T (anh Logan 11:36).
+     One booking / waiting customer keeps ONE rare tech (two free rare techs: the other one still takes customers). Only when another free tech can take this customer –
+     never leaves the customer waiting. The kept tech keeps the place in the line (no turn lost – anh Logan 11:38). Settings -> Turn rules: turn_rare_keep (default ON). */
+-function ta_rare_keep(array $free, array $a, int $wm, string $date, array $skills, array $line, array $waiting, int $nowM): array {
++function ta_rare_keep(array $free, array $a, int $wm, string $date, array $skills, array $line, array $waiting, int $nowM, array $tried = []): array { /* (2.99.662 rare) $tried = techs who already said no to THIS customer */
+     $can = fn(int $t, int $sv): bool => !($skills[$t] ?? []) || in_array($sv, $skills[$t], true);
+     $mainOf = fn(array $x): array => ta_main_sids(ids_list((string)$x['service_ids']));
+     $mine = $mainOf($a); $need = []; $openNow = array_flip(array_map('intval', q("SELECT appt_id FROM turn_offers WHERE state = 'open'")->fetchAll(PDO::FETCH_COLUMN)));
+@@ -148,6 +153,8 @@
+         $who = array_values(array_filter(array_map('intval', $line), fn($t) => $can($t, (int)$r)));
+         if (!$who || count($who) > 2) continue; // not rare today
+         foreach ($list as [$x, $sid, $why]) {
++            /* (2.99.662 rare) booked with a tech who CAN do R but is not in the line now (e.g. the owner LOGAN, 06/11 BARB 11:00): that tech's own customer - nobody else is kept */
++            if ($sid && !in_array($sid, $who, true) && $can($sid, (int)$r)) continue;
+             $cands = $sid && in_array($sid, $who, true) ? [$sid] : $who;
+             if ($sid && in_array($sid, $who, true) && !in_array($sid, $free, true)) continue; // booked with a rare tech who is busy / not free: nothing to keep
+             foreach ($cands as $t) if (in_array($t, $free, true) && !isset($keep[$t])) { $keep[$t] = [(int)$r, $x, $why]; break; }
+@@ -156,6 +163,8 @@
+     if (!$keep) return $free;
+     $rest = array_values(array_filter($free, fn($t) => !isset($keep[$t])));
+     if (!$rest) return $free; // nobody else free: the rare tech takes this customer as before
++    /* (2.99.662 rare) never leaves the customer waiting: every other free tech already said no (Skip / no answer) -> the kept tech gets this customer */
++    if (!array_diff($rest, $tried)) return $free;
+     foreach ($keep as $t => [$r, $x, $why]) {
+         $sn = (string)(services_by_ids([$r])[0]['name'] ?? 'this service'); $tag = '#rk' . $t . '-' . (int)$x['id'];
+         if (!q("SELECT 1 FROM appt_log WHERE appt_id = ? AND action = 'turn_rare' AND detail LIKE ?", [$a['id'], '%' . $tag])->fetchColumn())
