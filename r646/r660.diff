@@ -1,0 +1,1295 @@
+diff -ruN int659/assets/admin/dejavoo-hq.js int660z/assets/admin/dejavoo-hq.js
+--- int659/assets/admin/dejavoo-hq.js	2026-11-03 19:26:04.000000000 -0600
++++ int660z/assets/admin/dejavoo-hq.js	2026-11-06 00:36:31.833474087 -0600
+@@ -9,6 +9,8 @@
+   const mine = () => !IS_MGR && (!S.nfOnly || !!S.support);
+   const say = (b, t, bad) => { const p = b.querySelector('#dvMsg'); if (p) { p.textContent = t; p.style.color = bad ? 'var(--danger, #c0392b)' : ''; } };
+   const logRows = (l) => (l || []).slice(0, 8).map(x => `<li>${esc(x.at || '')} · ${esc(x.op || '')}${x.amount != null ? ' $' + esc(x.amount) : ''} · ${esc(x.status || '')}${x.last4 ? ' · ••' + esc(x.last4) : ''}</li>`).join('');
++  /* (2.99.660 card) the codes / on-off are set ONLY in AN HQ (💳 Card keys): here only a status line */
++  const dvStatus = (v) => esc(T('Set up by NailFlow in AN HQ: ', 'NailFlow cài trong AN HQ: ')) + (v.ready ? '<b>' + esc(T('codes saved ✓', 'đã có mã ✓')) + '</b>' : esc(T('not set up', 'chưa cài'))) + (v.tpn ? ' · TPN ' + esc(v.tpn) : '') + ' · ' + esc(v.on ? T('Card on the P5: ON', 'Cà thẻ P5: BẬT') : T('Card on the P5: off', 'Cà thẻ P5: tắt'));
+   async function box(b) {
+     if (!mine() || b.querySelector('#dvBox')) return;
+     const d = document.createElement('div'); d.className = 'card'; d.id = 'dvBox'; d.style.marginTop = '12px'; b.appendChild(d);
+@@ -16,19 +18,9 @@
+     const v = j.dv || {};
+     d.innerHTML = `<h3 style="margin-top:0">💳 Dejavoo P5 <span class="muted">(NailFlow)</span></h3>
+       <p class="hint">${esc(T('Card terminal through SPIn Cloud. ' + (v.env === 'live' ? 'LIVE' : 'Sandbox (test) – no real money.'), 'Máy cà thẻ qua SPIn Cloud. ' + (v.env === 'live' ? 'LIVE (tiền thật)' : 'Sandbox (thử) – không có tiền thật.')))}</p>
+-      <div class="field"><label for="dvTpn">TPN</label><input id="dvTpn" inputmode="numeric" autocomplete="off" value="${esc(v.tpn || '')}" placeholder="220926423654"></div>
+-      <div class="field"><label for="dvReg">Register ID</label><input id="dvReg" type="password" autocomplete="new-password" value="" placeholder="${esc(v.reg || T('not set', 'chưa có'))}"></div>
+-      <div class="field"><label for="dvAuth">Auth Key</label><input id="dvAuth" type="password" autocomplete="new-password" value="" placeholder="${esc(v.auth || T('not set', 'chưa có'))}"></div>
+-      <p class="hint">${esc(T('Empty = keep the one saved. Never shown again.', 'Để trống = giữ mã đã lưu. Mã không bao giờ hiện lại.'))}</p>
+-      <label class="chk"><input type="checkbox" id="dvOn" ${v.on ? 'checked' : ''}> ${esc(T('Card on the P5 at Checkout', 'Cà thẻ trên máy P5 ở Checkout'))}</label>
+-      <div class="navbtns" style="margin-top:10px"><button type="button" class="btn" id="dvSave">${esc(T('Save', 'Lưu'))}</button> <button type="button" class="btn" id="dvCheck">${esc(T('Check the connection', 'Kiểm kết nối'))}</button></div>
++      <p class="hint" id="dvStatus">${dvStatus(v)}</p>
++      <div class="navbtns" style="margin-top:10px"><button type="button" class="btn" id="dvCheck">${esc(T('Check the connection', 'Kiểm kết nối'))}</button></div>
+       <p class="hint" id="dvMsg"></p><ul class="hint" id="dvLog" style="margin:6px 0 0;padding-left:18px">${logRows(j.log)}</ul>`;
+-    d.querySelector('#dvSave').onclick = async () => {
+-      const body = { tpn: d.querySelector('#dvTpn').value.trim(), reg: d.querySelector('#dvReg').value.trim(), auth: d.querySelector('#dvAuth').value.trim(), on: d.querySelector('#dvOn').checked };
+-      try { const r = await api('dv_save', body); d.querySelector('#dvReg').value = ''; d.querySelector('#dvAuth').value = '';
+-        d.querySelector('#dvReg').placeholder = r.dv.reg || T('not set', 'chưa có'); d.querySelector('#dvAuth').placeholder = r.dv.auth || T('not set', 'chưa có');
+-        d.querySelector('#dvLog').innerHTML = logRows(r.log); say(d, T('Saved.', 'Đã lưu.')); } catch (e) { say(d, e.message || String(e), true); }
+-    };
+     d.querySelector('#dvCheck').onclick = async () => {
+       say(d, T('Checking…', 'Đang kiểm…'));
+       try { const r = await api('dv_check', {}); d.querySelector('#dvLog').innerHTML = logRows(r.log);
+diff -ruN int659/assets/admin/payroc-hq.js int660z/assets/admin/payroc-hq.js
+--- int659/assets/admin/payroc-hq.js	2026-11-05 00:03:08.000000000 -0600
++++ int660z/assets/admin/payroc-hq.js	2026-11-06 00:36:31.833613353 -0600
+@@ -12,6 +12,8 @@
+   const testRows = (l) => (l || []).slice(0, 12).map(t => `<li>${esc(t.at || '')} · ${esc(t.tc || '')} ${esc(t.op || '')} $${esc(t.amt)} · <b>${esc(t.st || '')}</b>${t.code ? ' ' + esc(t.code) : ''}${t.approval ? ' · ' + esc(t.approval) : ''}${t.void ? ' · void: ' + esc(t.void) : ''}${t.refund ? ' · refund: ' + esc(t.refund) : ''}${t.msg ? ' · ' + esc(t.msg) : ''}
+     ${t.st === 'inProgress' || t.st === 'waiting' ? ` <button type="button" class="btn" data-prt="poll" data-id="${esc(t.id)}">${esc(T('Result', 'Kết quả'))}</button> <button type="button" class="btn" data-prt="stop" data-id="${esc(t.id)}">${esc(T('Stop', 'Dừng'))}</button>` : ''}
+     ${t.op === 'sale' && t.st === 'approved' && !t.void ? ` <button type="button" class="btn" data-prt="void" data-id="${esc(t.id)}">Void</button>` : ''}${t.op === 'sale' && t.st === 'approved' && !t.void && !t.refund ? ` <button type="button" class="btn" data-prt="refund_ref" data-id="${esc(t.id)}">${esc(T('Refund', 'Hoàn tiền'))}</button>` : ''}</li>`).join('');
++  /* (2.99.660 card) the codes / host / on-off are set ONLY in AN HQ (💳 Card keys): here only a status line */
++  const prStatus = (v) => esc(T('Set up by NailFlow in AN HQ: ', 'NailFlow cài trong AN HQ: ')) + (v.ready ? '<b>' + esc(T('codes saved ✓', 'đã có mã ✓')) + '</b>' : esc(T('not set up', 'chưa cài'))) + (v.tid ? ' · Terminal ' + esc(v.tid) : '') + ' · ' + esc(v.host === 'std' ? 'api.payroc.com' : 'api.uat.payroc.com') + ' · ' + esc(v.on ? T('Card on Payroc: ON', 'Cà thẻ Payroc: BẬT') : T('Card on Payroc: off', 'Cà thẻ Payroc: tắt'));
+   async function box(b) {
+     if (!mine() || b.querySelector('#prBox')) return;
+     const d = document.createElement('div'); d.className = 'card'; d.id = 'prBox'; d.style.marginTop = '12px'; b.appendChild(d);
+@@ -19,24 +21,15 @@
+     const v = j.pr || {};
+     d.innerHTML = `<h3 style="margin-top:0">💳 Payroc <span class="muted">(NailFlow · Sandbox)</span></h3>
+       <p class="hint">${esc(T('Payroc Cloud – sandbox (test) only, no real money. API: ', 'Payroc Cloud – chỉ sandbox (thử), không có tiền thật. API: '))}${esc(v.api || '')}</p>
+-      <div class="field"><label for="prTid">Terminal ID</label><input id="prTid" autocomplete="off" value="${esc(v.tid || '')}" placeholder="6804001"></div>
+-      <div class="field"><label for="prSn">${esc(T('Device serial number', 'Số serial máy (hoặc mã của Cloud Simulator)'))}</label><input id="prSn" autocomplete="off" value="${esc(v.sn || '')}"></div>
+-      <div class="field"><label for="prKey">API key</label><input id="prKey" type="password" autocomplete="new-password" value="" placeholder="${esc(v.key || T('not set', 'chưa có'))}"></div>
+-      <div class="field"><label for="prHost">${esc(T('Test host', 'Máy chủ thử'))}</label><select id="prHost"><option value="uat"${v.host === 'uat' ? ' selected' : ''}>api.uat.payroc.com</option><option value="std"${v.host === 'std' ? ' selected' : ''}>api.payroc.com (${esc(T('test key', 'key thử'))})</option></select></div>
+-      <p class="hint">${esc(T('Empty = keep the one saved. The key is never shown again.', 'Để trống = giữ mã đã lưu. Key không bao giờ hiện lại.'))}</p>
+-      <label class="chk"><input type="checkbox" id="prOn" ${v.on ? 'checked' : ''}> ${esc(T('Card on Payroc at Checkout', 'Cà thẻ qua Payroc ở Checkout'))}</label>
+-      <div class="navbtns" style="margin-top:10px"><button type="button" class="btn" id="prSave">${esc(T('Save', 'Lưu'))}</button> <button type="button" class="btn" id="prCheck">${esc(T('Check the connection', 'Kiểm kết nối'))}</button></div>
++      <p class="hint" id="prStatus">${prStatus(v)}</p>
++      <div class="navbtns" style="margin-top:10px"><button type="button" class="btn" id="prCheck">${esc(T('Check the connection', 'Kiểm kết nối'))}</button></div>
+       <p class="hint" id="prMsg"></p><ul class="hint" id="prLog" style="margin:6px 0 0;padding-left:18px">${logRows(j.log)}</ul>
+       <h4>${esc(T('Sandbox tests (certification)', 'Thử sandbox (để nộp Certification)'))}</h4>
+       <div class="field"><label for="prTc">${esc(T('Test case name', 'Tên test case'))}</label><input id="prTc" autocomplete="off" placeholder="TC1"></div>
+       <div class="field"><label for="prAmt">${esc(T('Test amount $', 'Số tiền thử $'))}</label><input id="prAmt" inputmode="decimal" autocomplete="off" value="10.00"></div>
+       <div class="navbtns"><button type="button" class="btn" data-prt="sale">${esc(T('Test sale', 'Thử bán'))}</button> <button type="button" class="btn" data-prt="refund">${esc(T('Test refund on the device', 'Thử hoàn tiền trên máy'))}</button> <button type="button" class="btn" id="prCsv">CSV</button></div>
+       <ul class="hint" id="prTests" style="margin:6px 0 0;padding-left:18px">${testRows(j.tests)}</ul>`;
+-    const fill = (r) => { if (r.log) d.querySelector('#prLog').innerHTML = logRows(r.log); if (r.tests) d.querySelector('#prTests').innerHTML = testRows(r.tests); if (r.pr) d.querySelector('#prKey').placeholder = r.pr.key || T('not set', 'chưa có'); };
+-    d.querySelector('#prSave').onclick = async () => {
+-      const body = { tid: d.querySelector('#prTid').value.trim(), sn: d.querySelector('#prSn').value.trim(), key: d.querySelector('#prKey').value.trim(), host: d.querySelector('#prHost').value, on: d.querySelector('#prOn').checked };
+-      try { const r = await api('pr_save', body); d.querySelector('#prKey').value = ''; fill(r); say(d, T('Saved.', 'Đã lưu.')); } catch (e) { say(d, e.message || String(e), true); }
+-    };
++    const fill = (r) => { if (r.log) d.querySelector('#prLog').innerHTML = logRows(r.log); if (r.tests) d.querySelector('#prTests').innerHTML = testRows(r.tests); if (r.pr) d.querySelector('#prStatus').innerHTML = prStatus(r.pr); };
+     d.querySelector('#prCheck').onclick = async () => {
+       say(d, T('Checking…', 'Đang kiểm…'));
+       try { const r = await api('pr_check', {}); fill(r); say(d, r.check && r.check.ok ? T('Connected (token OK).', 'Kết nối được (token OK).') : T('Not connected: ', 'Chưa kết nối: ') + ((r.check && r.check.msg) || ''), !(r.check && r.check.ok)); } catch (e) { say(d, e.message || String(e), true); }
+diff -ruN int659/assets/admin/push-tech.js int660z/assets/admin/push-tech.js
+--- int659/assets/admin/push-tech.js	2026-10-26 18:43:23.000000000 -0500
++++ int660z/assets/admin/push-tech.js	2026-11-06 00:36:31.818100064 -0600
+@@ -12,7 +12,7 @@
+     card.querySelector('.pt-body').innerHTML = `
+       ${S.support ? `<p class="hint" style="margin:0 0 6px">3 file Firebase (dự án "AN Salon Push"). Khoá (.json service account) được khoá lại trên server, không hiện lại, không ghi log.</p>
+       <div class="pt-files">
+-        <div>${r.key ? '✓ Khoá service account · ' + esc(r.key) : '✗ Khoá service account chưa có'} <label class="btn small">Tải lên<input type="file" accept=".json,application/json" data-ptf="sa" hidden></label></div>
++        <div>${r.key ? '✓ Khoá service account · ' + esc(r.key) : '✗ Khoá service account chưa có'} <span class="muted small">(NailFlow HQ)</span></div>${'' /* (2.99.660 keys) the key is set in NailFlow HQ only: no upload here */}
+         <div>${f(r.android, 'google-services.json (Android)')} <label class="btn small">Tải lên<input type="file" accept=".json,application/json" data-ptf="android" hidden></label></div>
+         <div>${f(r.ios, 'GoogleService-Info.plist (iPhone)')} <label class="btn small">Tải lên<input type="file" accept=".plist,text/xml,application/xml" data-ptf="ios" hidden></label></div>
+         <p class="${r.same ? 'ok' : 'muted'}" style="margin:4px 0 0">${r.same ? '✓ Cả 3 file cùng 1 dự án Firebase' : 'Cần cả 3 file cùng 1 dự án Firebase'}</p>
+diff -ruN int659/assets/admin/settings-asend.js int660z/assets/admin/settings-asend.js
+--- int659/assets/admin/settings-asend.js	2026-11-04 01:30:47.000000000 -0600
++++ int660z/assets/admin/settings-asend.js	2026-11-06 00:36:31.826085456 -0600
+@@ -27,24 +27,20 @@
+       <label class="check as-devopt"><input type="radio" name="asDev" value="android" ${devUI === 'android' ? 'checked' : ''}><span><b>(A) Android – SMS Gateway for Android</b><br><small class="muted">${LV('Open-source app (capcom6), Cloud mode. The web sends at once and shows Sent / Delivered / Failed. No Twilio.', 'App mã nguồn mở (capcom6), chế độ Cloud. Web gửi tin ngay, báo Sent / Delivered / Failed. Không Twilio.')}</small></span></label>
+       <label class="check as-devopt"><input type="radio" name="asDev" value="" ${devUI !== 'android' && devUI !== 'winsms' ? 'checked' : ''}><span>${LV('<b>(B) Send by hand</b><br><small class="muted">Every text goes to <b>To send</b> – Send opens Messages on the phone in your hand.</small>', '<b>(B) Gửi tay</b><br><small class="muted">Mọi tin vào <b>To send</b> – bấm Send là mở app Tin nhắn trên máy đang cầm.</small>')}</span></label>
+       <label class="check as-devopt"><input type="radio" name="asDev" value="winsms" ${devUI === 'winsms' ? 'checked' : ''}><span><b>(C) ${LV('SMS Server (NailFlow VPS)', 'SMS Server (máy chủ NailFlow)')}</b><br><small class="muted">${LV('The NailFlow SMS Server sends the texts through an SMS provider from the salon number (no phone) and brings the customers\' replies to Messages. It shows Sent / Delivered / Failed here.', 'NailFlow SMS Server gửi tin qua nhà cung cấp SMS từ số của tiệm (không cần điện thoại) và đưa tin khách trả lời vào Messages. Báo Sent / Delivered / Failed về đây.')}</small></span></label>
+-      ${devUI === 'winsms' ? `<div class="as-ad as-ws"><p class="hint" style="margin:0 0 6px">${LV('On the SMS Server: make this salon\'s key (nfsms salon-key &lt;id&gt;) with the address below, then paste the salon id + key here and tap Save device.', 'Trên SMS Server: tạo khoá cho tiệm (nfsms salon-key &lt;id&gt;) với địa chỉ dưới đây, rồi dán mã tiệm + khoá vào đây và bấm Save device.')}</p>
++      ${devUI === 'winsms' ? `<div class="as-ad as-ws"><p class="hint" style="margin:0 0 6px">${LV('The SMS Server key of this salon is set up by NailFlow (AN HQ).', 'Khoá SMS Server của tiệm do NailFlow cài (AN HQ).')}</p>
+         <div class="field"><label>${LV('Address for the SMS Server', 'Địa chỉ cho SMS Server')}</label><input class="inp" readonly value="${esc(D.wsUrl || '')}"></div>
+-        <div class="field"><label for="wsId">${LV('Salon id', 'Mã tiệm')}</label><input id="wsId" class="inp" autocomplete="off" value="${esc(D.wsId || '')}" placeholder="an"></div>
+-        <div class="field"><label for="wsKey">${LV('Key', 'Khoá')}</label><input id="wsKey" class="inp" type="password" autocomplete="new-password" ${D.wsKey ? `placeholder="${LV('saved', 'đã có')} · ${esc(D.wsFp)} – ${LV('type only to change', 'gõ khi muốn đổi')}"` : ''}></div>
++        <p class="as-mail ${D.wsKey ? 'ok' : 'bad'} as-keyst" style="margin:6px 0 0">${D.wsKey ? '✓' : '⚠'} <b>SMS Server: ${D.wsKey ? LV('connected', 'đã kết nối') : LV('not set up', 'chưa cài')}</b> · ${LV('salon id', 'mã tiệm')} ${esc(D.wsId || '')} · ${LV('set up by NailFlow', 'NailFlow cài')}</p>${/* (2.99.660 keys) status only – the key is typed in AN HQ */ ''}
+         ${D.wsPing ? `<p class="as-mail ${D.wsPing.at && (Date.now() - new Date(String(D.wsPing.at).replace(' ', 'T')).getTime()) < 300000 ? 'ok' : 'bad'}" style="margin:6px 0 0">🖥 ${LV('Last seen', 'Lần cuối')} ${esc(D.wsPing.at)}${D.wsPing.ver ? ' · v' + esc(D.wsPing.ver) : ''}${D.wsPing.dry ? ' · DRY RUN' : ''} · ${LV('waiting', 'đang chờ')} ${D.wsWaiting || 0}</p>` : `<p class="hint">${LV('The SMS Server has not called yet.', 'SMS Server chưa gọi lần nào.')}</p>`}</div>` : ''}
+       ${(() => { const X = D.share || {}; /* (2.99.261 – order 472) two salons on one Android */
+         if (X.with) return `<div class="as-share"><b>📲 Đang dùng Android của ${esc(X.with)} · Uses ${esc(X.with)}'s Android</b><p class="hint" style="margin:4px 0 6px">Same phone, same SMS Gateway – nothing to type. Every text from here starts with the salon's name and ends with “— ${esc(X.brand || '')}${X.phone ? ' ' + esc(X.phone) : ''}”; the confirm code is <b>${esc(X.prefix)}-…</b>. Replies go to the salon that texted that customer last.</p><div class="row"><button type="button" class="btn small" id="adShareOff">Đổi sang Android riêng · Our own Android</button><button type="button" class="btn small" id="adShareHand">Gửi tay · Send by hand</button></div></div>`; /* (2.99.319 – lệnh 546) */
+         return X.choices && X.choices.length && devUI === 'android' ? `<div class="as-share">${X.choices.map(c => `<button type="button" class="btn small primary" data-adshare="${esc(c.id)}">📲 Use ${esc(c.name)}'s Android (same phone)</button>`).join(' ')}<p class="hint" style="margin:4px 0 0">Love Nails / another salon texts through that salon's Android – its login is not typed here.</p></div>` : ''; })()}
+       ${D.share && D.share.report ? `<details class="as-share-rep"><summary><b>Texts through the Android – per day · Số tin qua Android mỗi ngày</b>${D.share.unsure ? ` · ❓ ${D.share.unsure} to sort in Messages` : ''}</summary><table class="as-rep"><tr><th>Day</th>${D.share.report.salons.map(n => `<th>${esc(n)}</th>`).join('')}</tr>${D.share.report.days.map(d => `<tr><td>${esc(shortDate(d.date))}</td>${D.share.report.salons.map(n => `<td>${d.n[n] || 0}</td>`).join('')}</tr>`).join('')}</table></details>` : ''}
+       ${devUI === 'android' && !(D.share && D.share.with) ? `<div class="as-ad">
+-        <div class="row as-row"><div class="field"><label for="adUser">Username (app → Home → Cloud server)</label><input id="adUser" autocomplete="off" autocapitalize="off" spellcheck="false" ${sv(D.adUser)}></div>
+-          <div class="field"><label for="adPass">Password</label><input id="adPass" type="password" autocomplete="new-password" ${sv(D.adPass)}></div></div>
+-        <div class="field"><label for="adSign">Signing key (app → Settings → Webhooks → Signing Key)</label><input id="adSign" type="password" autocomplete="off" ${sv(D.adSign)}>
+-          <p class="hint" style="margin:4px 0 0">Cần để web nhận báo Sent / Delivered / Failed và tin khách trả lời (STOP, CANCEL, CONFIRM AN-…) – web kiểm chữ ký từng lần.${D.adSign ? '' : ' <b>Chưa có</b> – web vẫn tự hỏi máy đã gửi chưa, nhưng KHÔNG nhận tin khách trả lời.'}</p></div>
++        <p class="as-mail ${D.adUser && D.adPass ? 'ok' : 'bad'} as-keyst" style="margin:0 0 6px">${D.adUser && D.adPass ? '✓' : '⚠'} <b>Android (SMS Gateway): ${D.adUser && D.adPass ? LV('connected', 'đã kết nối') : LV('not set up', 'chưa cài')}</b> · ${LV('signing key', 'signing key')} ${D.adSign ? '✓' : '—'} · ${LV('set up by NailFlow', 'NailFlow cài')}</p>${/* (2.99.660 keys) status only – the login is typed in AN HQ */ ''}
+         <div class="field"><label for="adTest">Test number (📲 Test Android)</label><input id="adTest" type="tel" inputmode="tel" value="${D.adTestOwn ? esc(D.adTest) : ''}" placeholder="${esc(D.adTest || '515-499-7409')}"></div>
+-        <p class="hint" style="margin:0">Mật khẩu / key lưu MÃ HOÁ trên web, không hiện lại, không ghi log.</p>
++        <p class="hint" style="margin:0">${LV('The login / keys are set up by NailFlow (AN HQ), kept encrypted, never shown.', 'Tài khoản / key do NailFlow cài (AN HQ), lưu MÃ HOÁ, không hiện lại.')}</p>
+       </div>` : ''}
+-      <div class="row" style="margin-top:8px"><button type="button" class="btn small primary" id="asDevSave">Save device</button>${D.device === 'android' ? `<button type="button" class="btn small" id="adCheck">Check connection</button><button type="button" class="btn small" id="adTestBtn">📲 Test Android → ${esc(D.adTest || '')}</button>${D.adUser && !(D.share && D.share.with) ? '<button type="button" class="btn small" id="adClear">Remove login</button>' : ''}` : ''}</div><div id="adCf"></div>
++      <div class="row" style="margin-top:8px"><button type="button" class="btn small primary" id="asDevSave">Save device</button>${D.device === 'android' ? `<button type="button" class="btn small" id="adCheck">Check connection</button><button type="button" class="btn small" id="adTestBtn">📲 Test Android → ${esc(D.adTest || '')}</button>` : ''}</div><div id="adCf"></div>
+       ${D.device === 'android' && C ? `<div class="as-mail ${C.ok && !D.adStuck && C.hooks >= 4 ? 'ok' : 'bad'}"><b>${!C.ok ? '⚠️ ' + esc(C.error || 'Not connected') : D.adStuck ? `⚠️ ${D.adStuck} text${D.adStuck > 1 ? 's' : ''} stuck – the Android did not send` : C.online ? '✓ Android online' : '✓ Android connected – asleep, wakes up for each text'}</b> · checked ${esc(logWhen(C.at))}${D.adLastSent ? ` · last text sent ${esc(logWhen(D.adLastSent))}` : ''}
+         ${(C.devices || []).map(d => `<br>📱 ${esc(d.name)} – last seen ${d.lastSeen ? esc(logWhen(d.lastSeen)) : '—'} ${d.online ? '🟢' : D.adStuck ? '🔴' : '💤'}`).join('')}${D.adStuck ? '<br>Check the phone: on, charging, Wi-Fi, SMSGate open (Battery: Unrestricted). A text waits for the phone to wake up; not sent by its deadline (2 hours, or the appointment time) → back to <b>To send</b>.' : ''}
+         <br>Webhooks: ${C.hooks || 0}/${D.adHooksN || 4}${C.hookErr ? ' – ' + esc(C.hookErr) : ''}${H ? ` · last report ${esc(H.event)} ${esc(logWhen(H.at))}` : ''}</div>` : ''}
+@@ -146,18 +142,16 @@
+       $$('[data-vk],[data-pvk]', b).forEach(row => { pick(row, v); const cb = $('[data-ask]', row); if (cb && v === 'auto') cb.checked = true; }); toast(v === 'auto' ? LV('All 🤖 Auto – tap Save', 'Tất cả 🤖 Auto – bấm Save') : LV('All 📱 My phone – tap Save', 'Tất cả 📱 Điện thoại chủ – bấm Save')); }));
+     bindLast(b); bindFail(b);
+     // (2.99.213 – order 416) the texting device
+-    $$('[name=asDev]', b).forEach(x => x.addEventListener('change', () => { devUI = x.value; const keep = { u: $('#adUser', b)?.value || '', p: $('#adPass', b)?.value || '', s: $('#adSign', b)?.value || '' }; draw(); if ($('#adUser', b)) { $('#adUser', b).value = keep.u; $('#adPass', b).value = keep.p; $('#adSign', b).value = keep.s; } }));
++    $$('[name=asDev]', b).forEach(x => x.addEventListener('change', () => { devUI = x.value; const keep = $('#adTest', b)?.value; draw(); if (keep != null && $('#adTest', b)) $('#adTest', b).value = keep; })); /* (2.99.660 keys) */
+     $('#asDevSave', b)?.addEventListener('click', async () => {
+       const dv = ($('[name=asDev]:checked', b) || {}).value || '';
+-      const body = { device: dv }; if (dv === 'winsms') { body.wsId = ($('#wsId', b) || {}).value || ''; body.wsKey = ($('#wsKey', b) || {}).value || ''; } /* (2.99.460) */ if (dv === 'android') { body.adUser = $('#adUser', b).value.trim(); body.adPass = $('#adPass', b).value; body.adSign = $('#adSign', b).value.trim(); body.adTest = $('#adTest', b).value.trim(); }
++      const body = { device: dv }; /* (2.99.660 keys) no key / login from here – AN HQ only */ if (dv === 'android' && $('#adTest', b)) body.adTest = $('#adTest', b).value.trim();
+       try { D = await api('autosend_device', body); devUI = D.device; draw(); toast(D.device === 'android' ? (D.adCheck && D.adCheck.ok ? 'Android saved ✓ – connected' : 'Android saved – tap Check connection') : D.device === 'winsms' ? 'SMS Server saved ✓' : 'Saved ✓'); } catch (e) { oops(e); } });
+     $$('[data-adshare]', b).forEach(x => x.addEventListener('click', async () => { try { D = await api('autosend_device', { device: 'android', adShare: x.dataset.adshare }); devUI = D.device; draw(); toast('✓ Uses the shared Android'); } catch (e) { oops(e); } })); // (2.99.261 – order 472)
+     $('#adShareHand', b)?.addEventListener('click', async () => { try { D = await api('autosend_device', { device: '' }); devUI = D.device; draw(); toast('Gửi tay ✓ – texts go to To send'); } catch (e) { oops(e); } }); // (2.99.319 – lệnh 546)
+     $('#adShareOff', b)?.addEventListener('click', async () => { try { D = await api('autosend_device', { device: 'android', adShare: '' }); devUI = D.device; draw(); } catch (e) { oops(e); } });
+     $('#adCheck', b)?.addEventListener('click', async (e) => { e.target.disabled = true; try { D = await api('android_check', {}); draw(); toast(D.check.ok ? (D.adStuck ? 'Connected – but texts are stuck: check the phone' : D.check.online ? 'Android online ✓' : 'Connected ✓ – the phone is asleep, it wakes up for each text') : (D.check.error || 'Not connected')); } catch (x) { oops(x); } finally { e.target.disabled = false; } });
+     $('#adTestBtn', b)?.addEventListener('click', async (e) => { e.target.disabled = true; try { D = await api('android_test', {}); draw(); toast(D.ok ? 'Test handed to the Android ✓ – look at Last 30' : 'Not sent – ' + (D.note || 'see Last 30')); } catch (x) { oops(x); } finally { e.target.disabled = false; } });
+-    $('#adClear', b)?.addEventListener('click', () => confirmIn($('#adCf', b), 'Remove the Android login from the web? Texts go to To send until you type it again.', 'Remove', async () => {
+-      try { D = await api('autosend_device', { device: '', adClear: 1 }); devUI = D.device; draw(); toast('Removed – texts go to To send'); } catch (e) { oops(e); } }, true)); // (2.99.157) 2nd test: the owner's 515-499-7409
+   };
+   draw();
+   if (!S.support) { const h = $('#p-settings .subhead h2'); if (h) h.textContent = '📲 ' + LV('Auto texts', 'Tin tự động'); } // (2.99.508 – LỆNH 506) the owner's title
+diff -ruN int659/assets/admin/settings-pay.js int660z/assets/admin/settings-pay.js
+--- int659/assets/admin/settings-pay.js	2026-10-31 12:53:38.000000000 -0500
++++ int660z/assets/admin/settings-pay.js	2026-11-06 00:36:31.826434680 -0600
+@@ -153,7 +153,7 @@
+   },
+   pay(b, s) {
+     const DS = { paid: ['arrived', 'paid'], refunded: ['', 'refunded'], failed: ['cancelled', 'failed'] };
+-    const ppKeys = !!s.paypal_client_id && s.paypal_secret_set; // no PayPal yet: no warnings about it (only the fields to fill in later)
++    const ppKeys = !!s.paypal_keys; /* (2.99.660 keys) no PayPal yet: no warnings about it (only the fields to fill in later) */
+     const F = s.fee || {};
+     b.innerHTML = `    <div class="card" style="margin-bottom:12px" id="cxBox"><h3 style="margin-top:0">Sales tax</h3>
+       <div class="field"><label for="cxTax">Sales tax % <span class="muted">(0 = no tax)</span></label><input id="cxTax" type="number" inputmode="decimal" step="0.001" min="0" max="20" value="${s.tax_pct || 0}">
+@@ -196,11 +196,8 @@
+       <label class="check"><input type="checkbox" id="dpAuto" ${s.dep_autorefund ? 'checked' : ''}><span>Refund automatically when the customer cancels online early enough</span></label>
+       <div class="field"><label for="dpHours">Early enough = at least this many hours before</label><input id="dpHours" type="number" inputmode="numeric" min="1" max="168" value="${s.dep_refund_hours}"></div>
+       <h3>PayPal</h3>
+-      <p class="hint">From your PayPal Business account: developer.paypal.com → Apps &amp; Credentials → your app → Client ID and Secret. The Secret stays on the server and is never shown again.</p>
+-      <div class="field"><label for="dpMode">Mode</label><select id="dpMode"><option value="live"${s.paypal_mode === 'live' ? ' selected' : ''}>Live (real payments)</option><option value="sandbox"${s.paypal_mode === 'sandbox' ? ' selected' : ''}>Sandbox (test only)</option></select></div>
+-      <div class="field"><label for="dpCid">Client ID</label><input id="dpCid" autocomplete="off" spellcheck="false" value="${esc(s.paypal_client_id)}" placeholder="Paste your Client ID"></div>
+-      <div class="field"><label for="dpSec">Secret</label><input id="dpSec" type="password" autocomplete="new-password" placeholder="${s.paypal_secret_set ? 'Saved – type to replace' : 'Paste your Secret'}"></div>
+-      <div class="row"><button type="button" class="btn primary" id="dpSave">Save</button>${ppKeys ? '<button type="button" class="btn" id="dpTest">Test PayPal connection</button><button type="button" class="btn red" id="dpClear">Remove PayPal keys</button>' : ''}</div>
++      <p class="hint pp-st">${ppKeys ? '✅ PayPal: connected' + (s.paypal_mode === 'sandbox' ? ' (Sandbox – test only)' : '') : '🛠️ PayPal: not set up'} – set up by NailFlow</p>${/* (2.99.660 keys) status only – the Client ID / Secret / mode are set in AN HQ */ ''}
++      <div class="row"><button type="button" class="btn primary" id="dpSave">Save</button>${ppKeys ? '<button type="button" class="btn" id="dpTest">Test PayPal connection</button>' : ''}</div>
+       <h3>Deposits (${s.deposits.length})</h3>
+       <div class="list">${s.deposits.map(d => `<div class="item"><div class="main"><div class="t1">${esc(d.name)} · ${money(d.amount)} <span class="chip ${(DS[d.status] || ['', d.status])[0]}">${esc((DS[d.status] || ['', d.status])[1])}</span></div>
+         <div class="t2">${esc(d.phone)} · ${d.people} people · ${esc(d.when)}${d.info ? ' · ' + esc(d.info) : ''}</div></div></div>`).join('') || '<div class="empty">No deposits yet.</div>'}</div>
+@@ -220,8 +217,7 @@
+     });
+     $('#dpSave', b).addEventListener('click', async () => {
+       try { await api('save_settings', { dep_on: $('#dpOn', b).checked, dep_min: +$('#dpMin', b).value, dep_amount: +$('#dpAmt', b).value, dep_text: $('#dpText', b).value,
+-        dep_policy: $('#dpPolicy', b).value, dep_autorefund: $('#dpAuto', b).checked, dep_refund_hours: +$('#dpHours', b).value, paypal_mode: $('#dpMode', b).value,
+-        paypal_client_id: $('#dpCid', b).value, paypal_secret: $('#dpSec', b).value }); saved(); renderSettings(); } catch (e) { oops(e); }
++        dep_policy: $('#dpPolicy', b).value, dep_autorefund: $('#dpAuto', b).checked, dep_refund_hours: +$('#dpHours', b).value }); saved(); renderSettings(); } catch (e) { oops(e); } /* (2.99.660 keys) no PayPal keys from here */
+     });
+     const dpTest = $('#dpTest', b);
+     if (dpTest) dpTest.addEventListener('click', async (e) => {
+@@ -229,11 +225,7 @@
+       try { const r = await api('dep_test', {}); toast(`PayPal connection works (${r.mode === 'sandbox' ? 'Sandbox – test only' : 'Live'}) ✓`, 4000); } catch (x) { oops(x); }
+       btn.disabled = false;
+     });
+-    const dpClear = $('#dpClear', b); // empties Client ID + Secret; group deposits and online gift card sales go off with them
+-    if (dpClear) dpClear.addEventListener('click', async (e) => {
+-      const x = e.currentTarget; if (x.dataset.sure !== '1') { x.dataset.sure = '1'; x.textContent = 'Tap again to remove the PayPal keys'; return; }
+-      try { await api('save_settings', { paypal_clear: true }); toast('PayPal keys removed – deposits and online gift cards are off'); renderSettings(); } catch (y) { oops(y); }
+-    });
++    /* (2.99.660 keys) "Remove PayPal keys": AN HQ → 🔑 Keys */
+   },
+   birthday(b, s) {
+     const ST = { sent: ['arrived', 'sent'], waiting: ['warn', 'in To send'], skipped: ['', 'skipped'], due: ['', 'shows up at the send time'], notext: ['', 'no texts'], stop: ['', 'opted out'] };
+diff -ruN int659/assets/admin/settings-texts.js int660z/assets/admin/settings-texts.js
+--- int659/assets/admin/settings-texts.js	2026-11-05 01:22:15.180372793 -0600
++++ int660z/assets/admin/settings-texts.js	2026-11-06 01:27:17.281180012 -0600
+@@ -44,17 +44,7 @@
+       <p class="hint" style="margin:-4px 0 12px">After a reminder is sent, the booking shows <b>?</b> on the schedule until the customer taps Confirm (then <b>✓</b>). Bookings reminded but not confirmed yet are listed in Messages → To send until the appointment time, with Call and Text again. The app never cancels them by itself.</p>
+       <button type="button" class="btn primary block" id="tSave">Save</button>
+       <p class="hint" style="margin:10px 0 0">${LV(`Automatic texting: not on – every text is sent by hand from your phone.`, `Tự động gửi SMS: chưa bật – mọi tin gửi tay bằng iPhone.`)}</p>
+-      <details class="twilio-box" hidden><summary>Automatic texts with Twilio (optional, for later)</summary>
+-        <p class="hint">Off = you send the texts from your iPhone (free). On = the same texts go out by themselves from a Twilio number (paid Twilio account needed).</p>
+-        <label class="check"><input type="checkbox" id="tOn" ${s.sms_enabled ? 'checked' : ''}><span>Send texts with Twilio automatically</span></label>
+-        <div class="field"><label for="tSid">Account SID</label><input id="tSid" value="${esc(s.twilio_sid)}" placeholder="AC…" autocomplete="off"></div>
+-        <div class="field"><label for="tTok">Auth Token</label><input id="tTok" type="password" placeholder="${s.twilio_token_set ? 'Saved – type to replace' : 'Paste your Auth Token'}" autocomplete="new-password"></div>
+-        <div class="field"><label for="tFrom">Twilio phone number</label><input id="tFrom" type="tel" value="${esc(s.twilio_from)}" placeholder="+15551234567"></div>
+-        ${linkBox('Webhook for replies (paste in Twilio → your number → “A message comes in”)', s.sms_webhook)}
+-        ${tpl('tFoot', 'Last line (first Twilio text to a new customer + offers)', s.sms_footer)}
+-        <button type="button" class="btn block" id="tTwSave">Save Twilio</button>
+-        <div class="linkbox" style="margin-top:10px"><input class="inp" id="tTo" type="tel" placeholder="Your cell to test"><button type="button" class="btn" id="tTest">Send test</button></div>
+-      </details>`;
++      ` /* (2.99.660 keys) the hidden Twilio box removed: Twilio is set in NailFlow HQ only */;
+     bindTpl(b);
+     $$('[name="lsStyle"]', b).forEach(x => x.addEventListener('change', async () => { try { await api('save_settings', { sms_link_style: x.value }); s.sms_link_style = x.value; toast('Link style ' + x.value + ' ✓'); } catch (e) { oops(e); } }));
+     $('#lsPrev', b).addEventListener('click', () => previewAll(($('[name="lsStyle"]:checked', b) || {}).value || 'A'));
+@@ -64,11 +54,6 @@
+       $$('[data-tpl]', b).forEach(x => { body[x.dataset.tpl] = x.value; });
+       try { await api('save_settings', body); saved(); S.day = null; renderSettings(); } catch (e) { oops(e); }
+     });
+-    $('#tTwSave', b).addEventListener('click', async () => {
+-      try { await api('save_settings', { sms_enabled: $('#tOn', b).checked, twilio_sid: $('#tSid', b).value, twilio_token: $('#tTok', b).value, twilio_from: $('#tFrom', b).value, sms_footer: $('#tFoot', b).value });
+-        saved(); $('#tTok', b).value = ''; S.day = null; } catch (e) { oops(e); }
+-    });
+-    $('#tTest', b).addEventListener('click', async () => { try { await api('test_sms', { to: $('#tTo', b).value }); toast('Test text sent'); } catch (e) { oops(e); } });
+     bindReviewLink(b, '#grLink', '#grTest');
+     $('#grSave', b).addEventListener('click', async () => {
+       try { await api('save_settings', { review_on: $('#grOn', b).checked, review_link: $('#grLink', b).value.trim() }); saved(); renderSettings(); } catch (e) { oops(e); }
+@@ -127,17 +112,8 @@
+       <button type="button" class="btn primary block" id="nSave">Save</button>
+       <p class="hint" style="margin-top:8px">Notifications never show a customer's phone number – only a short name like “Linh N.”. Tap one to open that appointment or Messages. The red number on the app icon = texts to send.</p>
+       <button type="button" class="btn red block" id="nfOff" style="margin-top:10px" hidden>Turn off on this device</button>
+-      ${S.support ? `<div class="card" style="margin-top:14px"><h3 style="margin-top:0">📱 NailFlow app (iPhone / Android)</h3>
+-        <p class="hint" style="margin:0 0 8px">The NailFlow app gets its notifications through Google Firebase (free). Paste the Firebase key once: Firebase → Project settings → Service accounts → Generate new private key → open the .json file → copy everything → paste here. It is kept locked and never shown again.</p>
+-        <p class="muted small" style="margin:0 0 8px" id="fcmState">${s.fcm_project ? 'Key saved · project ' + esc(s.fcm_project) : '<b>No key yet</b> – the app still works, only without notifications.'}</p>
+-        <div class="field"><textarea id="fcmKey" rows="3" autocomplete="off" spellcheck="false" placeholder='{ "type": "service_account", … }'></textarea></div>
+-        <button type="button" class="btn" id="fcmSave">Save key</button>
+-        ${s.fcmNeed2 ? `<p class="fcm2-warn" style="margin:10px 0 0;padding:8px 10px;border-radius:8px;background:#fde8e8;color:#9b1c1c;font-weight:600">⚠ App mới chưa nhận được thông báo – cần khoá Firebase an-salon-push</p>` : ''}
+-        ${s.fcm2Can ? `<div class="fcm2" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line,#ddd)"><b>Khoá Firebase an-salon-push (app mới)</b>
+-          <p class="muted small" style="margin:4px 0 8px" id="fcm2State">${s.fcm_project2 ? 'Đã có khoá · project ' + esc(s.fcm_project2) : 'Chưa có khoá'}</p>
+-          <div class="field"><input type="file" id="fcm2File" accept=".json,application/json"></div>
+-          <button type="button" class="btn" id="fcm2Save">Save</button>
+-          <p class="muted small" style="margin:8px 0 0">Firebase console → dự án <b>an-salon-push</b> → ⚙ Project settings → Service accounts → “Generate new private key” → tải file .json → chọn file ở ô này → Save. (Khoá được khoá lại, không hiện lại; dùng cho mọi tiệm.)</p></div>` : ''}</div>` : '' /* (2.99.414 – anh Logan 25/10) the Firebase keys are NailFlow's, shared by every salon: shown only to NailFlow support */}`;
++      ${s.fcmNeed2 ? `<p class="fcm2-warn" style="margin:10px 0 0;padding:8px 10px;border-radius:8px;background:#fde8e8;color:#9b1c1c;font-weight:600">⚠ App mới chưa nhận được thông báo – NailFlow HQ cài khoá Firebase (an-salon-push) · The new app gets no notifications yet – NailFlow HQ sets its Firebase key</p>` : '' /* (2.99.660 push) status only, no upload */}
++      ` /* (2.99.660 keys) the Firebase key card removed: keys are set in NailFlow HQ only */;
+     const draw = async () => {
+       if (NF_APP || !pushSupported()) { // (2.99.320 – lệnh 537) the NailFlow app only – no Safari / Home Screen way
+         let st = { perm: 'none' }; try { if (window.NFNative && NFNative.pushState) st = await NFNative.pushState(); } catch (e) {}
+@@ -169,9 +145,6 @@
+       catch (x) { toast('Could not turn on notifications: ' + (x.message || x), 6000); }
+       btn.disabled = false;
+     });
+-    $('#fcm2Save', b)?.addEventListener('click', async () => { const f = $('#fcm2File', b).files[0]; if (!f) return toast('Chọn file .json trước'); // (2.99.340 – lệnh 574)
+-      try { const r = await api('fcm_key', { json: await f.text(), slot: '2' }); $('#fcm2File', b).value = ''; $('#fcm2State', b).textContent = r.project ? 'Đã có khoá · project ' + r.project : 'Đã xoá khoá'; $('.fcm2-warn', b)?.remove(); toast('Saved ✓'); } catch (e) { oops(e); } });
+-    $('#fcmSave', b)?.addEventListener('click', async () => { const t = $('#fcmKey', b); try { const r = await api('fcm_key', { json: t.value }); t.value = ''; $('#fcmState', b).textContent = r.project ? 'Key saved · project ' + r.project : 'Key removed'; toast('Saved ✓'); } catch (e) { oops(e); } }); // (2.99.247)
+     rgBox($('#rgBox', b)); if (typeof nfSnd === 'function') nfSnd($('#sndBox', b)); $('#nfTest', b).addEventListener('click', async (e) => {
+       const btn = e.currentTarget; btn.disabled = true;
+       try {
+diff -ruN int659/assets/admin-core.js int660z/assets/admin-core.js
+--- int659/assets/admin-core.js	2026-11-05 01:28:21.271063690 -0600
++++ int660z/assets/admin-core.js	2026-11-06 00:44:21.686357924 -0600
+@@ -582,7 +582,7 @@
+   ['Money setup', [['s-pay', 'Checkout & tax'], ['s-loyalty', 'Rewards'], ['s-offers', 'Offers'], ['s-referral', 'Referral setup']].map(([k, t]) => [k, t, null])],
+   ['Texts & alerts', [['s-sms', 'Text messages'], ['s-smstpl', 'SMS templates'], ['s-notify', 'Notifications'], ['s-promo', 'Custom promo'], ['s-birthday', 'Birthday texts'], ['s-review', 'Google reviews']].map(([k, t]) => [k, t, null, k === 's-review' ? 'rv' : null])] /* (2.99.437 – CHAT 28/10 03:05) Google reviews: the red number = today's customers to ask */,
+   ['Safety & records', [['s-backup', 'Backup'], ['s-activity', 'Activity log'], ['s-audit', 'Money log'], ['s-testmode', 'Test mode'], ['s-test', 'Test numbers'], ['s-account', 'Account']].map(([k, t]) => [k, t, null])],
+-  ['Settings', [['settings', 'Settings', '#8E8E93'], ['hq', 'AN HQ', '#101826']]], // (2.99.274 – order 486) 🏢 the owner only (American Nails, HQ allows it)
++  ['Settings', [['settings', 'Settings', '#8E8E93'], ['hq', 'Logan', '#101826']]], /* (2.99.274 – order 486) 🏢 the owner only (American Nails, HQ allows it) · (2.99.660 HQ UI) named "Logan" like the HQ app */
+ ];
+ const HOME_MGR = ['checkout', 'sendrc', 'checkin', 'appts', 'book', 'closeday', 'turnview']; // (2.99.362 – lệnh 604) + Lịch theo turn // (2.99.141) + 🧾 Send receipt (managers may text receipts – SO-LUAT 07/10) // (2.99.137) + Check-in (SO-LUAT 07/10) // a manager: only what a manager may do (Close day: today only)
+ /** (2.99.499 – LỆNH 499 a, anh Logan 30/10) the owner's Home page 1 'Daily': shortcuts to the pages used every day (the same icons stay in their own groups). Keys 'd-…' = the icon without 'd-' (opens the same page). */
+diff -ruN int659/assets/admin.js int660z/assets/admin.js
+--- int659/assets/admin.js	2026-10-21 22:16:43.000000000 -0500
++++ int660z/assets/admin.js	2026-11-06 00:36:31.819546818 -0600
+@@ -5133,15 +5133,7 @@
+       <div class="field"><label for="chVol">Volume: <b id="chVolN">${s.chime.vol}</b>%</label><input type="range" id="chVol" min="0" max="100" step="5" value="${s.chime.vol}" style="width:100%"></div>
+       <button type="button" class="btn block" id="chTest">🔔 Test sound</button>
+       <p class="hint">✨ Sparkle = “American Nails – Sparkle”, the salon’s own chime (default, full volume).</p>
+-      <h3>Pushover (optional)</h3>
+-      <p class="hint" style="margin-top:0">Also sends the alerts to the Pushover app on your phone with your sound “${esc(s.pushover.sound || 'americannails')}” – together with the notifications above, not instead of them. From pushover.net: your <b>User Key</b> (top of the page after you log in) and an application's <b>API Token</b>. They stay on the server and are only shown partly hidden.</p>
+-      <div class="card" style="margin-bottom:10px">${s.pushover.ready ? '✅ <b>Pushover is on.</b>' : s.pushover.user && s.pushover.token ? (s.pushover.on ? '⚠ Keys saved – check them with Send test.' : '🔕 Keys saved, Pushover is off.') : '🔕 Not set up yet – paste both keys and tap Save.'}</div>
+-      <label class="check"><input type="checkbox" id="poOn" ${s.pushover.on ? 'checked' : ''}><span><b>Send alerts to Pushover</b></span></label>
+-      <div class="field"><label for="poUser">User Key</label><input id="poUser" type="password" autocomplete="off" spellcheck="false" placeholder="${s.pushover.user ? 'Saved: ' + esc(s.pushover.user) + ' – paste to replace' : 'Paste your User Key'}"></div>
+-      <div class="field"><label for="poTok">API Token</label><input id="poTok" type="password" autocomplete="off" spellcheck="false" placeholder="${s.pushover.token ? 'Saved: ' + esc(s.pushover.token) + ' – paste to replace' : 'Paste your API Token'}"></div>
+-      <div class="field"><span class="lbl">Priority</span>${Object.entries(s.pushover.kinds).map(([k, l]) => `<div class="po-pri"><span>${esc(l)}</span><select data-pri="${k}">${[[1, 'High'], [0, 'Normal'], [-1, 'Low (no sound)']].map(([v, t]) => `<option value="${v}"${s.pushover.pri[k] === v ? ' selected' : ''}>${t}</option>`).join('')}</select></div>`).join('')}</div>
+-      <div class="row"><button type="button" class="btn primary" id="poSave">Save</button><button type="button" class="btn" id="poTest">Send test</button>${s.pushover.user || s.pushover.token ? '<button type="button" class="btn red" id="poClear">Remove keys</button>' : ''}</div>
+-      <p class="hint">Messages never show the customer's phone number, e.g. “📅 New booking: Linh N. – Pedicure, Tue 2:00 PM”; tap to open the appointment. If Pushover is down, the app just writes it in Recent notifications – nothing else changes.</p>
++      ${'' /* (2.99.660 keys) the Pushover key box removed: keys are set in NailFlow HQ only */}
+       <h3>Notify me when</h3>
+       <label class="check"><input type="checkbox" id="nOnline" ${s.notify_online ? 'checked' : ''}><span>A customer books online</span></label>
+       <label class="check"><input type="checkbox" id="nCant" ${s.notify_cantcome ? 'checked' : ''}><span>A customer cancels</span></label>
+@@ -5204,23 +5196,7 @@
+     $('#chVol', b).addEventListener('input', (e) => { $('#chVolN', b).textContent = e.target.value; });
+     $('#chVol', b).addEventListener('change', (e) => { ch.vol = +e.target.value; chSave(true); });
+     $('#chTest', b).addEventListener('click', () => { if (window.Chime) { Chime.unlock(); Chime.play(ch.style, ch.vol, true); Chime.notice('👋 Linh N. just checked in'); } });
+-    // Pushover: keys only sent when typed; the priority of each kind; Send test uses the saved keys.
+-    $('#poSave', b).addEventListener('click', async () => {
+-      const body = { pushover_on: $('#poOn', b).checked, pushover_user: $('#poUser', b).value.trim(), pushover_token: $('#poTok', b).value.trim() };
+-      $$('[data-pri]', b).forEach(x => { body['pushover_pri_' + x.dataset.pri] = +x.value; });
+-      try { await api('save_settings', body); saved(); renderSettings(); } catch (x) { oops(x); }
+-    });
+-    $('#poTest', b).addEventListener('click', async (e) => {
+-      const btn = e.currentTarget; btn.disabled = true;
+-      try { const r = await api('pushover_test', {}); toast(r.ok ? 'Pushover test sent ✓ – check your phone' : 'Pushover did not take it: ' + r.info, 7000); if (r.log) $('#nfLog', b).innerHTML = pushLogRows(r.log); }
+-      catch (x) { oops(x); }
+-      btn.disabled = false;
+-    });
+-    const poClear = $('#poClear', b);
+-    if (poClear) poClear.addEventListener('click', async (e) => {
+-      const x = e.currentTarget; if (x.dataset.sure !== '1') { x.dataset.sure = '1'; x.textContent = 'Tap again to remove the keys'; return; }
+-      try { await api('save_settings', { pushover_clear: true }); toast('Pushover keys removed'); renderSettings(); } catch (y) { oops(y); }
+-    });
++    /* (2.99.660 keys) the Pushover key buttons removed */
+     $('#nSave', b).addEventListener('click', async () => {
+       const body = { notify_online: $('#nOnline', b).checked, notify_cantcome: $('#nCant', b).checked, notify_confirm: $('#nConf', b).checked,
+         notify_checkin: $('#nIn', b).checked, notify_ready: false, notify_anywait: $('#nAnyW', b).checked, notify_morning: $('#nMorn', b).checked, notify_badge: $('#nBadge', b).checked, notify_morning_hour: +$('#nMornH', b).value };
+diff -ruN int659/assets/hq-keys.js int660z/assets/hq-keys.js
+--- int659/assets/hq-keys.js	1969-12-31 18:00:00.000000000 -0600
++++ int660z/assets/hq-keys.js	2026-11-06 01:27:17.281555633 -0600
+@@ -0,0 +1,47 @@
++/* (2.99.660 keys) AN HQ → a salon card → 🔑 Keys: the ONLY place where a salon's secret keys are set (owner decision 06/11, same for every salon):
++   📲 the SMS Server key + salon id, the Android SMS Gateway login (username / password / signing key), 💳 PayPal (Client ID / Secret / Live or Sandbox).
++   Saved on the server encrypted with THAT salon's key; never shown again – a page only sees "saved ✓". Opened from the HQ salon page row "Keys nhắn tin & PayPal" (2.99.660 HQ UI). (2.99.660 push) + 🔔 Firebase (push) slot 1 / 2. */
++'use strict';
++window.HqKeys = (function () {
++  const H = () => window.HQ;
++  const e = (s) => H().esc(s);
++  const ok = (on) => on ? '<b class="hq-tag ok">saved ✓</b>' : '<span class="hq-tag warn">not set</span>';
++  const pw = (id, label, on) => `<label class="hq-lbl" for="${id}">${label} ${ok(on)}</label><input class="hq-in" id="${id}" type="password" autocomplete="new-password" autocapitalize="off" spellcheck="false" placeholder="${on ? 'type only to replace' : ''}">`;
++  async function open(s) {
++    const { api, openSheet, toast, busy, $ } = H();
++    let T, P, F; try { [T, P, F] = await Promise.all([api('texting&id=' + encodeURIComponent(s.id)), api('paypal&id=' + encodeURIComponent(s.id)), api('push_keys&id=' + encodeURIComponent(s.id))]); } catch (x) { return toast(x.message, true); } /* (2.99.660 push) + Firebase */
++    const draw = () => { const K = T.keys || {};
++      openSheet(`<h2>🔑 Keys – ${e(s.name || s.id)}</h2>
++        <p class="hq-muted">Set only here. Kept encrypted with this salon's own key, never shown again. The salon's Settings shows only a status line.</p>
++        <h3 style="margin:12px 0 6px">🖥 SMS Server ${K.wsOn ? '<small class="hq-tag ok">in use</small>' : ''}</h3>
++        <label class="hq-lbl" for="kWsId">Salon id</label><input class="hq-in" id="kWsId" autocapitalize="off" spellcheck="false" maxlength="32" value="${e(K.wsId || '')}" placeholder="an">
++        ${pw('kWsKey', 'Key (nfsms salon-key &lt;id&gt;)', K.wsKey)}
++        <h3 style="margin:14px 0 6px">📲 Android – SMS Gateway ${K.shared ? '<small class="hq-muted">(uses another salon\'s Android)</small>' : ''}</h3>
++        ${pw('kAdUser', 'Username', K.adUser)}${pw('kAdPass', 'Password', K.adPass)}${pw('kAdSign', 'Signing key', K.adSign)}
++        <div class="hq-acts"><button class="hq-btn good" id="kTxSave">Save texting keys</button>${K.adUser ? '<button class="hq-btn sm ghost" type="button" id="kAdClr">Remove Android login</button>' : ''}${K.wsKey ? '<button class="hq-btn sm ghost" type="button" id="kWsClr">Remove SMS Server key</button>' : ''}</div>
++        <h3 style="margin:16px 0 6px">💳 PayPal ${P.ready ? '<small class="hq-tag ok">connected</small>' : '<small class="hq-tag warn">not set up</small>'}</h3>
++        <label class="hq-lbl" for="kPpMode">Mode</label><select class="hq-in" id="kPpMode"><option value="live"${P.mode === 'live' ? ' selected' : ''}>Live (real payments)</option><option value="sandbox"${P.mode === 'sandbox' ? ' selected' : ''}>Sandbox (test only)</option></select>
++        <label class="hq-lbl" for="kPpCid">Client ID ${P.clientSet ? '<b class="hq-tag ok">saved ✓ …' + e(P.clientEnd) + '</b>' : '<span class="hq-tag warn">not set</span>'}</label><input class="hq-in" id="kPpCid" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${P.clientSet ? 'type only to replace' : ''}">
++        ${pw('kPpSec', 'Secret', P.secretSet)}
++        <p class="hq-muted small">Group deposits ${P.depOn ? 'ON' : 'off'} · online gift cards ${P.giftOnline ? 'ON' : 'off'} (the salon turns them on in its Settings).</p>
++        <div class="hq-acts"><button class="hq-btn good" id="kPpSave">Save PayPal</button>${P.clientSet || P.secretSet ? '<button class="hq-btn sm ghost" type="button" id="kPpClr">Remove PayPal keys</button>' : ''}</div>
++        <h3 style="margin:16px 0 6px">🔔 Firebase (push) – NailFlow app</h3>${/* (2.99.660 push) the service-account .json of slot 1 (old project) / slot 2 (new app, an-salon-push); the salon no longer uploads it */ ''}
++        <p class="hq-muted small">Firebase → Project settings → Service accounts → Generate new private key → choose the .json file. Empty slot = the NailFlow server file is used.</p>
++        ${[['1', 'Slot 1 (old app project)'], ['2', 'Slot 2 (new app · an-salon-push)']].map(([n, t]) => { const x = (F && F['slot' + n]) || {}; return `<label class="hq-lbl" for="kFb${n}">${t} ${ok(x.saved)}${x.saved && x.project ? ' <small class="hq-muted">' + e(x.project) + '</small>' : ''}</label><input class="hq-in" id="kFb${n}" type="file" accept=".json,application/json">${x.saved ? `<button class="hq-btn sm ghost" type="button" id="kFbClr${n}">Remove slot ${n} key</button>` : ''}`; }).join('')}
++        <div class="hq-acts"><button class="hq-btn good" id="kFbSave">Save Firebase keys</button><button class="hq-btn ghost" type="button" data-close>Close</button></div>`);
++      const tx = async (btn, set, say) => { busy(btn, true); try { const r = await api('texting_keys', { id: s.id, set }); T.keys = r.keys; toast(r.changed ? say : 'Nothing changed'); draw(); } catch (y) { toast(y.message, true); busy(btn, false); } };
++      $('#kTxSave').onclick = (ev) => tx(ev.target, { ws_id: $('#kWsId').value.trim(), ws_key: $('#kWsKey').value.trim(), ad_user: $('#kAdUser').value.trim(), ad_pass: $('#kAdPass').value.trim(), ad_sign: $('#kAdSign').value.trim() }, 'Saved ✓');
++      if ($('#kAdClr')) $('#kAdClr').onclick = (ev) => { if (ev.target.dataset.sure !== '1') { ev.target.dataset.sure = '1'; ev.target.textContent = 'Tap again to remove'; return; } tx(ev.target, { ad_clear: 1 }, 'Android login removed'); };
++      if ($('#kWsClr')) $('#kWsClr').onclick = (ev) => { if (ev.target.dataset.sure !== '1') { ev.target.dataset.sure = '1'; ev.target.textContent = 'Tap again to remove'; return; } tx(ev.target, { ws_clear: 1 }, 'SMS Server key removed'); };
++      const pp = async (btn, set, say) => { busy(btn, true); try { P = await api('paypal', { id: s.id, set }); toast(P.changed ? say : 'Nothing changed'); /* (2.99.660 push) like the texting keys */ draw(); } catch (y) { toast(y.message, true); busy(btn, false); } };
++      $('#kPpSave').onclick = (ev) => pp(ev.target, { mode: $('#kPpMode').value, client_id: $('#kPpCid').value.trim(), secret: $('#kPpSec').value.trim() }, 'Saved ✓');
++      const fb = async (btn, set, say) => { busy(btn, true); try { F = await api('push_keys', { id: s.id, set }); toast(F.changed ? say : 'Nothing changed'); draw(); } catch (y) { toast(y.message, true); busy(btn, false); } }; /* (2.99.660 push) */
++      $('#kFbSave').onclick = async (ev) => { const set = {}; for (const n of ['1', '2']) { const f = ($('#kFb' + n).files || [])[0]; if (f) set['slot' + n] = await f.text(); } if (!Object.keys(set).length) return toast('Choose a .json file first', true); fb(ev.target, set, 'Saved ✓'); };
++      for (const n of ['1', '2']) if ($('#kFbClr' + n)) $('#kFbClr' + n).onclick = (ev) => { if (ev.target.dataset.sure !== '1') { ev.target.dataset.sure = '1'; ev.target.textContent = 'Tap again to remove'; return; } fb(ev.target, { ['clear' + n]: 1 }, 'Slot ' + n + ' key removed'); };
++      if ($('#kPpClr')) $('#kPpClr').onclick = (ev) => { if (ev.target.dataset.sure !== '1') { ev.target.dataset.sure = '1'; ev.target.textContent = 'Tap again – deposits + online gift cards go off'; return; } pp(ev.target, { clear: 1 }, 'PayPal keys removed'); };
++    };
++    draw();
++  }
++  /* (2.99.660 HQ UI) the old "🔑 Keys" button put on each salon card is gone: the HQ salon page has the row "Keys nhắn tin & PayPal" → HqKeys.open(salon) */
++  return { open };
++})();
+diff -ruN int659/assets/hq.css int660z/assets/hq.css
+--- int659/assets/hq.css	2026-11-05 03:10:22.323710823 -0600
++++ int660z/assets/hq.css	2026-11-06 00:44:11.863107764 -0600
+@@ -1,4 +1,5 @@
+- :root{--bg:#0d141f;--card:#16202f;--line:#26344a;--tx:#e9eef6;--mu:#93a4bb;--gold:#e8b64c;--ok:#3fbf7f;--warn:#f0a43a;--bad:#ef5b5b;--blue:#4c8dff}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}body.hq-noscroll{overflow:hidden}a{color:#8fb6ff}.hq-top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 16px;background:rgba(13,20,31,.94);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}.hq-top h1{margin:0;font-size:20px;color:var(--gold);letter-spacing:.5px}#hqTopBtns{display:flex;gap:6px;flex-wrap:wrap}main{max-width:1100px;margin:0 auto;padding:14px 16px 40px}h2{font-size:20px;margin:0 0 8px}h3{font-size:17px;margin:0}.hq-muted{color:var(--mu)}.small{font-size:13px}.hq-err{color:var(--bad);min-height:1em;margin:6px 0}.hq-box{max-width:420px;margin:24px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}label{display:block;margin:10px 0;font-size:14px;color:var(--mu)}input,select{display:block;width:100%;margin-top:4px;padding:11px 12px;font-size:16px;color:var(--tx);background:#0b121c;border:1px solid var(--line);border-radius:10px}input:focus,select:focus{outline:2px solid var(--blue);outline-offset:0}input[type=checkbox]{display:inline-block;width:auto;margin:0 4px 0 0}input[type=file]{padding:9px}.hq-code{font-size:26px;letter-spacing:8px;text-align:center;font-variant-numeric:tabular-nums;margin:10px 0}.hq-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:#1f2c40;color:var(--tx);font-size:15px;font-weight:600;text-decoration:none;cursor:pointer}.hq-btn.main{background:var(--blue);border-color:var(--blue);color:#fff;width:100%;margin-top:6px}.hq-acts .hq-btn.main{width:auto}.hq-btn.sm{min-height:38px;padding:7px 11px;font-size:14px}.hq-btn.ghost{background:transparent}.hq-btn.danger{background:#5a1f25;border-color:#8a2f37;color:#ffd9d9}.hq-btn.good{background:#174d33;border-color:#2c7a52;color:#d7ffe8}.hq-btn:disabled{opacity:.5}.hq-btn.busy{opacity:.6;pointer-events:none}.hq-link{background:none;border:0;color:#8fb6ff;font-size:14px;padding:8px 0;cursor:pointer;text-decoration:underline}.hq-upd{border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid var(--line)}.hq-upd.ok{background:#11301f;border-color:#235c3c}.hq-upd.warn{background:#3a2a10;border-color:#6b4a14}.hq-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}@media (max-width:420px){.hq-cards{grid-template-columns:1fr}}.hq-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}.hq-card.paused{border-color:#8a2f37;box-shadow:inset 0 3px 0 #ef5b5b}.hq-card.bad{border-color:#8a2f37}.hq-card header{display:flex;align-items:center;gap:10px;margin-bottom:8px}.hq-card header>div{flex:1;min-width:0}.hq-card header a{font-size:13px;word-break:break-all}.hq-card header img,.hq-ini{width:40px;height:40px;border-radius:10px;flex:none;background:#fff;object-fit:contain}.hq-ini{display:flex;align-items:center;justify-content:center;background:#24324a;color:var(--gold);font-weight:700}.hq-pill{font-size:12px;font-weight:700;padding:4px 8px;border-radius:99px;white-space:nowrap}.hq-pill.run{background:#11301f;color:#7de0a8}.hq-pill.pause{background:#4a1a1f;color:#ff9c9c}dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;margin:8px 0 12px;font-size:14px}dt{color:var(--mu)}dd{margin:0;min-width:0;overflow-wrap:anywhere}.hq-tag{font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;text-transform:uppercase}.hq-tag.ok{background:#11301f;color:#7de0a8}.hq-tag.warn{background:#3a2a10;color:#ffc46b}.hq-warnc{color:var(--warn)}.hq-mono{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--mu);display:block}.hq-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.hq-sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;justify-content:center}.hq-sheet[hidden]{display:none}.hq-sheet-in{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));border:1px solid var(--line)}@media (min-width:700px){.hq-sheet{align-items:center}.hq-sheet-in{border-radius:18px}}.hq-hours{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:12px 0}.hq-hours legend{color:var(--mu);font-size:14px;padding:0 4px}.hq-hr{display:grid;grid-template-columns:38px 1fr 1fr auto;gap:6px;align-items:center;margin:4px 0}.hq-hr input[type=time]{margin:0;padding:8px 6px;font-size:15px}.hq-chk{margin:0;font-size:13px;white-space:nowrap}.hq-qr{background:#fff;border-radius:12px;padding:8px;width:210px;margin:8px auto}.hq-qr svg{display:block;width:100%;height:auto}.hq-key{display:block;margin-top:4px;font-size:14px;word-break:break-all;color:var(--tx)}.hq-logo-big{width:128px;height:128px;object-fit:contain;background:#fff;border-radius:16px}.hq-list{padding-left:20px}.hq-list li{margin:6px 0}.hq-pre{white-space:pre-wrap;background:#0b121c;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;max-height:40vh;overflow:auto}.hq-log>div{border-bottom:1px solid var(--line);padding:8px 0;font-size:14px;overflow-wrap:anywhere}.hq-log small{color:var(--mu)}.hq-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:#1f2c40;border:1px solid var(--line);padding:10px 16px;border-radius:12px;max-width:90vw}.hq-toast.bad{background:#5a1f25}
++ /* (2.99.660 HQ UI) light iPhone look: gray page, white cards, black text · green = OK, orange = needs action, red = stop / delete only, blue = tap */
++:root{--bg:#f2f2f7;--card:#fff;--line:#e5e5ea;--tx:#000;--mu:#6c6c70;--gold:#000;--ok:#248a3d;--warn:#c45c00;--bad:#d70015;--blue:#0a66d6}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}body.hq-noscroll{overflow:hidden}a{color:var(--blue)}.hq-top{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 16px;background:rgba(242,242,247,.92);border-bottom:1px solid var(--line);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}.hq-top h1{margin:0;font-size:20px;color:var(--gold);letter-spacing:.5px}#hqTopBtns{display:flex;gap:6px;flex-wrap:wrap}main{max-width:1100px;margin:0 auto;padding:14px 16px 40px}h2{font-size:20px;margin:0 0 8px}h3{font-size:17px;margin:0}.hq-muted{color:var(--mu)}.small{font-size:13px}.hq-err{color:var(--bad);min-height:1em;margin:6px 0}.hq-box{max-width:420px;margin:24px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}label{display:block;margin:10px 0;font-size:14px;color:var(--mu)}input,select{display:block;width:100%;margin-top:4px;padding:11px 12px;font-size:16px;color:var(--tx);background:#fff;border:1px solid #d1d1d6;border-radius:10px}input:focus,select:focus{outline:2px solid var(--blue);outline-offset:0}input[type=checkbox]{display:inline-block;width:auto;margin:0 4px 0 0}input[type=file]{padding:9px}.hq-code{font-size:26px;letter-spacing:8px;text-align:center;font-variant-numeric:tabular-nums;margin:10px 0}.hq-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:#fff;color:var(--blue);font-size:15px;font-weight:600;text-decoration:none;cursor:pointer}.hq-btn.main{background:var(--blue);border-color:var(--blue);color:#fff;width:100%;margin-top:6px}.hq-acts .hq-btn.main{width:auto}.hq-btn.sm{min-height:38px;padding:7px 11px;font-size:14px}.hq-btn.ghost{background:transparent}.hq-btn.danger{background:#fff;border-color:#f2b8bd;color:var(--bad)}.hq-btn.good{background:var(--blue);border-color:var(--blue);color:#fff}.hq-btn:disabled{opacity:.5}.hq-btn.busy{opacity:.6;pointer-events:none}.hq-link{background:none;border:0;color:var(--blue);font-size:14px;padding:8px 0;cursor:pointer;text-decoration:underline}.hq-upd{border-radius:12px;padding:10px 14px;margin-bottom:12px;border:1px solid var(--line)}.hq-upd.ok{background:#e9f6ec;border-color:#bfe3c8}.hq-upd.warn{background:#fff3e6;border-color:#f5d0a6}.hq-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}@media (max-width:420px){.hq-cards{grid-template-columns:1fr}}.hq-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}.hq-card.paused{border-color:#8a2f37;box-shadow:inset 0 3px 0 #ef5b5b}.hq-card.bad{border-color:#8a2f37}.hq-card header{display:flex;align-items:center;gap:10px;margin-bottom:8px}.hq-card header>div{flex:1;min-width:0}.hq-card header a{font-size:13px;word-break:break-all}.hq-card header img,.hq-ini{width:40px;height:40px;border-radius:10px;flex:none;background:#fff;object-fit:contain}.hq-ini{display:flex;align-items:center;justify-content:center;background:#fff;color:#000;font-weight:700}.hq-pill{font-size:12px;font-weight:700;padding:4px 8px;border-radius:99px;white-space:nowrap}.hq-pill.run{background:#e9f6ec;color:var(--ok)}.hq-pill.pause{background:#fde8ea;color:var(--bad)}dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;margin:8px 0 12px;font-size:14px}dt{color:var(--mu)}dd{margin:0;min-width:0;overflow-wrap:anywhere}.hq-tag{font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;text-transform:uppercase}.hq-tag.ok{background:#e9f6ec;color:var(--ok)}.hq-tag.warn{background:#fff3e6;color:var(--warn)}.hq-warnc{color:var(--warn)}.hq-mono{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--mu);display:block}.hq-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.hq-sheet{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}.hq-sheet[hidden]{display:none}.hq-sheet-in{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));border:1px solid var(--line)}@media (min-width:700px){.hq-sheet{align-items:center}.hq-sheet-in{border-radius:18px}}.hq-hours{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:12px 0}.hq-hours legend{color:var(--mu);font-size:14px;padding:0 4px}.hq-hr{display:grid;grid-template-columns:38px 1fr 1fr auto;gap:6px;align-items:center;margin:4px 0}.hq-hr input[type=time]{margin:0;padding:8px 6px;font-size:15px}.hq-chk{margin:0;font-size:13px;white-space:nowrap}.hq-qr{background:#fff;border-radius:12px;padding:8px;width:210px;margin:8px auto}.hq-qr svg{display:block;width:100%;height:auto}.hq-key{display:block;margin-top:4px;font-size:14px;word-break:break-all;color:var(--tx)}.hq-logo-big{width:128px;height:128px;object-fit:contain;background:#fff;border-radius:16px}.hq-list{padding-left:20px}.hq-list li{margin:6px 0}.hq-pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12px;max-height:40vh;overflow:auto}.hq-log>div{border-bottom:1px solid var(--line);padding:8px 0;font-size:14px;overflow-wrap:anywhere}.hq-log small{color:var(--mu)}.hq-toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:30;background:#1c1c1e;color:#fff;border:1px solid var(--line);padding:10px 16px;border-radius:12px;max-width:90vw}.hq-toast.bad{background:var(--bad)}
+ /* (2.99.420) 📥 Nạp khách từ CSV */
+ .hq-file{display:inline-block;margin:6px 0 10px;font-weight:600}.hq-file input{display:block;margin-top:6px}
+ .hq-csv-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:8px 0}
+@@ -9,3 +10,55 @@
+ /* (2.99.648) AI call sheet: the 3 numbers */
+ .hq-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0}
+ .hq-grid2 label{display:flex;flex-direction:column;gap:4px;font-size:14px}
++/* (2.99.660 HQ UI) the iPhone Settings rows: Home (To do + salons), a salon page, Accounts & security */
++body{font-size:17px}
++.hq-top{background:rgba(242,242,247,.92);border-bottom:1px solid var(--line);min-height:48px;justify-content:center;position:sticky}
++.hq-top h1{color:#000;font-size:17px;font-weight:600;letter-spacing:0}
++#hqTopBtns{position:absolute;left:12px;top:50%;transform:translateY(-50%)}
++body:has(.hq-big) .hq-top h1{display:none}
++body:has(.hq-big) .hq-top:not(:has(.hq-back)){display:none}
++.hq-back{border:0;background:none;color:var(--blue);font-size:17px;padding:8px 4px;cursor:pointer}
++main{max-width:1180px;padding:6px 16px 40px}
++.hq-box{border:0}
++.hq-col{min-width:0}
++.hq-split{display:grid;grid-template-columns:400px minmax(0,1fr);gap:28px;align-items:start}
++.hq-big{font-size:32px;line-height:1.15;margin:10px 0 2px;font-weight:700}
++.hq-sub{color:var(--mu);font-size:15px;margin:0 0 6px}
++.hq-sec{margin:22px 0 6px 16px;font-size:13px;font-weight:400;color:var(--mu);text-transform:uppercase;letter-spacing:.3px}
++.hq-foot{margin:8px 16px 0;font-size:13px;color:var(--mu)}
++.hq-foot .hq-link{font-size:13px;padding:0}
++.hq-grp{background:#fff;border-radius:12px;overflow:hidden}
++.hq-row{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;padding:10px 16px;border:0;background:none;color:#000;font:inherit;text-align:left;cursor:pointer;position:relative}
++.hq-row:disabled{cursor:default;opacity:1;color:#000}
++.hq-row+.hq-row::before{content:"";position:absolute;top:0;left:60px;right:0;border-top:1px solid var(--line)}
++.hq-plain .hq-row+.hq-row::before,.hq-row.hq-red::before,.hq-row.hq-lnk::before{left:16px}
++.hq-row:not(:disabled):active,.hq-row.sel{background:#e8eefa}
++.hq-rtx{flex:1;min-width:0}
++.hq-rt{display:block;font-size:17px;overflow-wrap:anywhere}
++.hq-rd{display:block;font-size:14px;color:var(--mu);margin-top:1px;overflow-wrap:anywhere}
++.hq-rv{color:var(--mu);font-size:16px;text-align:right;max-width:55%}
++.hq-rv.ok,.hq-st.ok,.hq-sub .ok,.hq-pill .ok{color:var(--ok)}
++.hq-rv.warn,.hq-st.warn,.hq-sub .warn,.hq-pill .warn{color:var(--warn);font-weight:600}
++.hq-st.bad,.hq-pill .bad{color:var(--bad);font-weight:600}
++.hq-chev{color:#c4c4c7;font-size:22px;line-height:1}
++.hq-tile{width:32px;height:32px;border-radius:8px;background:#3a3a3c;display:grid;place-items:center;flex:none}
++.hq-tile.warn{background:var(--warn)}.hq-tile.bad{background:var(--bad)}
++.hq-tile svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
++.hq-logo{width:44px;height:44px;border-radius:10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:15px;flex:none;object-fit:contain;color:#000}
++.hq-logo.big{width:60px;height:60px;border-radius:14px;font-size:20px}
++.hq-st{display:block;font-size:15px;font-weight:600;margin-top:2px}
++.hq-badge{min-width:24px;height:24px;border-radius:12px;background:var(--warn);color:#fff;font-size:14px;font-weight:700;display:grid;place-items:center;padding:0 7px}
++.hq-badge.bad{background:var(--bad)}
++.hq-search{display:flex;align-items:center;gap:8px;background:#e3e3e8;border-radius:10px;padding:2px 10px;margin:0 0 8px;color:var(--mu)}
++.hq-search svg{width:18px;height:18px;fill:none;stroke:#6c6c70;stroke-width:2;flex:none}
++.hq-search input{border:0;background:none;margin:0;padding:8px 0;font-size:17px;color:#000;outline:0;min-width:0}
++.hq-search input:focus{outline:0}
++.hq-search+.hq-grp{margin-bottom:8px}
++.hq-lnk .hq-rt{color:var(--blue)}
++.hq-red .hq-rt{color:var(--bad)}
++.hq-hero{display:flex;align-items:center;gap:14px;margin:10px 0 4px}
++.hq-hero h1{margin:0;font-size:28px;line-height:1.15}
++.hq-hero a{font-size:15px;text-decoration:none;word-break:break-all}
++.hq-pill{display:inline-block;font-size:15px;font-weight:600;padding:5px 12px;border-radius:99px;background:#fff;margin:10px 0 0;white-space:normal}
++.hq-sheet-in .hq-grp{margin:8px 0}
++.hq-sheet-in h2{font-size:22px}
+diff -ruN int659/assets/hq.js int660z/assets/hq.js
+--- int659/assets/hq.js	2026-11-05 03:10:22.321028127 -0600
++++ int660z/assets/hq.js	2026-11-06 01:27:17.281926432 -0600
+@@ -51,12 +51,12 @@
+     if (RST) return resetPage();
+     if (st.in) return loadCards();
+     if (INV && !st.in) return setupPage();
+-    if (!st.ready) { main.innerHTML = `<div class="hq-box"><h2>AN HQ is not set up yet</h2><p class="hq-muted">Open the invite link from Claude to make your HQ password.</p></div>`; return; }
++    if (!st.ready) { main.innerHTML = `<div class="hq-box"><h2>Logan is not set up yet</h2><p class="hq-muted">Open the invite link from Claude to make your HQ password.</p></div>`; return; }
+     if (st.locked) { main.innerHTML = `<div class="hq-box"><h2>Locked</h2><p class="hq-muted">Too many wrong tries. Wait 15 minutes, then reload.</p></div>`; return; }
+     HASU = !!st.user; /* (2.99.409) own sign-in email */ st.need2fa ? codePage() : loginPage();
+   }
+   function loginPage(msg) {
+-    main.innerHTML = `<form class="hq-box" id="fLogin"><h2>Log in</h2><p class="hq-muted">AN HQ has its own account (not a salon password).</p>
++    main.innerHTML = `<form class="hq-box" id="fLogin"><h2>Log in</h2><p class="hq-muted">Logan (HQ) has its own account (not a salon password).</p>
+       ${HASU ? '<label>Email<input type="email" id="em" autocomplete="username" required></label>' : ''}
+       <label>Password<input type="password" id="pw" autocomplete="current-password" required></label>
+       <p class="hq-err" id="err">${esc(msg || '')}</p><button class="hq-btn main" type="submit">Next</button>
+@@ -90,7 +90,7 @@
+   }
+   /* ---------- set up from the invite link ---------- */
+   function setupPage() {
+-    main.innerHTML = `<form class="hq-box" id="fSet"><h2>Welcome to AN HQ</h2><p class="hq-muted">Step 1 of 2 – your AN HQ account: your email (the sign-in name) and a password (10+ characters, letters + numbers). It is only for AN HQ – not a salon password.</p>
++    main.innerHTML = `<form class="hq-box" id="fSet"><h2>Welcome to Logan</h2><p class="hq-muted">Step 1 of 2 – your Logan (HQ) account: your email (the sign-in name) and a password (10+ characters, letters + numbers). It is only for Logan (HQ) – not a salon password.</p>
+       <label>Email<input type="email" id="em1" autocomplete="username" maxlength="120" required></label>
+       <label>New password<input type="password" id="p1" autocomplete="new-password" minlength="10" required></label>
+       <label>Type it again<input type="password" id="p2" autocomplete="new-password" minlength="10" required></label>
+@@ -112,17 +112,198 @@
+       <p class="hq-muted small">Or type this key by hand: <code class="hq-key">${esc(r.secret.replace(/(.{4})/g, '$1 ').trim())}</code></p>
+       ${codeInput('code')}<p class="hq-err" id="err"></p><button class="hq-btn main" type="submit">Finish</button></form>`;
+     $('#fQR').onsubmit = async e => { e.preventDefault(); const b = $('button[type=submit]', e.target); busy(b, true);
+-      try { await api('setup_confirm', { code: $('#code').value }); INV = ''; toast('AN HQ is ready ✓'); loadCards(); } catch (x) { $('#err').textContent = x.message; $('#code').value = ''; } finally { busy(b, false); } };
++      try { await api('setup_confirm', { code: $('#code').value }); INV = ''; toast('Logan is ready ✓'); loadCards(); } catch (x) { $('#err').textContent = x.message; $('#code').value = ''; } finally { busy(b, false); } };
+   }
+ 
+   /* ---------- the cards ---------- */
+   const DEV = { iphone: '📱 iPhone', android: '🤖 Android', '': 'Not chosen' };
+   const ago = s => { if (!s) return 'never'; const t = Date.parse(s.replace(' ', 'T')); if (!t) return s; const m = Math.round((Date.now() - t) / 60000);
+     return m < 2 ? 'just now' : m < 60 ? m + ' min ago' : m < 48 * 60 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' days ago'; };
++  /* (2.99.660 HQ UI) anh Logan 06/11 00:03 "dễ nhìn, dễ quản lý – nhìn là biết làm gì": iPhone Settings look.
++     Home = To do (every salon) + the salons (one status line each) + Accounts & security + HQ log.
++     A salon = its To do + Today + Help the owner + Salon info + Technical (HQ only) + Pause. Wide screen: the list on the left, the page on the right.
++     Every sheet (Calls, AI call, Texting, Keys, Edit info, Logo, CSV, Setup guide, Password, 2FA, Pause, Roll back, Security, Log, New salon)
++     is the SAME function as before – only how you reach it changed. A field that is not there yet (Telnyx / keys work) never makes a warning. */
++  let VIEW = { v: 'home', id: '' }, EXTRA = {}, QRY = '', FOUND = null;
++  const WIDE = () => window.matchMedia('(min-width: 900px)').matches;
++  const isDemo = (s) => s.demo === true || /(^|[^a-z])demo([^a-z]|$)/i.test(String(s.id || '') + ' ' + String(s.url || ''));
++  const ICO = {
++    warn: '<path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/>',
++    sup: '<path d="M14 7l3-3 3 3-3 3M17 4v6M4 20l8-8"/>', phone: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
++    lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>', edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
++    img: '<rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M20 16l-5-5-8 9"/>', down: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
++    call: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a1 1 0 01-1 1A16 16 0 014 5a1 1 0 011-1"/>', ai: '<path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',
++    msg: '<path d="M4 5h16v11H8l-4 4z"/>', key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3"/>', sys: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18"/>',
++    log: '<path d="M5 4h14v16H5zM9 9h6M9 13h6M9 17h3"/>', mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>', list: '<path d="M5 6h14M5 12h14M5 18h9"/>', card: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/>'
++  };
++  const tile = (k, cls) => `<span class="hq-tile${cls ? ' ' + cls : ''}" aria-hidden="true"><svg viewBox="0 0 24 24">${ICO[k] || ''}</svg></span>`;
++  /** one iPhone row: { do, ico, t, d, v, vc (ok|warn|bad), chev, cls } */
++  const row = (o) => `<button type="button" class="hq-row${o.cls ? ' ' + o.cls : ''}"${o.do ? ` data-go="${esc(o.do)}"` : ' disabled'}>${o.ico ? tile(o.ico, o.tc) : ''}<span class="hq-rtx"><span class="hq-rt">${o.t}</span>${o.d ? `<span class="hq-rd">${o.d}</span>` : ''}</span>${o.v != null && o.v !== '' ? `<span class="hq-rv ${o.vc || ''}">${o.v}</span>` : ''}${o.do && o.chev !== false ? '<span class="hq-chev">›</span>' : ''}</button>`;
++  const grp = (head, rows, cls) => rows.filter(Boolean).length ? `${head ? `<h3 class="hq-sec">${head}</h3>` : ''}<div class="hq-grp${cls ? ' ' + cls : ''}">${rows.filter(Boolean).join('')}</div>` : '';
++  const callRow = (s) => ((EXTRA.calls || {}).rows || []).find(x => x.id === s.id) || null;
++  /** what needs Logan, for one salon: [{ t (VI), d (EN), go, c: warn|bad }] – only from fields the API gives; a missing field = no item */
++  function todo(s) {
++    const T = [], add = (c, t, d, go) => T.push({ c, t, d, go });
++    if (!s.ok) { add('bad', 'Không đọc được tiệm', esc(s.error || 'Cannot read this salon.'), 'sys'); return T; }
++    const demo = isDemo(s), I = s.info || {};
++    if (s.paused) add('bad', 'Tiệm đang tạm dừng', 'Paused – online booking is off', 'open');
++    if (s.behind) add('warn', 'Code cũ ' + esc(s.version), 'Behind ' + esc(s.latest || (DATA && DATA.latest) || '') + ' – ask Claude to update', 'sys');
++    if (!demo && s.backupOld) add('warn', s.backup ? 'Backup cũ (' + esc(s.backup) + ')' : 'Chưa có backup', 'Nightly backup missing', 'sys');
++    if (s.errors > 0) add('warn', s.errors + ' lỗi mới (24 giờ)', 'New errors in the last 24 h', 'sys');
++    if (!demo && s.ownerPush === false) add('warn', 'Chủ chưa bật thông báo app', 'Owner notifications off – ask the owner to allow them', 'support');
++    if (s.toSend > 0) add('warn', s.toSend + ' tin chờ gửi', 'Texts waiting in To send', 'texting');
++    if (s.ai && s.ai.on && !s.ai.free && Number(s.ai.min) > Number(s.ai.incl)) add('warn', 'AI call vượt gói: ' + s.ai.min + ' / ' + s.ai.incl + ' phút', 'Over the plan minutes this month', 'aicall');
++    if (!demo && I.owner_email === '') add('warn', 'Thiếu email chủ tiệm', 'Owner email missing (app sign-in)', 'edit');
++    if (!demo && I.owner_cell === '') add('warn', 'Thiếu số cell chủ tiệm', 'Owner cell missing (support code, setup guide)', 'edit');
++    const c = callRow(s); /* (2.99.660 HQ UI) Telnyx work: calls_list rows { id, demo, setUp, number } – not there yet → nothing */
++    if (c && !c.demo && !c.error && c.setUp === false && !c.number && s.ai && s.ai.on) add('warn', 'Chưa cài điện thoại AI', 'AI call allowed but no Telnyx number', 'calls');
++    return T;
++  }
++  /** the shared NailFlow keys that need Logan (Telnyx work: calls_tx { keySet, pubSet } – missing field → nothing) */
++  function acctTodo() {
++    const A = EXTRA.tx || {}, T = [];
++    if (A.keySet === false) T.push({ c: 'warn', t: 'Chưa lưu Telnyx API key', d: 'Accounts & security', go: 'acct:tx' });
++    if (A.pubSet === false) T.push({ c: 'warn', t: 'Chưa lưu Telnyx Public Key', d: 'Accounts & security', go: 'acct:tx' });
++    return T;
++  }
++  const status = (s) => { const T = todo(s); if (!T.length) return `<span class="hq-st ok">✓ Mọi thứ OK${isDemo(s) ? ' · tiệm demo' : ''}</span>`;
++    const bad = T.some(x => x.c === 'bad'); return `<span class="hq-st ${bad ? 'bad' : 'warn'}">${bad ? '● ' + T[0].t : '⚠︎ ' + T.length + ' việc cần làm'}</span>`; };
++  const logo = (s, cls) => s.ok && s.info && s.info.logo ? `<img class="hq-logo${cls ? ' ' + cls : ''}" src="${esc(s.info.logo)}" alt="" width="44" height="44">` : `<span class="hq-logo${cls ? ' ' + cls : ''}">${esc(s.short || String(s.id || '?').slice(0, 2).toUpperCase())}</span>`;
+   async function loadCards() {
+-    top.innerHTML = `<button class="hq-btn sm" id="bSup">🔧 Hỗ trợ tiệm</button><button class="hq-btn sm" id="bNew">+ New salon</button><button class="hq-btn sm" id="bCalls">📞 Calls</button><button class="hq-btn sm ghost" id="bLog">Log</button><button class="hq-btn sm ghost" id="bSec">Security</button><button class="hq-btn sm ghost" id="bOut">Log out</button>`;
+-    $('#bNew').onclick = newSalon; $('#bLog').onclick = showLog; $('#bCalls').onclick = () => window.HqCalls && HqCalls.top(); /* (2.99.598 – LỆNH 595) */ $('#bSup').onclick = supFind;
+-    $('#bSec').onclick = () => { const on = !DATA || DATA.ownerOk !== false; // (2.99.274 – order 486) "Cho phép vào từ tài khoản chủ tiệm"
++    top.innerHTML = '';
++    if (!DATA) main.innerHTML = '<p class="hq-muted">Đang tải các tiệm… · Loading the salons…</p>';
++    try { DATA = await api('cards'); } catch (e) { if (e.status === 401) return start(); main.innerHTML = `<p class="hq-err">${esc(e.message)}</p>`; return; }
++    draw();
++    /* (2.99.660 HQ UI) extra status, each one optional: an action this code does not have answers 404 → ignored */
++    const opt = (a) => api(a).catch(() => null);
++    const [calls, tx, ai, stt] = await Promise.all([opt('calls_list'), opt('calls_tx'), opt('ai_key'), opt('stt_key')]);
++    EXTRA = { calls, tx, ai, stt }; if (sheet.hidden) draw();
++  }
++  function draw() {
++    if (!DATA) return;
++    if (VIEW.v === 'salon' && !DATA.salons.some(x => x.id === VIEW.id)) VIEW = { v: 'home', id: '' };
++    if (WIDE() && VIEW.v === 'home') { const f = DATA.salons.find(x => todo(x).length) || DATA.salons[0]; if (f) VIEW = { v: 'salon', id: f.id }; }
++    const back = VIEW.v !== 'home' && !WIDE() ? `<button class="hq-back" type="button" data-go="home">‹ Các tiệm</button>` : '';
++    top.innerHTML = back;
++    const right = VIEW.v === 'salon' ? salonHTML(DATA.salons.find(x => x.id === VIEW.id)) : VIEW.v === 'acct' ? acctHTML() : '';
++    main.innerHTML = WIDE() ? `<div class="hq-split"><section class="hq-col hq-left">${homeHTML()}</section><section class="hq-col">${right}</section></div>`
++      : `<section class="hq-col">${VIEW.v === 'home' ? homeHTML() : right}</section>`;
++    const q = $('#hqQ'); if (q) { q.value = QRY; q.oninput = () => { QRY = q.value; FOUND = null; const pos = q.selectionStart; draw(); const n = $('#hqQ'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (x) {} } };
++      q.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); find(); } }; }
++  }
++  function homeHTML() {
++    const S = DATA.salons, all = [];
++    S.forEach(s => todo(s).forEach(x => all.push(Object.assign({}, x, { t: esc(s.name || s.id) + ': ' + x.t, go: 'salon:' + s.id }))));
++    acctTodo().forEach(x => all.push(x));
++    const need = S.filter(s => todo(s).length).length;
++    const q = QRY.trim().toLowerCase(), list = q ? S.filter(s => (String(s.name || '') + ' ' + s.id + ' ' + String(s.url || '')).toLowerCase().includes(q)) : S;
++    const lookup = /\d{4}|@/.test(q) ? row({ do: 'find', t: 'Tìm theo số phone / 4 số cuối / email', d: 'Find by the salon phone, its last 4 digits or the owner email', cls: 'hq-lnk' }) : '';
++    const found = FOUND ? (FOUND.error ? `<p class="hq-err">${esc(FOUND.error)}</p>` : FOUND.rows.length ? grp('', FOUND.rows.map(x => row({ do: 'found:' + x.id, ico: 'sup', t: esc(x.name), d: (x.city ? esc(x.city) + ' · ' : '') + '…' + esc(x.last4) + ' · vào hỗ trợ · support', v: '' }))) : '<p class="hq-muted">Không thấy tiệm nào · No salon found.</p>') : '';
++    const acctWarn = acctTodo().length;
++    return `<h1 class="hq-big">Logan</h1>
++      <p class="hq-sub">${S.length} tiệm · ${need ? `<span class="warn">${need} tiệm cần làm</span>` : '<span class="ok">tất cả OK</span>'} · ${esc(String(DATA.now || '').slice(11))}</p>
++      ${grp('Cần làm · To do', all.map(x => row({ do: x.go, ico: 'warn', tc: x.c, t: x.t, d: x.d, chev: true })), 'hq-todo')}
++      <h3 class="hq-sec">Các tiệm · Salons</h3>
++      <label class="hq-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="hqQ" type="search" autocomplete="off" placeholder="Tìm: tên, số phone, 4 số cuối, email" aria-label="Search salons"></label>
++      ${lookup || found ? `<div class="hq-grp">${lookup}</div>${found}` : ''}
++      <div class="hq-grp">${list.map(s => { const n = todo(s).length; return `<button type="button" class="hq-row hq-salon${VIEW.v === 'salon' && VIEW.id === s.id ? ' sel' : ''}" data-go="salon:${esc(s.id)}">${logo(s)}<span class="hq-rtx"><span class="hq-rt">${esc(s.name || s.id)}</span>${status(s)}</span>${n ? `<span class="hq-badge${todo(s).some(x => x.c === 'bad') ? ' bad' : ''}">${n}</span>` : ''}<span class="hq-chev">›</span></button>`; }).join('') || '<p class="hq-muted" style="padding:12px 16px;margin:0">Không có · None</p>'}</div>
++      <div class="hq-grp" style="margin-top:10px">${row({ do: 'new', t: '+ Thêm tiệm mới · New salon', cls: 'hq-lnk', chev: false })}</div>
++      ${grp('NailFlow', [row({ do: 'acct', ico: 'key', t: 'Tài khoản &amp; bảo mật', d: 'Keys dùng chung · HQ login · Log out', v: acctWarn ? '⚠︎ ' + acctWarn : '', vc: 'warn' }),
++        row({ do: 'log', ico: 'log', t: 'Nhật ký HQ · Log', d: 'Mọi thay đổi trong HQ · every change' })])}
++      <p class="hq-foot">Code mới nhất ${esc(DATA.latest)} · cập nhật ${esc(DATA.now)} · <button class="hq-link" type="button" data-go="reload">Tải lại · Reload</button></p>`;
++  }
++  function salonHTML(s) {
++    if (!s) return '';
++    const T = todo(s), I = s.info || {}, demo = isDemo(s);
++    const head = `<div class="hq-hero">${logo(s, 'big')}<div><h1>${esc(s.name || s.id)}</h1>${s.url ? `<a href="${esc(s.url)}/" target="_blank" rel="noopener noreferrer">${esc(s.url.replace(/^https?:\/\//, ''))} ↗</a>` : ''}</div></div>
++      <p class="hq-pill">${T.length ? (T.some(x => x.c === 'bad') ? `<span class="bad">● ${T[0].t}</span>` : `<span class="warn">⚠︎ ${T.length} việc cần làm</span>`) : '<span class="ok">✓ Mọi thứ OK · Đang chạy</span>'}</p>
++      ${grp('Cần làm · To do', T.map(x => row({ do: x.go, ico: 'warn', tc: x.c, t: x.t, d: x.d })), 'hq-todo')}`;
++    if (!s.ok) return head + grp('Hệ thống · System', [row({ do: 'sys', ico: 'sys', t: 'Code, backup, lỗi', d: esc(s.version) + ' · backup ' + esc(s.backup || '–') + ' · ' + s.errors + ' lỗi' })]);
++    const tx = callRow(s), A = s.ai;
++    const callD = tx && !tx.error ? (tx.number ? esc(tx.number) + (tx.on === false ? ' · tắt · off' : '') : 'Chưa có số · not set up') : 'Số, iPhone reo trước, bật / tắt · number, iPhone, on / off';
++    const aiD = A ? (A.on ? `${A.min}${A.free ? '' : ' / ' + A.incl} phút tháng này · ${A.free ? 'Free' : '$' + Number(A.total || 0).toFixed(2)}` : 'Tắt · off') : '';
++    const txD = esc(({ iphone: 'iPhone', android: 'Android' })[s.device] || 'Chưa chọn máy · not chosen') + (s.device ? (s.autoOn ? ' · Auto send bật' : ' · Auto send tắt') : '') + ' · ' + s.toSend + ' chờ gửi';
++    const sysBad = s.behind || (!demo && s.backupOld) || s.errors > 0;
++    return head + grp('Hôm nay · Today', [
++        row({ t: 'Lịch hẹn · Appointments', v: `${s.today} hôm nay · ${s.week} trong 7 ngày` }),
++        row({ t: 'Chủ vào app lần cuối', d: 'Owner last in', v: esc(ago(s.lastLogin)) }),
++        row({ t: 'Thông báo app chủ', d: 'Owner notifications', v: s.ownerPush ? '✓ Bật' : '⚠︎ Tắt', vc: s.ownerPush ? 'ok' : 'warn' })], 'hq-plain')
++      + grp('Giúp chủ tiệm · Help the owner', [
++        row({ do: 'support', ico: 'sup', t: 'Vào admin tiệm (hỗ trợ)', d: 'Support session · 2 giờ, ghi log' }),
++        row({ do: 'setup', ico: 'phone', t: 'Gửi hướng dẫn cài app', d: 'Setup guide to the owner cell' + (I.owner_cell ? ' …' + esc(String(I.owner_cell).replace(/\D/g, '').slice(-4)) : '') }),
++        row({ do: 'pw', ico: 'lock', t: 'Mật khẩu &amp; 2FA chủ tiệm', d: 'Reset link · set password · 2FA off', v: I.twofa ? '2FA bật' : '2FA tắt' })])
++      + grp('Thông tin tiệm · Salon info', [
++        row({ do: 'edit', ico: 'edit', t: 'Tên, địa chỉ, giờ mở cửa', d: 'Name · phones · owner email / cell · hours · ring' }),
++        row({ do: 'logo', ico: 'img', t: 'Logo' }),
++        row({ do: 'csv', ico: 'down', t: 'Nạp khách từ CSV', d: 'Import customers' })])
++      + grp('Cài đặt kỹ thuật · Technical (chỉ HQ)', [
++        window.HqCalls ? row({ do: 'calls', ico: 'call', t: 'Điện thoại AI · Calls', d: callD, v: tx && !tx.error && !tx.demo ? (tx.number ? '✓' : (A && A.on ? '⚠︎' : '')) : '', vc: tx && tx.number ? 'ok' : 'warn' }) : '',
++        A ? row({ do: 'aicall', ico: 'ai', t: 'AI call · gói &amp; hoá đơn', d: 'Plan &amp; bill · ' + aiD, v: A.on && !A.free && Number(A.min) > Number(A.incl) ? '⚠︎' : '', vc: 'warn' }) : '',
++        row({ do: 'texting', ico: 'msg', t: 'Nhắn tin · Texting', d: txD, v: s.toSend > 0 ? '⚠︎' : '', vc: 'warn' }),
++        window.HqKeys ? row({ do: 'keys', ico: 'key', t: 'Keys nhắn tin &amp; PayPal', d: 'SMS Server · Android · PayPal · Firebase (push) – lưu 1 lần, không hiện lại · never shown again' /* (2.99.660 push) */ }) : '',
++        window.hqCardKeys ? row({ do: 'cardkeys', ico: 'card', t: 'Cà thẻ · Card keys', d: 'Payroc · Dejavoo P5 – lưu 1 lần, không hiện lại · never shown again' }) : '', /* (2.99.660 HQ UI) */
++        row({ do: 'sys', ico: 'sys', t: 'Code, backup, lỗi', d: esc(s.version) + (s.behind ? ' (cũ)' : '') + ' · backup ' + esc(s.backup ? s.backup.slice(5) : (demo ? 'demo' : 'không có')) + ' · ' + s.errors + ' lỗi', v: sysBad ? '⚠︎' : '✓', vc: sysBad ? 'warn' : 'ok' })])
++      + `<div class="hq-grp" style="margin-top:28px">${s.paused ? row({ do: 'open', t: '▶ Mở lại tiệm · Open again', cls: 'hq-lnk', chev: false }) : row({ do: 'pause', t: 'Tạm dừng tiệm · Pause salon…', cls: 'hq-red', chev: false })}</div>
++      <p class="hq-foot">Mọi thay đổi ở đây được ghi vào Nhật ký HQ và log của tiệm · every change is logged.</p>`;
++  }
++  function acctHTML() {
++    const A = EXTRA.tx || {}, ai = EXTRA.ai || {}, st = EXTRA.stt || {};
++    const keyV = (set) => set === true ? '✓' : set === false ? 'Chưa có' : '';
++    return `<h1 class="hq-big">Tài khoản NailFlow</h1><p class="hq-sub">Keys dùng chung cho mọi tiệm. Lưu xong không bao giờ hiện lại – chỉ thay hoặc xoá. · Shared keys, never shown again.</p>
++      ${grp('Điện thoại · Phone', [
++        window.HqCalls ? row({ do: 'acct:tx', ico: 'call', t: 'Tài khoản điện thoại &amp; số từng tiệm', d: 'Phone account keys · numbers per salon', v: A.keySet === false || A.pubSet === false ? '⚠︎ Chưa lưu' : (A.keySet ? '✓' : ''), vc: A.keySet === false || A.pubSet === false ? 'warn' : 'ok' }) : '',
++        row({ do: 'sec:sttKey', ico: 'mic', t: 'Speech-to-text key', d: 'OpenAI · ghi âm → chữ' + (st.at ? ' · lưu ' + esc(st.at) : ''), v: keyV(st.set), vc: st.set ? 'ok' : '' })])}
++      ${grp('AI', [row({ do: 'sec:aiKey', ico: 'ai', t: 'AI key – bảng màu', d: 'Claude · đọc số trên color chart' + (ai.at ? ' · lưu ' + esc(ai.at) : ''), v: keyV(ai.set), vc: ai.set ? 'ok' : '' })])}
++      ${grp('Chung · General', [row({ do: 'sec:supPh', t: 'Số hỗ trợ NailFlow', d: 'Hiện ở “Quên mật khẩu?” mọi tiệm · on every Forgot password', v: esc(DATA.support || '') })], 'hq-plain')}
++      <h1 class="hq-big" style="font-size:26px;margin-top:30px">Tài khoản HQ</h1>
++      ${grp('Bảo mật · Security', [row({ do: 'sec:ownOk', t: 'Mở HQ từ tài khoản chủ AN', d: 'Allow from the American Nails owner account', v: DATA.ownerOk === false ? 'Tắt' : 'Bật' }),
++        row({ do: 'sec:rmList', t: 'Thiết bị được nhớ', d: 'Remembered devices (90 ngày) · quên mật khẩu HQ' })], 'hq-plain')}
++      <div class="hq-grp" style="margin-top:20px">${row({ do: 'out', t: 'Đăng xuất · Log out', cls: 'hq-red', chev: false })}</div>`;
++  }
++  async function find() {
++    try { FOUND = await api('sup_find', { q: QRY }); } catch (e) { FOUND = { error: e.message, rows: [] }; }
++    draw();
++  }
++  /* (2.99.660 HQ UI) code, backup, errors of one salon + Roll back (the same rollbackAsk) */
++  function sysSheet(s) {
++    openSheet(`<h2>Code, backup, lỗi – ${esc(s.name || s.id)}</h2><dl>
++      <dt>Code</dt><dd>${esc(s.version)} ${s.behind ? '<span class="hq-tag warn">cũ · behind</span>' : '<span class="hq-tag ok">mới nhất · newest</span>'}</dd>
++      <dt>Backup <small>(3 AM)</small></dt><dd>${s.backup ? esc(s.backup) + (s.backupOld ? ' <span class="hq-tag warn">cũ · old</span>' : '') : '<span class="hq-tag warn">không có · none</span>'}</dd>
++      <dt>Lỗi mới (24 h)</dt><dd>${s.errors ? `<span class="hq-tag warn">${s.errors}</span> <small class="hq-mono">${esc(s.lastError)}</small>` : '0 ✓'}</dd></dl>
++      ${s.behind ? '<p class="hq-muted">Code cũ: nhờ Claude cập nhật · ask Claude to update.</p>' : ''}
++      <div class="hq-acts">${s.shared && s.prev ? `<button class="hq-btn danger" type="button" id="sysRb">↩ Roll back to ${esc(s.prev)}…</button>` : ''}<button class="hq-btn ghost" type="button" data-close>Đóng · Close</button></div>`);
++    const rb = $('#sysRb'); if (rb) rb.onclick = () => rollbackAsk(s);
++  }
++  /* (2.99.660 HQ UI) owner password + 2FA: the same resetLink / twofaOff */
++  function pwSheet(s) {
++    const I = s.info || {};
++    openSheet(`<h2>Mật khẩu &amp; 2FA – ${esc(s.name || s.id)}</h2><div class="hq-grp">
++      ${row({ do: 'x:reset', ico: 'lock', t: 'Đặt lại mật khẩu chủ tiệm', d: 'Link 1 lần (30 phút) hoặc đặt mật khẩu ngay · reset link or set now' })}
++      ${I.twofa ? row({ do: 'x:twofa', ico: 'lock', t: 'Tắt 2FA tạm cho tiệm này', d: 'Owner lost the Authenticator phone · hỏi 2 lần', cls: 'hq-red' }) : row({ t: '2FA đang tắt', d: I.twofaOffAt ? 'Tắt từ HQ lúc ' + esc(I.twofaOffAt) : '2FA is off' })}</div>
++      <div class="hq-acts"><button class="hq-btn ghost" type="button" data-close>Đóng · Close</button></div>`);
++    $$('[data-go^="x:"]', sheetIn).forEach(b => { b.onclick = () => (b.dataset.go === 'x:reset' ? resetLink : twofaOff)(s); });
++  }
++  /* (2.99.660 HQ UI) every row → the same function as the old buttons */
++  function go(k) {
++    const s = DATA && DATA.salons.find(x => x.id === VIEW.id);
++    const sup = (x) => supAsk({ id: x.id, name: x.name || x.id, nocode: !!x.supNoCode, cell: x.info && x.info.owner_cell ? '…' + String(x.info.owner_cell).replace(/\D/g, '').slice(-4) : '' });
++    if (k === 'home') { VIEW = { v: 'home', id: '' }; draw(); window.scrollTo(0, 0); return; }
++    if (k.startsWith('salon:')) { VIEW = { v: 'salon', id: k.slice(6) }; draw(); if (!WIDE()) window.scrollTo(0, 0); return; }
++    if (k === 'acct') { VIEW = { v: 'acct', id: '' }; draw(); if (!WIDE()) window.scrollTo(0, 0); return; }
++    if (k === 'acct:tx') return window.HqCalls && HqCalls.top();
++    if (k.startsWith('sec:')) return secSheet(k.slice(4));
++    if (k.startsWith('found:')) return sup$(k.slice(6));
++    const A = { reload: loadCards, new: newSalon, log: showLog, find, out: async () => { try { await api('logout', {}); } catch (e) {} CSRF = ''; DATA = null; VIEW = { v: 'home', id: '' }; start(); } };
++    if (A[k]) return A[k]();
++    if (!s) return;
++    ({ support: sup, texting: textingSheet, aicall: aiSheet, calls: (x) => window.HqCalls && HqCalls.open(x), keys: (x) => window.HqKeys && HqKeys.open({ id: x.id, name: x.name || x.id }), cardkeys: (x) => window.hqCardKeys && window.hqCardKeys(x),
++      edit: editInfo, logo: editLogo, csv: (x) => window.HqCsv && HqCsv.open(x), setup: (x) => window.HqSetup && HqSetup.open(x), pw: pwSheet, sys: sysSheet,
++      pause: pauseAsk, open: reopen }[k] || (() => {}))(s);
++  }
++  const sup$ = (id) => { const x = FOUND && FOUND.rows.find(r => r.id === id); if (x) supAsk(x); };
++  document.addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (!b || b.disabled || !b.closest('#hq, #hqTopBtns')) return; e.preventDefault(); go(b.dataset.go); });
++  let rsz = 0; window.addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(() => { if (DATA && document.getElementById('hqQ') !== document.activeElement) draw(); }, 200); });
++  function secSheet(focus) { const on = !DATA || DATA.ownerOk !== false; /* (2.99.274 – order 486) "Cho phép vào từ tài khoản chủ tiệm" · (2.99.660 HQ UI) the old Security sheet, opened from Accounts & security at the row tapped */
+       openSheet(`<h2>Security</h2><label class="hq-chk"><input type="checkbox" id="ownOk" ${on ? 'checked' : ''}> <span><b>Cho phép vào từ tài khoản chủ tiệm</b> · Allow opening HQ from the American Nails owner account (Home → 🏢 Mở AN HQ, after the owner's own login + Authenticator). Managers and techs never see it.</span></label>
+         <label class="hq-lbl" for="supPh"><b>Số hỗ trợ NailFlow</b> · shown on every salon's “Forgot password?”</label><div class="hq-acts"><input class="hq-in" id="supPh" type="tel" maxlength="20" value="${esc((DATA && DATA.support) || '(515) 672-7879')}"><button class="hq-btn sm" type="button" id="supSave">Save</button></div>
+         <h3 style="margin:14px 0 6px">🤖 AI key – ⚡ color charts</h3><p class="hq-muted" style="margin:0 0 6px">Claude API key: the salons' 📷 Add from color chart reads the numbers with it (no key: the phone reads them itself, less sure). Kept on the server only – never shown again.</p>
+@@ -146,44 +327,10 @@
+       $('#aiSave').onclick = async (e) => { busy(e.target, true); try { const r = await api('ai_key', { key: $('#aiKey').value, model: $('#aiModel').value }); $('#aiKey').value = ''; aiDraw(r); toast('Saved ✓'); } catch (x) { toast(x.message, true); } finally { busy(e.target, false); } };
+       $('#aiDel').onclick = async (e) => { const b = e.target; if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Tap again'; return; } try { const r = await api('ai_key', { clear: 1 }); aiDraw(r); b.dataset.sure = ''; b.textContent = 'Remove key'; toast('Removed ✓'); } catch (x) { toast(x.message, true); } };
+       $('#supSave').onclick = async (e) => { busy(e.target, true); try { const r = await api('support_phone', { phone: $('#supPh').value }); if (DATA) DATA.support = r.phone; toast('Saved ✓' + (r.notReached.length ? ' (not reached: ' + r.notReached.join(', ') + ')' : '')); } catch (x) { toast(x.message, true); } finally { busy(e.target, false); } };
+-      $('#ownOk').onchange = async (e) => { try { const r = await api('owner_ok', { on: e.target.checked }); if (DATA) DATA.ownerOk = r.ownerOk; toast(r.ownerOk ? 'On ✓' : 'Off ✓'); } catch (x) { toast(x.message, true); e.target.checked = !e.target.checked; } }; };
+-    $('#bOut').onclick = async () => { try { await api('logout', {}); } catch (e) {} CSRF = ''; start(); };
+-    if (!DATA) main.innerHTML = '<p class="hq-muted">Loading the salons…</p>';
+-    try { DATA = await api('cards'); } catch (e) { if (e.status === 401) return start(); main.innerHTML = `<p class="hq-err">${esc(e.message)}</p>`; return; }
+-    const behind = DATA.salons.filter(s => s.behind);
+-    main.innerHTML = `<section class="hq-upd ${behind.length ? 'warn' : 'ok'}"><b>Code ${esc(DATA.latest)}</b> is the newest.
+-        ${behind.length ? 'Behind: ' + behind.map(s => `<b>${esc(s.name || s.id)}</b> (${esc(s.version)})`).join(', ') + ' – ask Claude to update.' : 'Every salon has it ✓'}</section>
+-      <div class="hq-cards">${DATA.salons.map(card).join('')}</div>
+-      <p class="hq-muted small">Updated ${esc(DATA.now)} · <button class="hq-link" id="bRe">Reload</button></p>`;
+-    $('#bRe').onclick = loadCards;
+-    $$('.hq-card').forEach(el => { const s = DATA.salons.find(x => x.id === el.dataset.id);
+-      el.addEventListener('click', e => { const b = e.target.closest('[data-do]'); if (!b) return; ({ support: (x) => supAsk({ id: x.id, name: x.name || x.id, nocode: !!x.supNoCode, cell: x.info && x.info.owner_cell ? '…' + String(x.info.owner_cell).replace(/\D/g, '').slice(-4) : '' }), texting: textingSheet, aicall: aiSheet, /* (2.99.648) */ calls: (x) => window.HqCalls && HqCalls.open(x), /* (2.99.598 – LỆNH 595) */ edit: editInfo, logo: editLogo, reset: resetLink, setup: (x) => window.HqSetup && HqSetup.open(x), csv: (x) => window.HqCsv && HqCsv.open(x), /* (2.99.420 – LENH-614 mục 8) */ twofa: twofaOff, pause: pauseAsk, open: reopen, rollback: rollbackAsk })[b.dataset.do](s); }); });
+-  }
+-  function card(s) {
+-    if (!s.ok) return `<article class="hq-card bad" data-id="${esc(s.id)}"><h3>${esc(s.id)}</h3><p class="hq-err">${esc(s.error || 'Cannot read this salon.')}</p>
+-      <dl><dt>Code</dt><dd>${esc(s.version)}</dd><dt>Last backup</dt><dd>${esc(s.backup || 'none')}</dd><dt>New errors (24 h)</dt><dd>${s.errors}</dd></dl></article>`;
+-    const row = (k, v, cls) => `<dt>${k}</dt><dd class="${cls || ''}">${v}</dd>`;
+-    return `<article class="hq-card${s.paused ? ' paused' : ''}" data-id="${esc(s.id)}">
+-      <header>${s.info.logo ? `<img src="${esc(s.info.logo)}" alt="" width="40" height="40">` : `<span class="hq-ini">${esc(s.short)}</span>`}
+-        <div><h3>${esc(s.name)}</h3><a href="${esc(s.url)}/" target="_blank" rel="noopener noreferrer">${esc(s.url.replace(/^https?:\/\//, ''))}</a></div>
+-        <span class="hq-pill ${s.paused ? 'pause' : 'run'}">${s.paused ? '⏸ Paused' : '● Running'}</span></header>
+-      <dl>
+-        ${row('Code', esc(s.version) + (s.behind ? ' <span class="hq-tag warn">behind</span>' : ' <span class="hq-tag ok">newest</span>'))}
+-        ${row('Last backup <small>(nightly 3 AM)</small>', s.backup ? esc(s.backup) + (s.backupOld ? ' <span class="hq-tag warn">old</span>' : '') : '<span class="hq-tag warn">none</span>')}
+-        ${row('New errors (24 h)', s.errors ? `<span class="hq-tag warn">${s.errors}</span> <small class="hq-mono">${esc(s.lastError)}</small>` : '0 ✓')}
+-        ${row('Thông báo chủ', s.ownerPush ? '✓ app NailFlow' : '<span class="hq-tag warn">⚠ chủ chưa bật thông báo</span>')}
+-        ${row('Owner last in', esc(ago(s.lastLogin)) + (s.lastLogin ? ` <small class="hq-muted">${esc(s.lastLogin)}</small>` : ''))}
+-        ${row('Appointments', `<b>${s.today}</b> today · <b>${s.week}</b> next 7 days`)}
+-        ${s.ai ? row('AI call', s.ai.on ? `on · <b${!s.ai.free && s.ai.min > s.ai.incl ? ' class="hq-warnc"' : ''}>${s.ai.min}</b>${s.ai.free ? '' : ' / ' + s.ai.incl} min this month${s.ai.free ? ' · Free' : ' · $' + Number(s.ai.total).toFixed(2)}` : 'off') : ''}
+-        ${row('Texting device', esc(DEV[s.device] || DEV['']) + (s.device ? (s.autoOn ? ' · Auto send on' : ' · Auto send off') : '') + ` · <b${s.toSend ? ' class="hq-warnc"' : ''}>${s.toSend}</b> in To send`)}
+-      </dl>
+-      <div class="hq-acts"><button class="hq-btn sm" data-do="support">🔧 Xin vào hỗ trợ</button><button class="hq-btn sm" data-do="texting">📲 Tin nhắn</button><button class="hq-btn sm" data-do="aicall">🤖 AI call</button><button class="hq-btn sm" data-do="calls">📞 Calls</button><button class="hq-btn sm" data-do="edit">✏️ Edit info</button><button class="hq-btn sm" data-do="logo">🖼 Logo</button><button class="hq-btn sm" data-do="csv">📥 Nạp khách từ CSV</button>
+-        <button class="hq-btn sm" data-do="setup">📲 Gửi hướng dẫn cài đặt</button><button class="hq-btn sm" data-do="reset">🔑 Đặt lại mật khẩu chủ tiệm</button>
+-        ${s.info && s.info.twofa ? '<button class="hq-btn sm" data-do="twofa">Tắt 2FA tạm cho tiệm này</button>' : (s.info && s.info.twofaOffAt ? `<small class="hq-muted">2FA tắt từ HQ lúc ${esc(s.info.twofaOffAt)}</small>` : '')}
+-        ${s.paused ? '<button class="hq-btn sm good" data-do="open">▶ Open again</button>' : '<button class="hq-btn sm danger" data-do="pause">⏸ Pause salon</button>'}
+-        ${s.shared && s.prev ? `<button class="hq-btn sm" data-do="rollback">↩ Roll back to ${esc(s.prev)}</button>` : ''}</div>
+-    </article>`;
++      $('#ownOk').onchange = async (e) => { try { const r = await api('owner_ok', { on: e.target.checked }); if (DATA) DATA.ownerOk = r.ownerOk; toast(r.ownerOk ? 'On ✓' : 'Off ✓'); } catch (x) { toast(x.message, true); e.target.checked = !e.target.checked; } };
++      const f = focus && document.getElementById(focus); if (f) setTimeout(() => { f.scrollIntoView({ block: 'center' }); if (f.matches('input')) f.focus({ preventScroll: true }); }, 60); /* (2.99.660 HQ UI) */
+   }
++  sheet.addEventListener('click', (e) => { if ((e.target === sheet || e.target.closest('[data-close]')) && DATA && VIEW.v === 'acct') setTimeout(draw, 0); }); /* (2.99.660 HQ UI) Accounts page shows the new support phone / on-off */
+   /* edit the salon info (each change logged in HQ + the salon's Money & security log) */
+   const DN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+   const DEF_H = { 0: ['11:00', '17:00'], 6: ['09:00', '18:00'] };
+@@ -313,20 +460,13 @@
+   }
+   async function showLog() {
+     let L; try { L = (await api('log')).log; } catch (e) { if (e.status === 401) return start(); toast(e.message, true); return; }
+-    openSheet(`<h2>HQ log</h2><p class="hq-muted">Every change made in AN HQ (also in each salon's Money &amp; security log).</p>
++    openSheet(`<h2>HQ log</h2><p class="hq-muted">Every change made in HQ (also in each salon's Money &amp; security log).</p>
+       <div class="hq-log">${L.length ? L.map(x => `<div><small>${esc(x.at)} · ${esc(x.who)} · <b>${esc(x.salon)}</b></small><br>${esc(x.what)}: ${x.old !== '' ? `<s>${esc(x.old)}</s> → ` : ''}${esc(x.new)}</div>`).join('') : '<p class="hq-muted">Nothing yet.</p>'}</div>
+       <div class="hq-acts"><button class="hq-btn ghost" data-close>Close</button></div>`);
+   }
+   document.addEventListener('visibilitychange', () => { if (!document.hidden && DATA && sheet.hidden) loadCards(); });
+-  start();
++  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start(); /* (2.99.660 HQ UI) after hq-calls.js / hq-setup.js / hq-csv.js / hq-keys.js are loaded: the rows that open them are drawn */
+   /* (2.99.336 – lệnh 567) 🔧 HỖ TRỢ TIỆM – with the OWNER'S code: find the salon → the code goes to the owner's cell → the owner reads it to you → its admin (2 hours, in its log) */
+-  function supFind() {
+-    openSheet(`<h2>🔧 Hỗ trợ tiệm</h2><p class="hq-muted">Gõ số phone tiệm, 4 số cuối, hoặc email chủ tiệm.</p><div class="hq-acts"><input class="hq-in" id="supQ" autocomplete="off"><button class="hq-btn sm" id="supGo">Tìm</button></div><div id="supRes"></div><button class="hq-btn ghost" type="button" data-close>Close</button>`);
+-    const go = async () => { const box = $('#supRes'); box.innerHTML = '<p class="hq-muted">…</p>';
+-      try { const r = await api('sup_find', { q: $('#supQ').value }); box.innerHTML = r.rows.length ? r.rows.map(x => `<button class="hq-btn" data-sid="${esc(x.id)}">${esc(x.name)}${x.city ? ' · ' + esc(x.city) : ''} · …${esc(x.last4)}</button>`).join('') : '<p class="hq-muted">Không thấy tiệm nào.</p>';
+-        $$('[data-sid]', box).forEach(b => b.onclick = () => supAsk(r.rows.find(x => x.id === b.dataset.sid))); } catch (e) { box.innerHTML = `<p class="hq-err">${esc(e.message)}</p>`; } };
+-    $('#supGo').onclick = go; $('#supQ').onkeydown = (e) => { if (e.key === 'Enter') go(); };
+-  }
+   function supAsk(x) {
+     if (!x) return;
+     openSheet(`<h2>🔧 ${esc(x.name)}</h2>${x.nocode ? '<p class="hq-muted">Tiệm của NailFlow / demo – vào không cần mã. Phiên hỗ trợ 2 giờ, ghi trong log của tiệm.</p><button class="hq-btn good" id="supIn">Vào admin tiệm</button>'
+@@ -366,7 +506,7 @@
+     const draw = () => { openSheet(`<h2>📲 Tin nhắn – ${esc(s.name || s.id)}</h2>
+       ${r.isMain ? '<p class="hq-muted">American Nails = chủ máy Android 601.</p>' : ''}
+       <label class="hq-chk"><input type="radio" name="txm" value="shared" ${r.mode === 'shared' ? 'checked' : ''} ${r.isMain ? 'disabled' : ''}> <span>Dùng chung Android 601 của AN</span></label>
+-      <label class="hq-chk"><input type="radio" name="txm" value="own" ${r.mode === 'own' ? 'checked' : ''}> <span>Android riêng của tiệm ${r.mode === 'own' ? '(' + esc(r.own) + ' – chủ tiệm tự gõ tài khoản khi anh đang hỗ trợ)' : ''}</span></label>
++      <label class="hq-chk"><input type="radio" name="txm" value="own" ${r.mode === 'own' ? 'checked' : ''}> <span>Android riêng của tiệm ${r.mode === 'own' ? '(' + esc(r.own) + ' – tài khoản: nút 🔑 Keys)' : ''}</span></label>
+       <label class="hq-chk"><input type="radio" name="txm" value="manual" ${r.mode === 'manual' ? 'checked' : ''}> <span>Gửi tay bằng điện thoại chủ</span></label>
+       <label class="hq-chk"><input type="checkbox" id="txOn" ${r.on ? 'checked' : ''}> <span>Auto send BẬT</span></label>
+       <p class="hq-muted">Hôm nay ${r.today} tin · 7 ngày ${r.week} · kẹt / chờ gửi tay: ${r.stuck}. Bảng từng loại tin: “🔧 Xin vào hỗ trợ” → Settings → Auto send.</p>
+@@ -375,4 +515,31 @@
+         try { r = await api('texting', { id: s.id, set: { mode: m, on: $('#txOn').checked } }); toast('Saved ✓'); draw(); } catch (y) { toast(y.message, true); busy(e.target, false); } }; };
+     draw();
+   }
++  /* (2.99.660 card) 💳 Card keys of a salon: Payroc + Dejavoo P5 – set ONLY here (the salon Admin only shows a status line). A secret is never shown: empty = keep. */
++  async function hqCardKeys(s) {
++    let r; try { r = await api('card_keys&id=' + encodeURIComponent(s.id)); } catch (e) { return toast(e.message, true); }
++    const saved = (x) => x ? '<b>saved ✓</b>' : 'not set';
++    const draw = () => { const p = r.pr || {}, d = r.dv || {}; openSheet(`<h2>💳 Card keys – ${esc(s.name || r.name || s.id)}</h2>
++      <h3>Payroc <span class="hq-muted">(${p.ready ? 'ready' : 'not set up'}${p.on ? ' · ON' : ''})</span></h3>
++      <label>Terminal ID<input id="ckPrTid" autocomplete="off" value="${esc(p.tid || '')}"></label>
++      <label>Device serial number<input id="ckPrSn" autocomplete="off" value="${esc(p.sn || '')}"></label>
++      <label>API key – ${saved(p.keySet)}<input id="ckPrKey" type="password" autocomplete="new-password" value="" placeholder="empty = keep"></label>
++      <label>Host<select id="ckPrHost"><option value="uat"${p.host !== 'std' ? ' selected' : ''}>api.uat.payroc.com (sandbox)</option><option value="std"${p.host === 'std' ? ' selected' : ''}>api.payroc.com (test key)</option></select></label>
++      <label class="hq-chk"><input type="checkbox" id="ckPrOn" ${p.on ? 'checked' : ''}> <span>Card on Payroc at Checkout</span></label>
++      <label class="hq-chk"><input type="checkbox" id="ckPrClr"> <span>Remove the Payroc codes</span></label>
++      <h3>Dejavoo P5 <span class="hq-muted">(${d.ready ? 'ready' : 'not set up'}${d.on ? ' · ON' : ''} · ${d.env === 'live' ? 'LIVE' : 'sandbox'})</span></h3>
++      <label>TPN<input id="ckDvTpn" inputmode="numeric" autocomplete="off" value="${esc(d.tpn || '')}"></label>
++      <label>Register ID – ${saved(d.regSet)}<input id="ckDvReg" type="password" autocomplete="new-password" value="" placeholder="empty = keep"></label>
++      <label>Auth Key – ${saved(d.authSet)}<input id="ckDvAuth" type="password" autocomplete="new-password" value="" placeholder="empty = keep"></label>
++      <label class="hq-chk"><input type="checkbox" id="ckDvOn" ${d.on ? 'checked' : ''}> <span>Card on the P5 at Checkout</span></label>
++      <label class="hq-chk"><input type="checkbox" id="ckDvClr"> <span>Remove the Dejavoo codes</span></label>
++      <p class="hq-muted">Keys are saved encrypted with this salon's own key and never shown again. "Check the connection" / sandbox tests: “🔧 Xin vào hỗ trợ” → Settings → Payments.</p>
++      <div class="hq-acts"><button class="hq-btn good" id="ckSave">Save</button><button class="hq-btn ghost" type="button" data-close>Close</button></div>`);
++      $('#ckSave').onclick = async (e) => { busy(e.target, true);
++        const pr = $('#ckPrClr').checked ? { clear: 1 } : { tid: $('#ckPrTid').value.trim(), sn: $('#ckPrSn').value.trim(), key: $('#ckPrKey').value.trim(), host: $('#ckPrHost').value, on: $('#ckPrOn').checked };
++        const dv = $('#ckDvClr').checked ? { clear: 1 } : { tpn: $('#ckDvTpn').value.trim(), reg: $('#ckDvReg').value.trim(), auth: $('#ckDvAuth').value.trim(), on: $('#ckDvOn').checked };
++        try { r = await api('card_keys', { id: s.id, set: { pr, dv } }); toast(r.changed ? 'Saved ✓' : 'Nothing changed'); draw(); } catch (y) { toast(y.message, true); busy(e.target, false); } }; };
++    draw();
++  }
++  window.hqCardKeys = hqCardKeys; /* (2.99.660 card) the opener – a menu row of the HQ layout calls hqCardKeys(salon) */
+ })();
+diff -ruN int659/hq/api.php int660z/hq/api.php
+--- int659/hq/api.php	2026-11-06 00:24:55.711210079 -0600
++++ int660z/hq/api.php	2026-11-06 01:27:17.282237239 -0600
+@@ -213,6 +213,21 @@
+     case 'texting': // 📲 Tin nhắn: read / change the device + Auto send on/off (never a login or key)
+         $need(); if ($method === 'POST') hq_out(hq_texting((string)($in['id'] ?? ''), (array)($in['set'] ?? [])));
+         hq_out(hq_texting((string)($_GET['id'] ?? '')));
++    case 'texting_keys': /* (2.99.660 keys) 🔑 the SMS Server key + salon id, the Android login – set ONLY here, encrypted with that salon's key; never sent back */
++        $need(); if ($method !== 'POST') hq_fail('POST only', 405); $fresh(); require_once __DIR__ . '/../inc/hq-keys.php';
++        hq_out(hq_tx_keys((string)($in['id'] ?? ''), (array)($in['set'] ?? [])));
++    case 'paypal': /* (2.99.660 keys) 🔑 PayPal Client ID / Secret / Live or Sandbox of a salon – set ONLY here; GET = saved or not */
++        $need(); require_once __DIR__ . '/../inc/hq-keys.php';
++        if ($method === 'POST') { $fresh(); hq_out(hq_paypal((string)($in['id'] ?? ''), (array)($in['set'] ?? []))); }
++        hq_out(hq_paypal((string)($_GET['id'] ?? '')));
++    case 'card_keys': /* (2.99.660 card) 💳 Payroc + Dejavoo P5 codes of a salon – set ONLY here, secrets encrypted with that salon's key; GET = saved or not, never a value */
++        $need(); require_once __DIR__ . '/../inc/hq-cards.php';
++        if ($method === 'POST') { $fresh(); hq_out(hq_card_keys((string)($in['id'] ?? ''), (array)($in['set'] ?? []))); }
++        hq_out(hq_card_keys((string)($_GET['id'] ?? '')));
++    case 'push_keys': /* (2.99.660 push) 🔔 Firebase service-account key slot 1 / slot 2 of a salon – set ONLY here (the salon no longer uploads it); GET = saved or not + project id */
++        $need(); require_once __DIR__ . '/../inc/hq-keys.php';
++        if ($method === 'POST') { $fresh(); hq_out(hq_push_keys((string)($in['id'] ?? ''), (array)($in['set'] ?? []))); }
++        hq_out(hq_push_keys((string)($_GET['id'] ?? '')));
+ 
+     case 'new_salon':
+         $need(); if ($method !== 'POST') hq_fail('POST only', 405); $fresh();
+diff -ruN int659/hq/index.php int660z/hq/index.php
+--- int659/hq/index.php	2026-10-31 20:59:18.000000000 -0500
++++ int660z/hq/index.php	2026-11-06 00:44:11.864152890 -0600
+@@ -9,22 +9,22 @@
+ ?><!doctype html>
+ <html lang="en">
+ <head><meta charset="utf-8">
+-<title>AN HQ</title>
++<title>Logan</title>
+ <meta name="robots" content="noindex, nofollow">
+ <meta name="referrer" content="no-referrer">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="mobile-web-app-capable" content="yes">
+-<meta name="apple-mobile-web-app-title" content="AN HQ">
+-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+-<meta name="theme-color" content="#101826">
++<meta name="apple-mobile-web-app-title" content="Logan">
++<meta name="apple-mobile-web-app-status-bar-style" content="default"><!-- (2.99.660 HQ UI) light iPhone look, title "Logan" -->
++<meta name="theme-color" content="#f2f2f7">
+ <link rel="manifest" href="manifest.json">
+ <link rel="apple-touch-icon" href="../assets/app-icons/hq-180.png">
+ <link rel="icon" href="../assets/app-icons/hq-192.png">
+ <link rel="stylesheet" href="../assets/hq.css?v=<?= hq_h($v) ?>">
+ </head>
+ <body>
+-<header class="hq-top"><h1>AN HQ</h1><div id="hqTopBtns"></div></header>
++<header class="hq-top"><div id="hqTopBtns"></div><h1>Logan</h1></header>
+ <main id="hq" aria-live="polite"><p class="hq-muted">Loading…</p></main>
+ <div id="hqSheet" class="hq-sheet" hidden><div class="hq-sheet-in" role="dialog" aria-modal="true"></div></div>
+ <div id="hqToast" class="hq-toast" hidden></div>
+@@ -32,6 +32,7 @@
+ <script src="../assets/hq-setup.js?v=<?= hq_h($v) ?>"></script>
+ <script src="../assets/hq-csv.js?v=<?= hq_h($v) ?>"></script><!-- (2.99.420) Nạp khách từ CSV -->
+ <script src="../assets/hq-calls.js?v=<?= hq_h($v) ?>"></script><!-- (2.99.598 – LỆNH 595) 📞 Calls -->
++<script src="../assets/hq-keys.js?v=<?= hq_h($v) ?>"></script><!-- (2.99.660 keys) 🔑 Keys: SMS Server / Android / PayPal – set only in HQ -->
+ <script src="../assets/nf-links.js?v=<?= hq_h($v) ?>"></script><!-- (2.99.323 – lệnh 538) in the NailFlow app: never Safari -->
+ </body>
+ </html>
+diff -ruN int659/hq/manifest.json int660z/hq/manifest.json
+--- int659/hq/manifest.json	2026-10-21 22:16:43.000000000 -0500
++++ int660z/hq/manifest.json	2026-11-06 00:44:11.864443832 -0600
+@@ -1,12 +1,12 @@
+ {
+- "name": "AN HQ",
+- "short_name": "AN HQ",
++ "name": "Logan",
++ "short_name": "Logan",
+  "description": "Logan's app for all the salons.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+- "background_color": "#101826",
+- "theme_color": "#101826",
++ "background_color": "#f2f2f7",
++ "theme_color": "#f2f2f7",
+  "icons": [
+   {"src": "../assets/app-icons/hq-192.png", "sizes": "192x192", "type": "image/png"},
+   {"src": "../assets/app-icons/hq-512.png", "sizes": "512x512", "type": "image/png"}
+diff -ruN int659/inc/api/autosend.php int660z/inc/api/autosend.php
+--- int659/inc/api/autosend.php	2026-11-04 18:01:14.000000000 -0600
++++ int660z/inc/api/autosend.php	2026-11-06 00:36:31.827545900 -0600
+@@ -95,21 +95,20 @@
+     if (function_exists('as_can_edit') && !as_can_edit()) fail('Cài đặt tin nhắn do NailFlow quản lý – liên hệ ' . (function_exists('hq_support_phone_here') ? hq_support_phone_here() : '(515) 672-7879') . ' nếu cần đổi. · Texting settings are managed by NailFlow.', 403); // (2.99.336 – lệnh 543/567)
+     if ($method !== 'POST') fail('POST only', 405);
+     need_admin();
++    /* (2.99.660 keys) the SMS Server key / salon id and the Android login are set ONLY in AN HQ (encrypted there with this salon's key): refused here, for every salon */
++    foreach (['wsKey', 'adUser', 'adPass', 'adSign', 'adClear'] as $f) if (!empty($in[$f]) && trim((string)$in[$f]) !== '') { audit('autosend', 'Texting keys', '', 'refused – set up by NailFlow (AN HQ)'); fail('Texting keys are set up by NailFlow (AN HQ). · Khoá / tài khoản gửi tin do NailFlow cài.', 403); }
++    if (trim((string)($in['wsId'] ?? '')) !== '' && strtolower(trim((string)$in['wsId'])) !== ws_salon_id()) fail('Texting keys are set up by NailFlow (AN HQ). · Khoá / tài khoản gửi tin do NailFlow cài.', 403);
+     $was = ws_on() && as_dev() === 'android' ? 'winsms' : as_dev(); $dev = (string)($in['device'] ?? $was);
+     if (!in_array($dev, ['', 'android', 'winsms'], true)) fail('Bad device.'); // (2.99.305) iPhone-Shortcuts removed
+     if ($dev === 'winsms') { // (2.99.460 – lệnh 460) (C) SMS Server: the Android parts stay as they are (not used); its salon id + key (made by the SMS Server, pasted here)
+-        if (array_key_exists('wsId', $in) || array_key_exists('wsKey', $in)) { $r = ws_key_set((string)($in['wsId'] ?? ''), (string)($in['wsKey'] ?? '')); if ($r !== '') fail($r); }
+-        if (ws_key() === '') fail('Paste the salon id and the key from the SMS Server first, then Save.');
++        if (ws_key() === '') fail('The SMS Server key of this salon is not set up yet – NailFlow sets it in AN HQ.'); /* (2.99.660 keys) */
+         set_setting('ad_transport', 'winsms'); set_setting('as_device', 'android');
+         if ($was !== 'winsms') { audit('autosend', 'Texting device', $was ?: 'none', 'SMS Server · ' . ws_salon_id() . ' · key ' . ws_key_fp()); q("UPDATE autosend SET state = 'wait' WHERE state = 'mailed'"); $GLOBALS['as_via'] = 'device changed'; after_reply(fn() => as_flush(), true); }
+         json_out(as_page()); }
+     if ($was === 'winsms') { set_setting('ad_transport', ''); $was = 'winsms'; // leaving the SMS Server: what it was given and did not send → back to the queue (nothing lost)
+         foreach (q("SELECT * FROM autosend WHERE state = 'taken' AND via = 'winsms'")->fetchAll() as $x) ad_back($x, 'Texting device changed', false); }
+     $chg = [];
+-    foreach (['adUser' => 'ad_user', 'adPass' => 'ad_pass', 'adSign' => 'ad_sign'] as $f => $k) if (isset($in[$f]) && trim((string)$in[$f]) !== '') {
+-        $v = trim(mb_substr((string)$in[$f], 0, 200)); if (preg_match('/\s/', $v)) fail('No spaces in the username / password / key.');
+-        if (ad_dec((string)setting($k)) !== $v) { set_setting($k, ad_enc($v)); $chg[] = ['adUser' => 'username', 'adPass' => 'password', 'adSign' => 'signing key'][$f]; } }
+-    if (!empty($in['adClear'])) { foreach (['ad_user', 'ad_pass', 'ad_sign', 'ad_tok', 'ad_check'] as $k) set_setting($k, ''); $chg[] = 'login removed'; }
++    /* (2.99.660 keys) the Android login (username / password / signing key) and "Remove login": AN HQ only (refused above) */
+     if ($chg) ad_forget_tokens();
+     if (array_key_exists('adShare', $in)) { // (2.99.261 – order 472) "Use American Nails' Android" (texts from this salon end with its name + phone; its confirm code LN-…)
+         $sh = (string)$in['adShare']; $wasSh = (string)setting('ad_share');
+@@ -120,7 +119,7 @@
+         elseif ($wasSh !== '') { set_setting('ad_share', ''); $chg[] = 'own Android'; if ($dev === 'android' && !ad_ready()) $dev = ''; }
+         ad_forget_tokens(); }
+     if (array_key_exists('adTest', $in)) { $t = trim((string)$in['adTest']); $np = $t === '' ? '' : norm_phone($t); if ($t !== '' && strlen($np) !== 12) fail('Test number: type 10 digits.'); set_setting('ad_test_phone', $np); }
+-    if ($dev === 'android' && !ad_ready()) fail('Android: type the username and password of the SMS Gateway app first.');
++    if ($dev === 'android' && !ad_ready()) fail('Android: the SMS Gateway login is not set up yet – NailFlow sets it in AN HQ.'); /* (2.99.660 keys) */
+     set_setting('as_device', $dev);
+     if ($dev !== $was || $chg) audit('autosend', 'Texting device', $was ?: 'none', ($dev ?: 'none') . ($chg ? ' · changed: ' . implode(', ', $chg) : '')); // never the values
+     if ($dev === 'android' && $was !== 'android') q("UPDATE autosend SET state = 'wait' WHERE state = 'mailed'"); // waiting from before → the Android sends them (nothing lost, nothing twice)
+diff -ruN int659/inc/api/dejavoo.php int660z/inc/api/dejavoo.php
+--- int659/inc/api/dejavoo.php	2026-11-03 19:26:04.000000000 -0600
++++ int660z/inc/api/dejavoo.php	2026-11-06 00:44:35.432152894 -0600
+@@ -10,18 +10,9 @@
+ $dvLog = function (): array { $l = json_decode((string)setting('dv_log'), true); return array_slice(array_reverse(is_array($l) ? $l : []), 0, 15); };
+ switch ($action) {
+ case 'dv_info':
+-    json_out(['ok' => true, 'dv' => dv_shown() + ['ready' => dv_ready()], 'log' => $dvLog()]);
+-case 'dv_save':
+-    if ($method !== 'POST') fail('POST only', 405);
+-    $was = dv_shown();
+-    try { dv_set_creds(array_key_exists('tpn', $in) ? (string)$in['tpn'] : '', array_key_exists('reg', $in) ? (string)$in['reg'] : '', array_key_exists('auth', $in) ? (string)$in['auth'] : ''); }
+-    catch (InvalidArgumentException $e) { fail($e->getMessage()); }
+-    if (!empty($in['clear'])) dv_set_creds(null, null, null);
+-    if (array_key_exists('on', $in)) { if (!empty($in['on']) && !dv_ready()) fail('Type the TPN and the Auth Key first.'); set_setting('dv_on', !empty($in['on']) ? '1' : '0'); }
+-    $now = dv_shown();
+-    $ch = []; foreach (['tpn' => 'TPN', 'reg' => 'Register ID', 'auth' => 'Auth Key', 'on' => 'on'] as $k => $lab) if ($was[$k] !== $now[$k]) $ch[] = $lab;
+-    if ($ch) audit('setting', 'Dejavoo P5', 'changed', implode(', ', $ch), 'Settings → Payments → Dejavoo P5'); // never the codes
+-    json_out(['ok' => true, 'dv' => $now + ['ready' => dv_ready()], 'log' => $dvLog()]);
++    $c = dv_creds(); json_out(['ok' => true, 'dv' => array_merge(dv_shown(), ['reg' => $c['reg'] !== '', 'auth' => $c['auth'] !== '']) /* (2.99.660 card) status only: saved or not, never the last 4 */ + ['ready' => dv_ready()], 'log' => $dvLog()]);
++case 'dv_save': /* (2.99.660 card) the Dejavoo codes / on-off are set ONLY in AN HQ (hq_card_keys), for every salon and every login (support session too): refused, nothing saved */
++    fail('The Dejavoo P5 codes are set up by NailFlow in AN HQ.', 403);
+ case 'dv_check': // "Check the connection" = Terminal Connection Status (nothing is charged)
+     if ($method !== 'POST') fail('POST only', 405);
+     $r = dv_terminal_status(); json_out(['ok' => true, 'online' => $r['online'], 'status' => $r['status'], 'msg' => $r['msg'], 'log' => $dvLog()]);
+diff -ruN int659/inc/api/notify.php int660z/inc/api/notify.php
+--- int659/inc/api/notify.php	2026-10-30 22:01:04.000000000 -0500
++++ int660z/inc/api/notify.php	2026-11-06 00:36:31.820901350 -0600
+@@ -129,6 +129,7 @@
+ 
+ case 'fcm_key': // (2.99.247 – order 447) Settings → Notifications → NailFlow app: the Firebase service-account key (locked, never shown again)
+     need_admin(); check_csrf();
++    fail('Firebase keys are set in NailFlow HQ only.', 403); /* (2.99.660 keys) the salon never uploads a Firebase key; saved ones stay and inc/fcm.php still reads them, then the HQ file */
+     require_once APP_ROOT . '/inc/fcm.php';
+     $slot = (string)($in['slot'] ?? '') === '2' ? '2' : ''; // (2.99.340 – lệnh 574) slot 2 = the new app's project (an-salon-push)
+     if ($slot === '2') { require_once APP_ROOT . '/inc/support.php'; if (!fcm2_can()) fail('Chỉ NailFlow (AN HQ) / chủ American Nails tải khoá này.', 403); }
+diff -ruN int659/inc/api/payroc.php int660z/inc/api/payroc.php
+--- int659/inc/api/payroc.php	2026-11-05 02:58:35.297837968 -0600
++++ int660z/inc/api/payroc.php	2026-11-06 00:44:35.421547891 -0600
+@@ -11,18 +11,11 @@
+ $prLog = function (): array { $l = json_decode((string)setting('pr_log'), true); return array_slice(array_reverse(is_array($l) ? $l : []), 0, 15); };
+ $prTests = function (): array { $l = json_decode((string)setting('pr_tests'), true); return is_array($l) ? $l : []; };
+ $prTestPut = function (string $id, array $row) use ($prTests): void { $l = $prTests(); $l[$id] = $row + ($l[$id] ?? []); if (count($l) > 60) $l = array_slice($l, -60, null, true); set_setting('pr_tests', json_encode($l, JSON_UNESCAPED_UNICODE)); };
+-$out = fn(array $x = []) => json_out(['ok' => true, 'pr' => pr_shown() + ['ready' => pr_ready(), 'dev' => pr_dev_ready()], 'log' => $prLog(), 'tests' => array_values(array_reverse($prTests()))] + $x);
++$out = fn(array $x = []) => json_out(['ok' => true, 'pr' => array_merge(pr_shown(), ['key' => pr_creds()['key'] !== '']) /* (2.99.660 card) status only: saved or not, never the last 4 */ + ['ready' => pr_ready(), 'dev' => pr_dev_ready()], 'log' => $prLog(), 'tests' => array_values(array_reverse($prTests()))] + $x);
+ switch ($action) {
+ case 'pr_info': $out();
+-case 'pr_save':
+-    if ($method !== 'POST') fail('POST only', 405);
+-    $was = pr_shown();
+-    try { if (!empty($in['clear'])) pr_set_creds(null, null, null); else pr_set_creds((string)($in['tid'] ?? ''), (string)($in['sn'] ?? ''), (string)($in['key'] ?? ''), (string)($in['host'] ?? '')); }
+-    catch (InvalidArgumentException $e) { fail($e->getMessage()); }
+-    if (array_key_exists('on', $in)) { if (!empty($in['on']) && !pr_dev_ready()) fail('Type the Terminal ID, the device serial number and the API key first.'); set_setting('pr_on', !empty($in['on']) ? '1' : '0'); }
+-    $now = pr_shown(); $ch = []; foreach (['tid' => 'Terminal ID', 'sn' => 'device', 'key' => 'API key', 'host' => 'host', 'on' => 'on'] as $k => $lab) if ($was[$k] !== $now[$k]) $ch[] = $lab;
+-    if ($ch) audit('setting', 'Payroc', 'changed', implode(', ', $ch), 'Settings → Payments → Payroc'); /* never the key */
+-    $out();
++case 'pr_save': /* (2.99.660 card) the Payroc codes / host / on-off are set ONLY in AN HQ (hq_card_keys), for every salon and every login (support session too): refused, nothing saved */
++    fail('The Payroc codes are set up by NailFlow in AN HQ.', 403);
+ case 'pr_check':
+     if ($method !== 'POST') fail('POST only', 405);
+     $r = pr_check(); $out(['check' => $r]);
+diff -ruN int659/inc/api/pushtech.php int660z/inc/api/pushtech.php
+--- int659/inc/api/pushtech.php	2026-10-21 22:16:43.000000000 -0500
++++ int660z/inc/api/pushtech.php	2026-11-06 00:36:31.821036468 -0600
+@@ -17,8 +17,8 @@
+     need_admin(); check_csrf(); if ($method !== 'POST') fail('POST only', 405);
+     $w = (string)($in['which'] ?? ''); $t = (string)($in['text'] ?? ''); if (strlen($t) > 200000) fail('File too big.');
+     try {
+-        if ($w === 'sa') { require_once APP_ROOT . '/inc/fcm.php'; $pid = fcm_set_key($t); audit('settings', 'Thông báo thợ · Firebase key', '', $pid !== '' ? 'set · ' . $pid : 'removed'); }
+-        else { $pid = pt_cfg_file($w, $t); audit('settings', 'Thông báo thợ · ' . ($w === 'ios' ? 'GoogleService-Info.plist' : 'google-services.json'), '', $pid); }
++        if ($w === 'sa') fail('Firebase keys are set in NailFlow HQ only.', 403); /* (2.99.660 keys) the salon never uploads the service-account key; a saved one stays */
++        $pid = pt_cfg_file($w, $t); audit('settings', 'Thông báo thợ · ' . ($w === 'ios' ? 'GoogleService-Info.plist' : 'google-services.json'), '', $pid);
+     } catch (RuntimeException $e) { fail($e->getMessage()); }
+     json_out(['ok' => true, 'project' => $pid] + pt_status());
+ 
+diff -ruN int659/inc/api/settings.php int660z/inc/api/settings.php
+--- int659/inc/api/settings.php	2026-11-05 01:28:11.336386014 -0600
++++ int660z/inc/api/settings.php	2026-11-06 00:36:44.046950957 -0600
+@@ -10,7 +10,7 @@
+ case 'settings':
+     need_admin();
+     $s = settings();
+-    $keys = ['salon_name', 'salon_phone', 'salon_address', 'timezone', 'cancel_policy', 'twilio_sid', 'twilio_from',
++    $keys = ['salon_name', 'salon_phone', 'salon_address', 'timezone', 'cancel_policy', /* (2.99.660 keys) no twilio_sid */ 'twilio_from',
+         'sms_confirm', 'sms_confirmed', 'sms_welcome', 'sms_reminder', 'sms_change', 'sms_cancel', 'sms_techout', 'sms_footer'];
+     $out = []; foreach ($keys as $k) $out[$k] = $s[$k];
+     $out['app_short'] = setting('app_short'); $out['app_short_now'] = app_prefix(); // (2.99.210 – order 411)
+@@ -71,7 +71,7 @@
+         'sms_winback' => setting('sms_winback'), 'offer_wb_on' => setting('offer_wb_on') === '1',
+         'dep_on' => setting('dep_on') === '1', 'dep_min' => max(2, (int)setting('dep_min')), 'dep_amount' => dep_each(), 'dep_text' => setting('dep_text'),
+         'dep_policy' => setting('dep_policy'), 'dep_autorefund' => setting('dep_autorefund') === '1', 'dep_refund_hours' => (int)setting('dep_refund_hours'),
+-        'paypal_mode' => setting('paypal_mode') === 'sandbox' ? 'sandbox' : 'live', 'paypal_client_id' => setting('paypal_client_id'),
++        'paypal_mode' => setting('paypal_mode') === 'sandbox' ? 'sandbox' : 'live', /* (2.99.660 keys) the Client ID is no longer sent to Settings (set in AN HQ) */
+         'paypal_secret_set' => setting('paypal_secret') !== '', 'dep_ready' => dep_ready(), 'deposits' => dep_list(),
+         'review_on' => setting('review_on') === '1' && sms_ready(), 'review_link' => setting('review_link'), 'facebook_url' => setting('facebook_url'), 'review_hours' => (int)setting('review_hours'),
+         'sms_review' => setting('sms_review'),
+@@ -265,6 +265,11 @@
+ 
+ case 'save_settings':
+     need_admin();
++    /* (2.99.660 keys) PayPal Client ID / Secret / Live-Sandbox / Remove keys: AN HQ only, for every salon. The same value sent back (an old page's Save) is ignored; a new one = refused, nothing saved. */
++    if ((trim((string)($in['paypal_client_id'] ?? '')) !== '' && trim((string)$in['paypal_client_id']) !== trim(setting('paypal_client_id'))) || trim((string)($in['paypal_secret'] ?? '')) !== '' || !empty($in['paypal_clear'])
++        || (array_key_exists('paypal_mode', $in) && ($in['paypal_mode'] === 'sandbox' ? 'sandbox' : 'live') !== (setting('paypal_mode') === 'sandbox' ? 'sandbox' : 'live'))) {
++        try { audit('setting', 'PayPal keys', '', 'refused – set up by NailFlow (AN HQ)'); } catch (Throwable $e) {} fail('PayPal is set up by NailFlow (AN HQ). · PayPal do NailFlow cài.', 403); }
++    unset($in['paypal_client_id'], $in['paypal_secret'], $in['paypal_mode'], $in['paypal_clear']);
+     if (!empty($in['showapp_reset'])) { require_once APP_ROOT . '/inc/showapp.php'; if (!showapp_ok()) fail('Only the show salon.', 403); json_out(['ok' => true, 'seed' => showapp_seed()]); } // (2.99.478 – LỆNH 466) Home → Reset demo: the show salon back to its fake data
+     // (2.99.92) all or nothing: every value is checked, one wrong value = nothing saved (one transaction), the log is written after
+     $allBefore = settings(true);
+@@ -272,9 +277,9 @@
+     register_shutdown_function(function () { try { if (db()->inTransaction()) db()->rollBack(); } catch (Throwable $e) {} });
+     $moneyKeys = ['checkout_start', 'rw_on', 'rw_mode', 'rw_need', 'rw_amt', 'rw_visits', 'rw_visit_amt', 'rw_visit_min', 'offer_bday_on', 'offer_bday_pct', 'offer_bday_max', 'offer_bday_days', 'offer_wb_on', 'offer_wb_pct', 'offer_wb_max', 'offer_wb_days', 'dps_card_pct', 'loyalty_on', 'loyalty_visits', 'loyalty_reward', 'payroll_week_start', 'gift_on', 'dep_on', 'dep_amount', 'bonus_amt', 'bonus_cust', 'bonus_sales', 'ye_1099', 'tips_cash_day', 'tax_pct', 'admin_fee_on', 'admin_fee_min', 'admin_fee_amt', 'admin_fee_min2', 'admin_fee_amt2', 'admin_fee_min3', 'admin_fee_amt3', 'admin_fee_staff', 'tip_screen_on', 'tip_pcts', 'cash_float', 'payroll_split_on', 'tip_payout', 'co_prefill', 'redo_days'];
+     $moneyBefore = array_combine($moneyKeys, array_map('setting', $moneyKeys));
+-    $text = ['salon_name' => 80, 'no_text_phones' => 200, 'app_short' => 12, 'salon_phone' => 30, 'salon_address' => 160, 'cancel_policy' => 300, 'twilio_sid' => 64, 'twilio_from' => 20,
++    $text = ['salon_name' => 80, 'no_text_phones' => 200, 'app_short' => 12, 'salon_phone' => 30, 'salon_address' => 160, 'cancel_policy' => 300, /* (2.99.660 keys) twilio_sid / twilio_from: NailFlow HQ only */
+         'sms_confirm' => 1000, 'sms_confirmed' => 600, 'sms_welcome' => 300, 'sms_reminder' => 1000, 'sms_change' => 1000, 'sms_cancel' => 1000, 'sms_techout' => 1000, 'sms_footer' => 300, 'sms_rebook' => 1000,
+-        'sms_bday' => 1000, 'sms_winback' => 1000, 'dep_text' => 500, 'dep_policy' => 500, 'paypal_client_id' => 128, 'sms_review' => 1000, 'review_link' => 300, 'facebook_url' => 300, 'sms_release' => 1000, 'receipt_line' => 40];
++        'sms_bday' => 1000, 'sms_winback' => 1000, 'dep_text' => 500, 'dep_policy' => 500, 'sms_review' => 1000, 'review_link' => 300, 'facebook_url' => 300, 'sms_release' => 1000, 'receipt_line' => 40];
+     if (array_key_exists('checkout_start', $in)) { $d = trim((string)$in['checkout_start']); if ($d !== '' && !valid_date($d)) fail('Start using Checkout on: choose a day.'); $csWas = checkout_start(); set_setting('checkout_start', $d); // (2.99.82)
+         if ($d !== '' && $d !== $csWas) { require_once APP_ROOT . '/inc/rewards.php'; $rwN = 0; // (2.99.95) receipts from that day on: Rewards counted now – once per receipt (never twice)
+             foreach (q("SELECT * FROM receipts WHERE status = 'paid' AND test = 0 AND day >= ? ORDER BY id", [$d])->fetchAll() as $rr) { try { $had = (bool)q("SELECT 1 FROM reward_log WHERE receipt_id = ? AND kind = 'earn'", [(int)$rr['id']])->fetchColumn(); rw_receipt_paid($rr); if ((float)$rr['refund'] > 0 && (float)$rr['total'] > 0) rw_receipt_back($rr, min(1.0, (float)$rr['refund'] / (float)$rr['total']), 'refunded before'); /* (2.99.100) */ if (!$had && q("SELECT 1 FROM reward_log WHERE receipt_id = ? AND kind = 'earn'", [(int)$rr['id']])->fetchColumn()) $rwN++; } catch (Throwable $e) { error_log('rw start: ' . $e->getMessage()); } }
+@@ -395,14 +400,10 @@
+     foreach ($text as $k => $len) if (array_key_exists($k, $in)) set_setting($k, trim(mb_substr(str_replace(["\r\n", "\r"], "\n", (string)$in[$k]), 0, $len))); // message templates keep their lines
+     if (array_key_exists('sms_link_style', $in) && in_array($in['sms_link_style'], ['A', 'B', 'C'], true)) set_setting('sms_link_style', (string)$in['sms_link_style']); // (2.63)
+     if (array_key_exists('salon_phone', $in)) set_setting('salon_phone', pretty_phone(trim(mb_substr((string)$in['salon_phone'], 0, 30)))); // "(515) 207-1130" everywhere
+-    if (!empty($in['twilio_token'])) set_setting('twilio_token', trim((string)$in['twilio_token']));
+-    if (!empty($in['paypal_secret'])) set_setting('paypal_secret', trim(mb_substr((string)$in['paypal_secret'], 0, 128))); // never sent back to the page
+-    if (!empty($in['paypal_clear'])) { // "Remove PayPal keys": no PayPal until real keys are entered – deposits and online gift cards off
+-        foreach (['paypal_client_id' => '', 'paypal_secret' => '', 'dep_on' => '0', 'gift_online' => '0'] as $k => $v) set_setting($k, $v);
+-    }
+-    if (array_key_exists('paypal_mode', $in)) set_setting('paypal_mode', $in['paypal_mode'] === 'sandbox' ? 'sandbox' : 'live');
++    /* (2.99.660 keys) twilio_token: NailFlow HQ only (not saved here) */
++    /* (2.99.660 keys) paypal_secret / paypal_clear / paypal_mode: AN HQ only (inc/hq-keys.php hq_paypal) */
+     if (array_key_exists('timezone', $in) && in_array($in['timezone'], timezone_identifiers_list(), true)) set_setting('timezone', $in['timezone']);
+-    foreach (['online_booking', 'sms_enabled', 'notify_online', 'notify_confirm', 'notify_cantcome', 'notify_change', 'notify_message', 'notify_checkin', 'notify_morning', 'notify_badge',
++    foreach (['online_booking', /* (2.99.660 keys) sms_enabled: NailFlow HQ only */ 'notify_online', 'notify_confirm', 'notify_cantcome', 'notify_change', 'notify_message', 'notify_checkin', 'notify_morning', 'notify_badge',
+         'msg_confirm_on', 'msg_reminder_on', 'msg_change_on', 'msg_cancel_on', 'msg_bday_on', 'backup_on', 'rebook_on', 'online_hours_on', 'auto_next', 'auto_next_admin', 'svc_search', 'book_show_price', 'book_ask_tm', 'notify_ready', 'notify_anywait', 'loyalty_on', 'loyalty_min_on', 'chime_on', 'gallery_on', 'bday_on', 'dep_on', 'dep_autorefund', 'review_on', 'gift_on', 'gift_expiry_on', 'gift_online', 'stop_hook_on', 'confirm_close_short'] as $k)
+         if (array_key_exists($k, $in)) set_setting($k, $in[$k] ? '1' : '0');
+     if (array_key_exists('walkin_next_text', $in)) set_setting('walkin_next_text', $in['walkin_next_text'] ? '1' : '0'); // (2.99.607 - LENH 604)
+diff -ruN int659/inc/calls-tx.php int660z/inc/calls-tx.php
+--- int659/inc/calls-tx.php	2026-11-06 00:39:35.609528265 -0600
++++ int660z/inc/calls-tx.php	2026-11-06 01:27:17.286761831 -0600
+@@ -38,11 +38,15 @@
+ /* (2.99.613 - CHAT 20:15) no voice set: the Telnyx voice list (GET /v2/text-to-speech/voices?provider=telnyx) -> "Maeve" (else the first en-US female), kept in tx_voice */
+ function tx_voice_pick(): string {
+     $v = tx_voice(); if ($v !== '') return $v;
+-    $l = tx_api('GET', '/text-to-speech/voices?provider=telnyx')['voices'] ?? []; $pick = null;
+-    foreach ($l as $x) if (is_array($x) && stripos((string)($x['name'] ?? ''), TX_VOICE_NAME) !== false && stripos((string)($x['voice_id'] ?? ''), 'ultra') !== false) { $pick = $x; break; }
++    /* (2.99.660 voice) the list under 'voices' (docs) or 'data'; the id in 'voice_id' (docs) or 'id' (older shape); language 'en-US' / 'en_US' / 'en' */
++    $r = tx_api('GET', '/text-to-speech/voices?provider=telnyx'); $l = $r['voices'] ?? ($r['data'] ?? []); $l = is_array($l) ? $l : []; $pick = null;
++    $vid = fn($x) => (string)($x['voice_id'] ?? ($x['id'] ?? ''));
++    foreach ($l as $x) if (is_array($x) && stripos((string)($x['name'] ?? ''), TX_VOICE_NAME) !== false && stripos($vid($x), 'ultra') !== false) { $pick = $x; break; }
+     if (!$pick) foreach ($l as $x) if (is_array($x) && stripos((string)($x['name'] ?? ''), TX_VOICE_NAME) !== false) { $pick = $x; break; }
+-    if (!$pick) foreach ($l as $x) if (is_array($x) && strtolower((string)($x['gender'] ?? '')) === 'female' && stripos((string)($x['language'] ?? ''), 'en-US') !== false) { $pick = $x; break; }
+-    $id = $pick ? (string)($pick['voice_id'] ?? '') : ''; if ($id === '') throw new RuntimeException('no Telnyx voice found - type one in Voice');
++    if (!$pick) foreach ($l as $x) if (is_array($x) && strtolower((string)($x['gender'] ?? '')) === 'female' && stripos(str_replace('_', '-', (string)($x['language'] ?? '')), 'en-US') !== false) { $pick = $x; break; }
++    if (!$pick) foreach ($l as $x) if (is_array($x) && strtolower((string)($x['gender'] ?? '')) === 'female' && stripos((string)($x['language'] ?? ''), 'en') === 0) { $pick = $x; break; } /* (2.99.660 voice) */
++    $id = $pick ? $vid($pick) : '';
++    if ($id === '') throw new RuntimeException('no Telnyx voice found - type one in Voice (' . count($l) . ' voices; reply keys: ' . mb_substr(implode(',', array_map('strval', array_keys($r))), 0, 80) . ')'); /* (2.99.660 voice) a short diagnostic, never a secret */
+     if (!str_contains($id, '.')) $id = 'Telnyx.Ultra.' . $id;
+     set_setting('tx_voice', $id); return $id;
+ }
+diff -ruN int659/inc/core.php int660z/inc/core.php
+--- int659/inc/core.php	2026-11-06 00:25:01.317967511 -0600
++++ int660z/inc/core.php	2026-11-06 00:36:58.570074360 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.659');
++define('APP_VERSION', '2.99.660');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN int659/inc/hq-cards.php int660z/inc/hq-cards.php
+--- int659/inc/hq-cards.php	1969-12-31 18:00:00.000000000 -0600
++++ int660z/inc/hq-cards.php	2026-11-06 00:36:54.248157383 -0600
+@@ -0,0 +1,65 @@
++<?php
++/* (2.99.660 card) AN HQ is the ONLY place where a salon's card processors are set up (owner decision 06/11): Payroc (Terminal ID, device serial number,
++   API key, host, "Card on Payroc") and Dejavoo P5 (TPN, Register ID, Auth Key, "Card on the P5"). Same code for every salon, American Nails too.
++   The API key / Register ID / Auth Key are ENCRYPTED with THAT salon's own key (hq_enc_for = the salon's own ad_enc), so its runtime pr_creds() / dv_creds()
++   decrypt them by themselves. A secret is never sent back (only "saved ✓"), never logged (the audit / HQ log name WHAT changed, never the value).
++   The checks are the same as the salon's old pr_set_creds() / dv_set_creds() (inc/payroc.php, inc/dejavoo.php): everything checked BEFORE anything is saved. */
++declare(strict_types=1);
++require_once __DIR__ . '/hq-keys.php'; /* (2.99.660) the ONE per-salon helper: hq_salon_key / hq_enc_for / hq_dec_for live only in inc/hq-keys.php */
++
++/** What HQ may show of a salon's card processors: the non-secret codes + whether each secret is saved (never a value, never a box). */
++function hq_cards_info(array $c, array $s): array {
++    $prKey = (string)($s['pr_key'] ?? '') !== ''; $prTid = trim((string)($s['pr_tid'] ?? '')); $prSn = trim((string)($s['pr_sn'] ?? ''));
++    $dvTpn = trim((string)($s['dv_tpn'] ?? '')); $dvReg = (string)($s['dv_reg'] ?? '') !== ''; $dvAuth = (string)($s['dv_auth'] ?? '') !== '';
++    return ['pr' => ['tid' => $prTid, 'sn' => $prSn, 'keySet' => $prKey, 'host' => (string)($s['pr_host'] ?? '') === 'std' ? 'std' : 'uat', 'on' => (string)($s['pr_on'] ?? '') === '1',
++                     'ready' => $prTid !== '' && $prKey, 'dev' => $prTid !== '' && $prKey && $prSn !== ''],
++            'dv' => ['tpn' => $dvTpn, 'regSet' => $dvReg, 'authSet' => $dvAuth, 'env' => (string)($s['dv_env'] ?? '') === 'live' ? 'live' : 'uat', 'on' => (string)($s['dv_on'] ?? '') === '1',
++                     'ready' => ($dvTpn !== '' || $dvReg) && $dvAuth]];
++}
++/** HQ → 💳 Card keys of salon $id. GET ($set null): hq_cards_info only. set { pr: {tid, sn, key, host, on, clear}, dv: {tpn, reg, auth, on, clear} }:
++    an empty / missing field keeps what is saved; clear = remove the codes (and turn it off). All checked first, then saved. */
++function hq_card_keys(string $id, ?array $set = null): array {
++    $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('No config for this salon.'); $p = hq_pdo($c); $s = hq_set($p, $c);
++    if ($set !== null) {
++        $pr = is_array($set['pr'] ?? null) ? $set['pr'] : null; $dv = is_array($set['dv'] ?? null) ? $set['dv'] : null; $w = []; $chg = [];
++        if ($pr !== null) {
++            if (!empty($pr['clear'])) { foreach (['pr_tid', 'pr_sn', 'pr_key', 'pr_tok'] as $k) $w[$k] = ''; $w['pr_on'] = '0'; $chg[] = 'Payroc codes removed (Card on Payroc off)'; }
++            else {
++                $tid = trim((string)($pr['tid'] ?? '')); $sn = trim((string)($pr['sn'] ?? '')); $key = trim((string)($pr['key'] ?? '')); $host = trim((string)($pr['host'] ?? ''));
++                if ($tid !== '' && !preg_match('/^[A-Za-z0-9]{4,50}$/', $tid)) throw new RuntimeException('Payroc Terminal ID: 4–50 letters / digits.');
++                if ($sn !== '' && !preg_match('/^[A-Za-z0-9_.\-]{1,64}$/', $sn)) throw new RuntimeException('Payroc device serial number: letters / digits only.');
++                if ($key !== '' && (strlen($key) < 16 || strlen($key) > 512 || preg_match('/\s/', $key))) throw new RuntimeException('Payroc API key: check it (no spaces).');
++                if ($host !== '' && $host !== 'uat' && $host !== 'std') throw new RuntimeException('Payroc host: uat or std.');
++                if ($tid !== '' && $tid !== trim((string)($s['pr_tid'] ?? ''))) { $w['pr_tid'] = $tid; $chg[] = 'Payroc Terminal ID'; }
++                if ($sn !== '' && $sn !== trim((string)($s['pr_sn'] ?? ''))) { $w['pr_sn'] = $sn; $chg[] = 'Payroc device'; }
++                if ($key !== '' && hq_dec_for($c, (string)($s['pr_key'] ?? '')) !== $key) { $w['pr_key'] = hq_enc_for($c, $key); $w['pr_tok'] = ''; $chg[] = 'Payroc API key'; }
++                if ($host !== '' && $host !== ((string)($s['pr_host'] ?? '') === 'std' ? 'std' : 'uat')) { $w['pr_host'] = $host; $w['pr_tok'] = ''; $chg[] = 'Payroc host ' . $host; }
++                if (array_key_exists('on', $pr)) { $on = !empty($pr['on']);
++                    $okDev = ($w['pr_tid'] ?? trim((string)($s['pr_tid'] ?? ''))) !== '' && ($w['pr_sn'] ?? trim((string)($s['pr_sn'] ?? ''))) !== '' && ($w['pr_key'] ?? (string)($s['pr_key'] ?? '')) !== '';
++                    if ($on && !$okDev) throw new RuntimeException('Payroc: type the Terminal ID, the device serial number and the API key first.');
++                    if ($on !== ((string)($s['pr_on'] ?? '') === '1')) { $w['pr_on'] = $on ? '1' : '0'; $chg[] = 'Card on Payroc ' . ($on ? 'on' : 'off'); } }
++            }
++        }
++        if ($dv !== null) {
++            if (!empty($dv['clear'])) { foreach (['dv_tpn', 'dv_reg', 'dv_auth'] as $k) $w[$k] = ''; $w['dv_on'] = '0'; $chg[] = 'Dejavoo codes removed (Card on the P5 off)'; }
++            else {
++                $tpn = (string)preg_replace('/\D+/', '', (string)($dv['tpn'] ?? '')); $reg = trim((string)($dv['reg'] ?? '')); $auth = trim((string)($dv['auth'] ?? ''));
++                if ($tpn !== '' && (strlen($tpn) < 10 || strlen($tpn) > 12)) throw new RuntimeException('Dejavoo TPN: 10–12 digits.');
++                if ($reg !== '' && (strlen($reg) < 2 || strlen($reg) > 50)) throw new RuntimeException('Dejavoo Register ID: 2–50 characters.');
++                if ($auth !== '' && strlen($auth) !== 10) throw new RuntimeException('Dejavoo Auth Key: exactly 10 characters.');
++                if ($tpn !== '' && $tpn !== trim((string)($s['dv_tpn'] ?? ''))) { $w['dv_tpn'] = $tpn; $chg[] = 'Dejavoo TPN'; }
++                if ($reg !== '' && hq_dec_for($c, (string)($s['dv_reg'] ?? '')) !== $reg) { $w['dv_reg'] = hq_enc_for($c, $reg); $chg[] = 'Dejavoo Register ID'; }
++                if ($auth !== '' && hq_dec_for($c, (string)($s['dv_auth'] ?? '')) !== $auth) { $w['dv_auth'] = hq_enc_for($c, $auth); $chg[] = 'Dejavoo Auth Key'; }
++                if (array_key_exists('on', $dv)) { $on = !empty($dv['on']);
++                    $okDv = (($w['dv_tpn'] ?? trim((string)($s['dv_tpn'] ?? ''))) !== '' || ($w['dv_reg'] ?? (string)($s['dv_reg'] ?? '')) !== '') && ($w['dv_auth'] ?? (string)($s['dv_auth'] ?? '')) !== '';
++                    if ($on && !$okDv) throw new RuntimeException('Dejavoo: type the TPN and the Auth Key first.');
++                    if ($on !== ((string)($s['dv_on'] ?? '') === '1')) { $w['dv_on'] = $on ? '1' : '0'; $chg[] = 'Card on the P5 ' . ($on ? 'on' : 'off'); } }
++            }
++        }
++        foreach ($w as $k => $v) hq_put($p, $c, $k, $v);
++        if ($chg) { $what = implode(', ', $chg); hq_salon_audit($p, 'Card keys (set by NailFlow)', '', $what); hq_change(function (&$d) use ($id, $what) { hq_log($d, $id, 'card keys', '', $what); }); }
++        $s = hq_set($p, $c);
++        return ['ok' => true, 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id), 'changed' => count($chg)] + hq_cards_info($c, $s);
++    }
++    return ['ok' => true, 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id)] + hq_cards_info($c, $s);
++}
+diff -ruN int659/inc/hq-keys.php int660z/inc/hq-keys.php
+--- int659/inc/hq-keys.php	1969-12-31 18:00:00.000000000 -0600
++++ int660z/inc/hq-keys.php	2026-11-06 01:27:17.282479105 -0600
+@@ -0,0 +1,115 @@
++<?php
++/* (2.99.660 keys) AN HQ is the ONLY place where a salon's secret keys / provider settings are set (owner decision 06/11): the SMS Server key (+ its salon id),
++   the Android SMS Gateway login (username / password / signing key) and PayPal (Client ID / Secret / Live or Sandbox). Same code for every salon, American Nails too.
++   Each secret is ENCRYPTED with THAT salon's own key – the same key its runtime ad_enc() / ad_dec() (inc/android.php ad_key) makes from its own config.php –
++   so the salon decrypts it by itself. A secret is never sent back to a page (only "saved ✓"), never logged (the audit / HQ log name WHAT changed, never the value).
++   The salon's Admin only sees a status line (Settings → Auto send, Settings → Deposits & PayPal). */
++declare(strict_types=1);
++
++/** The key of salon $c (its config.php array) = ad_key() run inside that salon. */
++function hq_salon_key(array $c): string { return hash('sha256', 'an-android|' . ($c['db_pass'] ?? '') . '|' . ($c['db_name'] ?? '') . '|' . ($c['db_user'] ?? '') . '|' . ($c['sqlite_path'] ?? ''), true); }
++/** Encrypt for salon $c (= ad_enc() of that salon: 's1:' sodium secretbox, or 'g1:' AES-256-GCM without sodium). */
++function hq_enc_for(array $c, string $plain): string {
++    if ($plain === '') return '';
++    $k = hq_salon_key($c);
++    if (function_exists('sodium_crypto_secretbox')) { $n = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES); return 's1:' . base64_encode($n . sodium_crypto_secretbox($plain, $n, $k)); }
++    $iv = random_bytes(12); $tag = ''; $ct = openssl_encrypt($plain, 'aes-256-gcm', $k, OPENSSL_RAW_DATA, $iv, $tag);
++    return 'g1:' . base64_encode($iv . $tag . $ct);
++}
++/** Decrypt a value of salon $c (= ad_dec() of that salon) – used here only to compare (a value typed again unchanged is not re-saved). */
++function hq_dec_for(array $c, string $box): string {
++    if ($box === '') return '';
++    $raw = base64_decode(substr($box, 3), true); if ($raw === false) return ''; $k = hq_salon_key($c);
++    if (str_starts_with($box, 's1:') && function_exists('sodium_crypto_secretbox_open')) { $p = @sodium_crypto_secretbox_open(substr($raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES), substr($raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES), $k); return $p === false ? '' : $p; }
++    if (str_starts_with($box, 'g1:')) { $p = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', $k, OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16)); return $p === false ? '' : $p; }
++    return '';
++}
++/** A PayPal secret as saved: encrypted ('s1:' / 'g1:') since 2.99.660, plain before. */
++function hq_pp_plain(array $c, string $v): string { return (str_starts_with($v, 's1:') || str_starts_with($v, 'g1:')) ? hq_dec_for($c, $v) : $v; }
++function hq_ws_fp(string $k): string { return $k === '' ? '' : strtoupper(substr(hash('sha256', 'nf-ws|' . $k), 0, 8)); } /* = ws_key_fp() of the salon */
++
++/** The texting keys of a salon for HQ: only whether each one is saved (never a value). */
++function hq_tx_keys_info(array $s): array {
++    return ['wsKey' => (string)($s['ws_key'] ?? '') !== '', 'wsId' => (string)($s['ws_salon_id'] ?? ''), 'wsOn' => (string)($s['ad_transport'] ?? '') === 'winsms',
++        'adUser' => (string)($s['ad_user'] ?? '') !== '', 'adPass' => (string)($s['ad_pass'] ?? '') !== '', 'adSign' => (string)($s['ad_sign'] ?? '') !== '', 'shared' => (string)($s['ad_share'] ?? '') !== ''];
++}
++/** HQ → 🔑 Keys → Texting: set { ws_id, ws_key, ws_clear, ad_user, ad_pass, ad_sign, ad_clear } of salon $id. An empty field keeps what is saved. All checked first, then saved. */
++function hq_tx_keys(string $id, array $set): array {
++    $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('No config for this salon.'); $p = hq_pdo($c); $s = hq_set($p, $c);
++    $wsId = strtolower(trim((string)($set['ws_id'] ?? ''))); $wsKey = trim((string)($set['ws_key'] ?? ''));
++    if ($wsId !== '' && !preg_match('/^[a-z0-9_-]{1,32}$/', $wsId)) throw new RuntimeException('SMS Server salon id: letters / numbers only (like "an").');
++    if ($wsKey !== '' && (strlen($wsKey) < 24 || strlen($wsKey) > 200 || preg_match('/\s/', $wsKey))) throw new RuntimeException('The SMS Server key looks wrong (24+ characters, no spaces).');
++    $ad = [];
++    foreach (['ad_user' => 'Android username', 'ad_pass' => 'Android password', 'ad_sign' => 'Android signing key'] as $k => $say) { $v = trim((string)($set[$k] ?? '')); if ($v === '') continue;
++        if (mb_strlen($v) > 200 || preg_match('/\s/', $v)) throw new RuntimeException($say . ': no spaces, up to 200 characters.'); $ad[$k] = [$v, $say]; }
++    if ($ad && (string)($s['ad_share'] ?? '') !== '') throw new RuntimeException('This salon uses another salon\'s Android – choose "Android riêng" in 📲 Tin nhắn first.');
++    $chg = []; $adChg = false;
++    if ($wsId !== '' && $wsId !== (string)($s['ws_salon_id'] ?? '')) { hq_put($p, $c, 'ws_salon_id', $wsId); $chg[] = 'SMS Server salon id ' . $wsId; }
++    if (!empty($set['ws_clear'])) { if ((string)($s['ws_key'] ?? '') !== '') { hq_put($p, $c, 'ws_key', ''); $chg[] = 'SMS Server key removed'; } }
++    elseif ($wsKey !== '' && hq_dec_for($c, (string)($s['ws_key'] ?? '')) !== $wsKey) { hq_put($p, $c, 'ws_key', hq_enc_for($c, $wsKey)); $chg[] = 'SMS Server key ' . hq_ws_fp($wsKey); }
++    if (!empty($set['ad_clear'])) { foreach (['ad_user', 'ad_pass', 'ad_sign', 'ad_tok', 'ad_check'] as $k) hq_put($p, $c, $k, ''); $chg[] = 'Android login removed'; $adChg = true; }
++    else foreach ($ad as $k => [$v, $say]) if (hq_dec_for($c, (string)($s[$k] ?? '')) !== $v) { hq_put($p, $c, $k, hq_enc_for($c, $v)); $chg[] = $say; $adChg = true; }
++    if ($adChg) foreach (['ad_tok', 'ad_basic_until', 'ad_hooks_n', 'ad_hooks_try'] as $k) hq_put($p, $c, $k, ''); /* the old login's tokens go; the salon's cron registers the webhooks again (ad_hooks_upgrade) */
++    if ($chg) { $what = implode(', ', $chg); hq_salon_audit($p, 'Texting keys (set by NailFlow)', '', $what); hq_change(function (&$d) use ($id, $what) { hq_log($d, $id, 'texting keys', '', $what); }); }
++    return ['ok' => true, 'changed' => count($chg), 'keys' => hq_tx_keys_info(hq_set($p, $c))];
++}
++
++/** HQ → 🔑 Keys → PayPal of salon $id. GET: only whether each key is saved (+ the last 4 of the Client ID). set { client_id, secret, mode, clear }: an empty field keeps what is saved.
++    The Client ID stays plain (the booking / gift pages give it to PayPal's buttons); the Secret is saved ENCRYPTED with that salon's key (inc/paypal.php pp_secret reads both). */
++function hq_paypal(string $id, ?array $set = null): array {
++    $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('No config for this salon.'); $p = hq_pdo($c); $s = hq_set($p, $c);
++    if ($set !== null) { $chg = [];
++        if (!empty($set['clear'])) { foreach (['paypal_client_id' => '', 'paypal_secret' => '', 'dep_on' => '0', 'gift_online' => '0'] as $k => $v) hq_put($p, $c, $k, $v); $chg[] = 'PayPal keys removed (group deposits + online gift cards off)'; }
++        else {
++            $cid = trim((string)($set['client_id'] ?? '')); $sec = trim((string)($set['secret'] ?? ''));
++            foreach ([$cid, $sec] as $v) if ($v !== '' && (strlen($v) > 128 || preg_match('/\s/', $v))) throw new RuntimeException('PayPal Client ID / Secret: no spaces, up to 128 characters.');
++            if (array_key_exists('mode', $set)) { $m = (string)$set['mode'] === 'sandbox' ? 'sandbox' : 'live'; if ($m !== ((string)($s['paypal_mode'] ?? '') === 'sandbox' ? 'sandbox' : 'live')) { hq_put($p, $c, 'paypal_mode', $m); $chg[] = 'PayPal mode ' . $m; } }
++            if ($cid !== '' && $cid !== trim((string)($s['paypal_client_id'] ?? ''))) { hq_put($p, $c, 'paypal_client_id', $cid); $chg[] = 'PayPal Client ID …' . substr($cid, -4); }
++            if ($sec !== '' && hq_pp_plain($c, (string)($s['paypal_secret'] ?? '')) !== $sec) { hq_put($p, $c, 'paypal_secret', hq_enc_for($c, $sec)); $chg[] = 'PayPal Secret'; }
++        }
++        if ($chg) { $what = implode(', ', $chg); hq_salon_audit($p, 'PayPal keys (set by NailFlow)', '', $what); hq_change(function (&$d) use ($id, $what) { hq_log($d, $id, 'PayPal keys', '', $what); }); }
++        $s = hq_set($p, $c); $n = count($chg); /* (2.99.660 push) the page says "Saved ✓" only when something changed */
++    }
++    $cid = trim((string)($s['paypal_client_id'] ?? '')); $sec = (string)($s['paypal_secret'] ?? '');
++    return ['ok' => true, 'changed' => $n ?? 0, /* (2.99.660 push) */ 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id), 'clientSet' => $cid !== '', 'clientEnd' => $cid !== '' ? substr($cid, -4) : '', 'secretSet' => trim($sec) !== '',
++        'ready' => $cid !== '' && trim($sec) !== '', 'mode' => (string)($s['paypal_mode'] ?? '') === 'sandbox' ? 'sandbox' : 'live', 'depOn' => (string)($s['dep_on'] ?? '') === '1', 'giftOnline' => (string)($s['gift_online'] ?? '') === '1'];
++}
++
++/* (2.99.660 push) HQ → 🔑 Keys → Firebase (push) of salon $id: the NailFlow app's Firebase service-account key, slot 1 (fcm_sa, the old project) and slot 2
++   (fcm_sa2, the new app's project an-salon-push). The salon no longer uploads it (inc/api/notify.php fcm_key + pushtech.php which=sa refuse) – set ONLY here.
++   Saved like the old salon code (inc/fcm.php fcm_set_key): only type / project_id / client_email / private_key / token_uri, ENCRYPTED with that salon's key
++   (its fcm_key() opens it with ad_dec), fcm_project<slot> = the project id, the cached access token fcm_tok<slot> cleared. A cleared slot falls back to the
++   HQ file (fcm_file_key) like before; the shared slot-2 file is NOT touched here (it serves every salon). GET / answer: saved yes/no + project id, never a key. */
++function hq_push_info(array $s): array {
++    $o = ['ok' => true];
++    foreach (['1' => '', '2' => '2'] as $n => $sl) $o['slot' . $n] = ['saved' => (string)($s['fcm_sa' . $sl] ?? '') !== '', 'project' => (string)($s['fcm_project' . $sl] ?? '')];
++    return $o;
++}
++/** set { slot1, slot2 } = the .json text (replace), { clear1, clear2 } = remove. All checked first, then saved. */
++function hq_push_keys(string $id, ?array $set = null): array {
++    $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('No config for this salon.'); $p = hq_pdo($c); $s = hq_set($p, $c);
++    if ($set !== null) { $put = [];
++        foreach (['1' => '', '2' => '2'] as $n => $slot) {
++            if (!empty($set['clear' . $n])) { $put[$slot] = null; continue; }
++            $t = trim((string)($set['slot' . $n] ?? '')); if ($t === '') continue;
++            if (strlen($t) > 20000) throw new RuntimeException('Firebase key (slot ' . $n . '): file too big.');
++            $j = json_decode($t, true);
++            if (!is_array($j) || ($j['type'] ?? '') !== 'service_account' || empty($j['client_email']) || empty($j['project_id']) || !is_string($j['private_key'] ?? null) || !@openssl_pkey_get_private($j['private_key']))
++                throw new RuntimeException('Slot ' . $n . ': this is not a Firebase service-account key (Firebase → Project settings → Service accounts → Generate new private key → the .json file).');
++            $put[$slot] = ['type' => 'service_account', 'project_id' => (string)$j['project_id'], 'client_email' => (string)$j['client_email'], 'private_key' => (string)$j['private_key'], 'token_uri' => (string)($j['token_uri'] ?? '')];
++        }
++        $chg = [];
++        foreach ($put as $slot => $keep) { $n = $slot === '2' ? '2' : '1';
++            if ($keep === null) { if ((string)($s['fcm_sa' . $slot] ?? '') === '') continue;
++                foreach (['fcm_sa', 'fcm_project', 'fcm_tok'] as $k) hq_put($p, $c, $k . $slot, ''); $chg[] = 'Firebase key slot ' . $n . ' removed'; continue; }
++            $js = (string)json_encode($keep);
++            if (hq_dec_for($c, (string)($s['fcm_sa' . $slot] ?? '')) === $js) continue;
++            hq_put($p, $c, 'fcm_sa' . $slot, hq_enc_for($c, $js)); hq_put($p, $c, 'fcm_project' . $slot, $keep['project_id']); hq_put($p, $c, 'fcm_tok' . $slot, '');
++            $chg[] = 'Firebase key slot ' . $n . ' · project ' . $keep['project_id'];
++        }
++        if ($chg) { $what = implode(', ', $chg); hq_salon_audit($p, 'Firebase push keys (set by NailFlow)', '', $what); hq_change(function (&$d) use ($id, $what) { hq_log($d, $id, 'Firebase push keys', '', $what); }); }
++        $s = hq_set($p, $c);
++        return ['changed' => count($chg)] + hq_push_info($s);
++    }
++    return hq_push_info($s);
++}
+diff -ruN int659/inc/hq.php int660z/inc/hq.php
+--- int659/inc/hq.php	2026-11-05 03:09:58.869029680 -0600
++++ int660z/inc/hq.php	2026-11-06 00:36:31.828744426 -0600
+@@ -524,6 +524,7 @@
+ }
+ /** 📲 Tin nhắn of a salon (543 22:36 kept by 567): what device, Auto send on/off, texts today – and the 3 choices. Never a login / key. */
+ function hq_texting(string $id, ?array $set = null): array {
++    require_once __DIR__ . '/hq-keys.php'; /* (2.99.660 keys) */
+     $sl = hq_salon($id); $c = hq_cfg($sl['root']); $p = hq_pdo($c); $s = hq_set($p, $c);
+     $mainId = ''; foreach (hq_salon_list() as $x) if (rtrim((string)$x['root'], '/') === rtrim(hq_root(), '/')) $mainId = (string)$x['id'];
+     if ($set !== null) {
+@@ -542,5 +543,5 @@
+     return ['ok' => true, 'mode' => $mode, 'on' => ($s['as_on'] ?? '') === '1', 'own' => $mode === 'own' ? (($s['ad_user'] ?? '') !== '' ? 'đã nối ✓' : 'chưa nối') : '',
+         'today' => $n("SELECT COUNT(*) FROM autosend WHERE state = 'sent' AND sent_at >= ?", [$today . ' 00:00:00']), 'week' => $n("SELECT COUNT(*) FROM autosend WHERE state = 'sent' AND sent_at >= ?", [date('Y-m-d', strtotime('-6 days')) . ' 00:00:00']),
+         'stuck' => $n("SELECT COUNT(*) FROM autosend WHERE state IN ('failed', 'back') AND created_at >= ?", [date('Y-m-d H:i:s', time() - 86400)]) + $n("SELECT COUNT(*) FROM outbox WHERE status = 'pending'", []),
+-        'isMain' => $id === $mainId];
++        'isMain' => $id === $mainId, 'keys' => hq_tx_keys_info($s) /* (2.99.660 keys) saved or not – never a value */];
+ }
+diff -ruN int659/inc/paypal.php int660z/inc/paypal.php
+--- int659/inc/paypal.php	2026-10-21 22:16:43.000000000 -0500
++++ int660z/inc/paypal.php	2026-11-06 00:36:31.829052194 -0600
+@@ -32,12 +32,19 @@
+     if ($raw === false) throw new RuntimeException('PayPal could not be reached: ' . $err);
+     return [$code, json_decode((string)$raw, true) ?: []];
+ }
++/** (2.99.660 keys) the PayPal Secret: saved ENCRYPTED by AN HQ ('s1:' / 'g1:', this salon's own key) – a secret saved before 2.99.660 is plain and still works. */
++function pp_secret(): string {
++    $v = trim(setting('paypal_secret'));
++    if (!str_starts_with($v, 's1:') && !str_starts_with($v, 'g1:')) return $v;
++    if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php';
++    return trim(ad_dec($v));
++}
+ function pp_token(): string {
+     static $tok = null;
+     if ($tok) return $tok;
+     if (!pay_keys()) throw new RuntimeException('Online payments are off (no payment account yet).'); // nothing is sent to PayPal
+     [$code, $j] = pp_http('POST', '/v1/oauth2/token', 'grant_type=client_credentials', [
+-        'Authorization: Basic ' . base64_encode(trim(setting('paypal_client_id')) . ':' . trim(setting('paypal_secret'))),
++        'Authorization: Basic ' . base64_encode(trim(setting('paypal_client_id')) . ':' . pp_secret()),
+         'Content-Type: application/x-www-form-urlencoded', 'Accept: application/json']);
+     if ($code !== 200 || empty($j['access_token'])) throw new RuntimeException('PayPal did not accept the Client ID / Secret (' . ($j['error_description'] ?? $j['error'] ?? 'HTTP ' . $code) . '). Check them and the Live / Sandbox choice.');
+     return $tok = (string)$j['access_token'];
