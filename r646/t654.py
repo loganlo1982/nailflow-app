@@ -347,6 +347,22 @@ open(D + '/h656.php', 'w').write("<?php require '%s/inc/core.php'; require_once 
 nt = sh('php', D + '/h656.php').stdout
 ok('17 TXL_AI_NOTE ("ONE booking, intent book") goes in the AI prompt (cl_ai) only for a call booked on the call (none for other calls)', nt.strip() == '[false,true,true]', nt)
 
+# ---------- 18. (2.99.657) real call #191 05/11 22:51: no service said for the caller -> the AI invented "Acrylic Gel", then gave the 2nd person's pedicure to both ----------
+SY, PY = 'v3:L18', '+15555550198'; Q18 = 'Sure, tomorrow at 9:30 is okay.'
+call_in(SY, PY); human(SY)
+setai(301, ai(customer_name='Tess', service_ids=[FS], service_text='Acrylic Gel Full set', time='09:30', salon_quote=Q18))
+n0 = nai(); piece(SY, '#S301 I want to get appointment tomorrow at 9:30', track='inbound', tname='TranscriptionTrack'); piece(SY, Q18, track='outbound', tname='TranscriptionTrack')
+ok('18 (#191) no service said, the AI says "Acrylic Gel Full set" anyway → read but NOT booked on the call (a service nobody said)', nai() >= n0 + 1 and not booked(PY), (nai() - n0, booked(PY)))
+setai(302, ai(customer_name='Tess', time='09:30', people=2, party=[{'name': 'Tess', 'service_ids': [], 'service_text': '', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote="Yes, that's fine."))
+piece(SY, '#S302 I want to add another person for a pedicure at the same time', track='inbound', tname='TranscriptionTrack'); piece(SY, "Yes, that's fine.", track='outbound', tname='TranscriptionTrack')
+ok('18 … the caller\'s own service still not said (party [ {} , pedicure ]) → not booked (services for each person not clear)', not booked(PY), booked(PY))
+setai(303, ai(customer_name='Tess', time='09:30', people=2, party=[{'name': 'Tess', 'service_ids': [GM], 'service_text': 'gel manicure', 'tech_id': 0, 'tech_text': ''}, {'name': '', 'service_ids': [PD], 'service_text': 'pedicure', 'tech_id': 0, 'tech_text': ''}], salon_quote='OK, gel manicure for you.'))
+piece(SY, '#S303 and for me a gel manicure', track='inbound', tname='TranscriptionTrack'); piece(SY, 'OK, gel manicure for you.', track='outbound', tname='TranscriptionTrack')
+b18 = booked(PY)
+ok('18 … once the caller says her own service (gel manicure) → booked on the call: 2 people, Gel Manicure + Pedicure', len(b18) == 2 and sorted(b['service_ids'] for b in b18) == sorted([str(GM), str(PD)]), b18)
+ok('18 the prompt rule "NEVER guess or copy a service" is in TXL_AI_NOTE', 'NEVER guess or copy a service' in open(A + '/inc/calls-live.php').read(), '')
+hangup(SY)
+
 # ---------- demo site ----------
 SD, PDm = 'v3:LDEMO', '+15555550187'
 open(CFG, 'w').write(CFG0.replace("return array(", "return array('demo'=>true, ", 1))
