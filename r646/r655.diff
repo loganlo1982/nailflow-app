@@ -1,0 +1,24 @@
+diff -ruN int654/inc/calls-live.php int655/inc/calls-live.php
+--- int654/inc/calls-live.php	2026-11-05 21:44:42.435736822 -0600
++++ int655/inc/calls-live.php	2026-11-05 22:09:28.985625760 -0600
+@@ -91,7 +91,7 @@
+     $lk = txl_lock($sid, false); if (!$lk) return; // a reading is running; the next words read again
+     try {
+         $c = q('SELECT * FROM calls WHERE call_sid = ?', [$sid])->fetch();
+-        if (!$c || (string)$c['kind'] !== 'call' || (string)$c['status'] !== 'ring' || !in_array((string)$c['screen'], ['human', 'person'], true) /* the iPhone answered by a person (AMD) / the screened owner (2.99.591) */ || is_demo_site()) return; // only while the owner is on the call
++        if (!$c || (string)$c['kind'] !== 'call' || (string)$c['status'] !== 'ring' || !in_array((string)$c['screen'], ['human', 'person', 'vm'], true) /* the iPhone answered: a person (AMD) / the screened owner (2.99.591) / (2.99.655 - real calls #187 #188 05/11: the owner answered but the AMD guessed 'vm' - the call stays with the owner; the AI part is kind 'agent' / screen 'vmai' and never reads here) */ || is_demo_site()) return; // only while the owner is on the call
+         $L = txl_lines($sid); $st = txl_state($sid);
+         if (count($L) <= (int)($st['n'] ?? 0) || (int)($st['reads'] ?? 0) >= TXL_MAX_N || time() - (int)($st['at'] ?? 0) < TXL_GAP) return;
+         [$tc, $ts] = txl_texts($L); $st['n'] = count($L); $st['at'] = time();
+diff -ruN int654/inc/core.php int655/inc/core.php
+--- int654/inc/core.php	2026-11-05 21:36:08.143526354 -0600
++++ int655/inc/core.php	2026-11-05 22:09:28.990675933 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.654');
++define('APP_VERSION', '2.99.655');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)

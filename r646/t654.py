@@ -222,12 +222,26 @@ ok('10c recording cannot be read (nothing heard) → the live booking stays, NO 
 ok('10c … the owner is asked to check it ("📞 Check booking", the call shows booked) – calls-live.php header: "cannot be read / no OK -> stays, NO text, 📞 Check booking"', r10c.get('status') == 'booked' and any(p['title'] == '📞 Check booking' for p in pp), (r10c.get('status'), r10c.get('reason'), pp))
 
 # ---------- 7. not answered by a person ----------
-for sid, ph, amd, lab in [('v3:L7A', '+15555550178', None, 'no AMD (screen empty)'), ('v3:L7B', '+15555550179', 'machine_start', "AMD machine (screen 'vm')")]:
+# (2.99.655 - requirement changed, documented: real calls #187/#188 05/11 - the owner ANSWERED but Telnyx AMD said machine (screen 'vm', amd-skip, the call stayed
+#  with the owner). 'vm' is now read live; only "not answered yet" (screen empty) and the AI part (kind 'agent' / screen 'vmai') never book live.)
+for sid, ph, amd, lab in [('v3:L7A', '+15555550178', None, 'no AMD (screen empty)')]:
     call_in(sid, ph)
     if amd: req('amd', {'CallSid': sid + 'L', 'AnsweredBy': amd, 'AccountSid': 'ACC1'}, xs(sid))
     setai(231, ai(customer_name='Rose', service_ids=[GM], time='18:00', salon_quote='Sure, tomorrow at 6 works.'))
     n0 = nai(); piece(sid, '#S231 Hi this is Rose, gel manicure tomorrow at 6'); piece(sid, 'Sure, tomorrow at 6 works.')
     ok('7 not a person on the iPhone – %s (screen=%r) → ?a=tr never books, no AI reading' % (lab, row(sid).get('screen')), not booked(ph) and nai() == n0 and (row(sid).get('screen') or '') in ('', 'vm'), (booked(ph), nai() - n0, row(sid).get('screen')))
+# (2.99.655) AMD guessed 'vm' while the owner answered (the call stays with the owner, kind 'call') -> read live and booked
+SV, PV = 'v3:L7B', '+15555550179'
+call_in(SV, PV); req('amd', {'CallSid': SV + 'L', 'AnsweredBy': 'machine_start', 'AccountSid': 'ACC1'}, xs(SV))
+setai(233, ai(customer_name='Ruth', service_ids=[GM], time='18:30', salon_agreed=True, salon_quote='Sure, tomorrow at 6:30 works.'))
+piece(SV, '#S233 Hi this is Ruth, gel manicure tomorrow at 6:30'); piece(SV, 'Sure, tomorrow at 6:30 works.')
+ok("7b AMD said machine but the owner talked (screen 'vm', kind 'call' – real calls #187/#188) → booked on the call", row(SV).get('screen') == 'vm' and len(booked(PV)) == 1, (row(SV).get('screen'), row(SV).get('kind'), booked(PV)))
+# the AI part (kind 'agent', screen 'vmai') never books live
+SA, PA2 = 'v3:L7D', '+15555550181'
+call_in(SA, PA2); sql("UPDATE calls SET kind = 'agent', screen = 'vmai' WHERE call_sid = '%s'" % SA)
+setai(234, ai(customer_name='Ava', service_ids=[GM], time='19:30', salon_agreed=True, salon_quote='You are booked for 7:30.'))
+n0 = nai(); piece(SA, '#S234 Hi this is Ava, gel manicure tomorrow at 7:30'); piece(SA, 'You are booked for 7:30.')
+ok('7c the AI part (kind agent / screen vmai) → ?a=tr never books, no AI reading (the AI assistant books itself)', not booked(PA2) and nai() == n0, (booked(PA2), nai() - n0))
 # screened 'person' (2.99.591) counts as the owner
 SP, PP = 'v3:L7C', '+15555550180'
 call_in(SP, PP); req('screened', {'SpeechResult': 'Hello, American Nails', 'AccountSid': 'ACC1'}, xs(SP))
