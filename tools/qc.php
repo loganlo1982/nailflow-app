@@ -6,6 +6,6 @@ $set = []; foreach ($p->query("SELECT k, v FROM settings WHERE k IN ('tx_live','
 $dir = null; foreach (["/home/uyurpyzubx0m/app/sites/$site/calls", "/home/uyurpyzubx0m/app/sites/$site/data/calls"] as $d) if (is_dir($d)) $dir = $d;
 foreach ($p->query("SELECT id, call_sid, kind, screen, status, started_at, dur_sec, appt_id, LEFT(result,120) res, LEFT(reason,100) why, created_at FROM calls ORDER BY id DESC LIMIT $n") as $r) {
   $sid = $r['call_sid']; unset($r['call_sid']); echo "== ", json_encode($r, JSON_UNESCAPED_UNICODE), "\n";
-  foreach (glob("/home/uyurpyzubx0m/app/sites/$site/*/txl-" . md5($sid) . ".*") ?: [] as $f) { echo "  ", basename($f), " ", filesize($f), " ", date('H:i:s', filemtime($f)), "\n"; if (str_ends_with($f, '.json')) echo "  ", substr((string)file_get_contents($f), 0, 600), "\n"; }
+  foreach (array_merge(glob("/home/uyurpyzubx0m/app/sites/$site/*/txl-" . md5($sid) . ".*") ?: [], glob("/home/uyurpyzubx0m/app/sites/$site/*/*/txl-" . md5($sid) . ".*") ?: []) as $f) { echo "  ", basename($f), " ", filesize($f), " ", date('H:i:s', filemtime($f)), "\n"; if (str_ends_with($f, '.json')) echo "  ", substr((string)file_get_contents($f), 0, 600), "\n"; }
   foreach ($p->query("SELECT action, LEFT(detail,150) d, created_at FROM appt_log WHERE created_at >= '" . $r['started_at'] . "' AND created_at <= DATE_ADD('" . $r['started_at'] . "', INTERVAL 4 MINUTE) ORDER BY id") as $l) echo "  log ", implode(' | ', $l), "\n";
 }
