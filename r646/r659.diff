@@ -1,0 +1,1234 @@
+diff -ruN int657/assets/admin/calls-tx.js int659/assets/admin/calls-tx.js
+--- int657/assets/admin/calls-tx.js	2026-11-01 22:45:20.000000000 -0600
++++ int659/assets/admin/calls-tx.js	2026-11-06 00:17:56.032521330 -0600
+@@ -1,6 +1,6 @@
+-/* (2.99.612 - LENH 612 · 2.99.613 setup step by step) Settings -> 📞 Calls: a "📞 Telnyx (test)" card at the END of the page (nothing above it moves), the owner only,
+-   only for the salon allowed the AI receptionist. API key (shown "saved …abcd"), Public Key, the Telnyx number, "Set up automatically",
+-   "Update AI", On / Off. Messages -> Calls: a small "TX" on Telnyx calls. assets/admin/calls.js is not changed. */
++/* (2.99.612 - LENH 612 · 2.99.613 setup step by step) Settings -> 📞 Calls: a "📞 Telnyx" card (2.99.659 SW: the salon phone, no longer a test) at the END of the page (nothing above it moves), the owner only,
++   only for the salon allowed the AI receptionist. (2.99.659 SW) read only: number, On / Off, "Set up by NailFlow (HQ)" - the set up itself is in HQ.
++   Messages -> Calls: a small "TX" on Telnyx calls. */
+ (function () {
+   'use strict';
+   const L = (en, vi) => (typeof T === 'function' ? T(en, vi) : en);
+@@ -20,35 +20,15 @@
+     const at = own.nextElementSibling && own.nextElementSibling.classList.contains('hint') ? own.nextElementSibling : own;
+     at.insertAdjacentHTML('afterend', `<p class="hint tx-own-hint" style="margin:4px 0 0">${E(L('Telnyx: “talk to someone” is connected ONLY to this phone, and only when it is not the iPhone above. Empty or the same number: the AI says “the salon will call you back” and you get a 📞 Call back.', 'Telnyx: “gặp người” CHỈ nối tới số này, và chỉ khi khác iPhone ở trên. Trống hoặc trùng số: AI nói “tiệm sẽ gọi lại” và anh nhận 📞 Call back.'))}</p>`);
+   }
+-  function draw(box, c, steps) {
+-    const sec = (id, set, label, tail) => `<div class="field"><label for="${id}">${E(label)}</label>${set ? `<p class="hint" style="margin:0 0 4px">${E(L('Saved', 'Đã lưu'))} ${tail ? '…' + E(tail) : '✓'} <button type="button" class="btn small" data-txrep="${id}">${E(L('Replace', 'Thay'))}</button></p><input class="inp" id="${id}" type="password" autocomplete="off" hidden>` : `<input class="inp" id="${id}" type="password" autocomplete="off">`}</div>`;
+-    box.innerHTML = `<h3 style="margin:0 0 8px">📞 Telnyx (${E(L('test', 'thử'))})</h3>
+-      <p class="hint" style="margin:0 0 8px">${E(L('A second phone company for the AI receptionist, only on the test number. The salon line (SignalWire) does not change.', 'Nhà mạng thứ 2 cho lễ tân AI, chỉ trên số thử. Số tiệm (SignalWire) không đổi.'))}</p>
+-      <label class="chkrow"><input type="checkbox" id="txOn"${c.on ? ' checked' : ''}> <span><b>${E(L('Telnyx number on', 'Bật số Telnyx'))}</b><small class="hint" style="display:block">${E(L('Off: callers hear “please call the salon”.', 'Tắt: khách nghe “please call the salon”.'))}</small></span></label>
+-      ${sec('txKey', c.keySet, L('Telnyx API key', 'API key Telnyx'), c.keyTail)}
+-      ${sec('txPub', c.pubSet, L('Public Key (webhook signing)', 'Public Key (ký webhook)'), '')}
+-      <div class="field"><label for="txNum">${E(L('Telnyx number', 'Số Telnyx'))}</label><input class="inp" id="txNum" type="tel" value="${E(c.number)}"></div>
+-      <details><summary>${E(L('Voice / model', 'Giọng / model'))}</summary>
+-        <div class="field"><label for="txVoice">${E(L('Voice', 'Giọng'))}</label><input class="inp" id="txVoice" value="${E(c.voice)}" autocapitalize="off"></div>
+-        <div class="field"><label for="txModel">${E(L('Model (empty = Telnyx default)', 'Model (trống = mặc định Telnyx)'))}</label><input class="inp" id="txModel" value="${E(c.model)}" autocapitalize="off"></div></details>
+-      <p class="hint">${E(L('Application', 'Ứng dụng'))}: ${E(c.appId || '–')} · AI: ${E(c.assistantId || '–')}${c.sodium ? '' : ' · ⚠️ ' + E(L('signature check not available on the server', 'máy chủ chưa kiểm được chữ ký'))}</p>
+-      ${steps ? `<div class="tx-steps">${steps.map(s => `<p style="margin:4px 0">${s.ok ? '✅' : '❌'} <b>${E(s.t)}</b> ${E(s.msg)}</p>`).join('')}</div>` : ''}
+-      <div class="navbtns"><button type="button" class="btn primary" id="txSave">${E(L('Save', 'Lưu'))}</button>
+-        <button type="button" class="btn" id="txSetup"${c.keySet ? '' : ' disabled'}>${E(L('Set up automatically', 'Cài đặt tự động'))}</button>
+-        <button type="button" class="btn" id="txAi"${c.keySet ? '' : ' disabled'}>${E(L('Update AI', 'Cập nhật AI'))}</button></div>`;
+-    box.querySelectorAll('[data-txrep]').forEach(x => x.addEventListener('click', () => { const i = box.querySelector('#' + x.dataset.txrep); i.hidden = false; i.focus(); x.closest('p').remove(); }));
+-    const v = (id) => (box.querySelector('#' + id) || {}).value || '';
+-    box.querySelector('#txSave').addEventListener('click', async (e) => { const btn = e.currentTarget; btn.disabled = true;
+-      try { const r = await api('tx_cfg', { on: box.querySelector('#txOn').checked, key: v('txKey'), pub: v('txPub'), number: v('txNum'), voice: v('txVoice'), model: v('txModel') });
+-        if (typeof toast === 'function') toast(L('Saved ✓', 'Đã lưu ✓')); draw(box, r.cfg); } catch (x) { if (typeof oops === 'function') oops(x); } finally { btn.disabled = false; } });
+-    /* (2.99.613) one step per request (each well under the page's 30 s), shown as it goes; stops at the first error */
+-    const run = async (btn, only) => { btn.disabled = true; btn.textContent = '…'; const done = []; let cfg = c;
+-      for (const step of only ? ['ai'] : ['key', 'ovp', 'app', 'num', 'ai']) {
+-        try { const r = await api('tx_setup', { step }); cfg = r.cfg; done.push(r.step); draw(box, cfg, done.concat([{ t: '…', ok: true, msg: '' }])); if (!r.ok) break; }
+-        catch (x) { done.push({ t: step, ok: false, msg: (x && x.message) || 'connection lost' }); break; } }
+-      draw(box, cfg, done); };
+-    box.querySelector('#txSetup').addEventListener('click', (e) => run(e.currentTarget, ''));
+-    box.querySelector('#txAi').addEventListener('click', (e) => run(e.currentTarget, 'ai'));
++  /* (2.99.659 SW - anh Logan 23:57) the phone set up (API key, Public Key, number, "Set up automatically", Update AI, On / Off, voice / model) is done ONLY in
++     NailFlow HQ: the salon page shows the status, read only (the server refuses tx_cfg POST / tx_setup from a salon admin too - inc/api/callstx.php). */
++  function draw(box, c) {
++    const done = !!(c.keySet && c.appId && c.assistantId && c.number);
++    box.innerHTML = `<h3 style="margin:0 0 8px">📞 Telnyx – ${E(L('salon phone', 'số điện thoại tiệm'))}</h3>
++      <p class="hint" style="margin:0 0 8px">${E(L('The salon\'s phone line: a call to this number rings the iPhone above first; nobody answers → the AI receptionist answers.', 'Số điện thoại của tiệm: gọi vào số này đổ chuông iPhone ở trên trước; không ai bắt máy → lễ tân AI trả lời.'))}</p>
++      <p style="margin:0 0 4px"><b>${E(L('Number', 'Số'))}:</b> ${E(c.number ? (typeof prettyPhone === 'function' ? prettyPhone(c.number) : c.number) : L('not set up yet', 'chưa có'))}</p>
++      <p style="margin:0 0 4px"><b>${E(L('Status', 'Trạng thái'))}:</b> ${c.on ? E(L('On ✓', 'Đang bật ✓')) : E(L('Off – callers hear “please call the salon”', 'Tắt – khách nghe “please call the salon”'))}</p>
++      <p class="hint" style="margin:0">${done ? E(L('Set up by NailFlow (HQ) ✓', 'NailFlow (HQ) đã cài ✓')) : E(L('Not set up yet – NailFlow (HQ) sets it up.', 'Chưa cài – NailFlow (HQ) sẽ cài.'))} ${E(L('Changes: contact NailFlow.', 'Muốn đổi: liên hệ NailFlow.'))}</p>`;
+   }
+   /* the Calls page: calls.js draws it (and draws it again after Save) - the card is put back each time */
+   function hook() {
+diff -ruN int657/assets/admin/calls.js int659/assets/admin/calls.js
+--- int657/assets/admin/calls.js	2026-11-05 01:22:15.020372787 -0600
++++ int659/assets/admin/calls.js	2026-11-05 23:56:16.662417088 -0600
+@@ -105,10 +105,10 @@
+   };
+   if (typeof lazyMod === 'function') { const prevLazy = lazyMod; lazyMod = function (m) { return prevLazy(m).then((r) => { if (m === 'settings') setAdd(); return r; }); }; }
+   setAdd();
+-  /* (2.99.598 – LỆNH 595) the salon's AI number from NailFlow: test call + how to forward the salon line (anh Logan / CHAT Q2: all calls *72 by default, *71 = only when nobody answers) */
+-  const hqBox = (c) => `<div class="cl-card cl-hq"><p style="margin:0 0 8px"><b>${esc(T('Your AI phone number', 'Số AI của tiệm'))}: ${esc(c.number || T('not set up yet', 'chưa có'))}</b><br><small class="hint">${esc(T('Set up by NailFlow ✓', 'NailFlow đã cài ✓'))}</small></p>
+-      ${c.number ? `<a class="btn big" href="tel:${esc(String(c.number).replace(/\D/g, ''))}">📞 ${esc(T('Test call', 'Gọi thử'))} ${esc(c.number)}</a><p class="hint" style="margin:6px 0 0">${esc(T('Call it from another phone: it rings the iPhone above; the call shows in Messages → Calls.', 'Gọi từ máy khác: đổ chuông iPhone ở trên; cuộc gọi hiện trong Messages → Calls.'))}</p>` : ''}
+-      ${c.number ? `<details class="cl-fwd" open><summary>${esc(T('Forward your salon line to it', 'Chuyển số tiệm sang số AI'))}</summary>
++  /* (2.99.659 SW: the Telnyx number) (2.99.598 – LỆNH 595) the salon's AI number from NailFlow: test call + how to forward the salon line (anh Logan / CHAT Q2: all calls *72 by default, *71 = only when nobody answers) */
++  const hqBox = (c) => `<div class="cl-card cl-hq"><p style="margin:0 0 8px"><b>${esc(T('Salon phone number (Telnyx)', 'Số điện thoại tiệm (Telnyx)'))}: ${esc(c.txNumber || T('not set up yet', 'chưa có'))}</b>${c.byHq ? `<br><small class="hint">${esc(T('Set up by NailFlow ✓', 'NailFlow đã cài ✓'))}</small>` : ''}</p>
++      ${c.txNumber ? `<a class="btn big" href="tel:${esc(String(c.txNumber).replace(/\D/g, ''))}">📞 ${esc(T('Test call', 'Gọi thử'))} ${esc(c.txNumber)}</a><p class="hint" style="margin:6px 0 0">${esc(T('Call it from another phone: it rings the iPhone above; the call shows in Messages → Calls.', 'Gọi từ máy khác: đổ chuông iPhone ở trên; cuộc gọi hiện trong Messages → Calls.'))}</p>` : ''}
++      ${c.txNumber ? `<details class="cl-fwd" open><summary>${esc(T('Forward your salon line to it', 'Chuyển số tiệm sang số Telnyx'))}</summary>
+         <div class="field"><label for="clCar">${esc(T('Phone company of the salon line', 'Nhà mạng của số tiệm'))}</label><select class="inp" id="clCar"><option value="vz">Verizon</option><option value="att">AT&amp;T</option><option value="tmo">T-Mobile</option><option value="other">${esc(T('Other / landline', 'Khác / số bàn'))}</option></select></div>
+         <div id="clCarTxt"></div><p class="tpl-warn">⚠️ ${esc(T('The iPhone to ring must be another number than the salon line you forward.', 'iPhone đổ chuông phải KHÁC số tiệm đang chuyển.'))}</p></details>` : ''}</div>`;
+   const fwdHow = (car, num) => { const n = String(num || '').replace(/\D/g, ''); const H = {
+@@ -134,22 +134,17 @@
+       ${chk('clBlk', c.block, T('Hang up on blocked numbers', 'Cúp máy số ẩn'), T('A blocked / private number hears: “Sorry, we can\'t take calls from a blocked or private number. Please call us again from your real phone number.” – no ring, no recording.', 'Số ẩn nghe: “Sorry, we can\'t take calls from a blocked or private number…” rồi cúp – không đổ chuông, không ghi âm.'))}
+       <div class="field"><label for="clOwn">${esc(T('Owner phone for questions', 'Số phone chủ (câu hỏi khác)'))}</label><input class="inp" id="clOwn" type="tel" inputmode="tel" value="${esc(c.owner || '')}" placeholder="${esc(c.fwd || '(515) 555-0123')}"><p class="hint" style="margin:4px 0 0">${esc(T('When nobody answers, the assistant books, moves and cancels by itself; any other question (prices, hours, Spanish…) is connected to this phone (empty: the iPhone above).', 'Không ai bắt máy: tổng đài tự đặt / dời / huỷ hẹn; câu hỏi khác (giá, giờ, tiếng Tây Ban Nha…) nối tới số này (trống: iPhone ở trên).'))}</p></div>
+       ${chk('clApr', c.approve, T('Owner approves phone bookings', 'Chủ duyệt hẹn từ cuộc gọi'), T('On: a booking from a call keeps its place and the customer gets the text, but shows ⏳ (amber) until you tap OK or Cancel on the call.', 'Bật: hẹn từ cuộc gọi vẫn giữ chỗ + khách nhận tin, nhưng hiện ⏳ (màu cam) tới khi anh bấm Duyệt / Huỷ trên cuộc gọi.') + (c.approveAuto ? ' ' + T('(On for the first 14 days of a new number.)', '(Tự bật 14 ngày đầu của số mới.)') : ''))}
+-      ${c.agentOk ? chk('clAgent', c.agent, T('Real-time AI receptionist (beta)', 'Lễ tân AI thời gian thực (beta)'), T('When nobody answers, a live AI talks with the caller (fast, natural) and books / moves / cancels with the same rules; questions go to the owner phone. The number must use the SWML address below on SignalWire. About $0.16 a minute.', 'Không ai bắt máy: AI nói chuyện trực tiếp với khách (nhanh, tự nhiên), tự đặt / dời / huỷ theo cùng luật; câu hỏi khác nối số chủ. Số trên SignalWire phải dùng địa chỉ SWML bên dưới. Khoảng $0.16/phút.')) + (c.agentUrl ? linkBox(T('SWML address for the number (SignalWire)', 'Địa chỉ SWML cho số (SignalWire)'), c.agentUrl) : '') : ''}
++      ${'' /* (2.99.659 SW) the SignalWire real-time AI checkbox + SWML address: gone (every number is on Telnyx; its AI is the Telnyx card below) */}
+       <p class="hint">${esc(T('Recordings and what was said are deleted after ' + c.keep + ' days. Appointments stay.', 'Ghi âm và nội dung tự xoá sau ' + c.keep + ' ngày. Lịch hẹn giữ nguyên.'))}</p>
+       ${!c.stt || !c.ai ? `<p class="tpl-warn">⚠️ ${esc(T('The AI keys are not set yet (NailFlow HQ) – calls are recorded, you listen to them.', 'Chưa có khoá AI (NailFlow HQ) – cuộc gọi vẫn ghi âm, anh tự nghe.'))}</p>` : ''}
+-      ${c.byHq ? hqBox(c) /* (2.99.598 – LỆNH 595) number set up by NailFlow (HQ): no SignalWire setup here */ : `<details class="cl-setup"${c.space && c.project && c.tokenSet && c.signSet ? '' : ' open'}><summary>${esc(T('Setup (SignalWire, one time)', 'Cài đặt SignalWire (1 lần)'))}</summary>
+-        <div class="field"><label for="clSpace">Space</label><input class="inp" id="clSpace" value="${esc(c.space)}" placeholder="nailflowapp" autocapitalize="off"></div>
+-        <div class="field"><label for="clProj">Project ID</label><input class="inp" id="clProj" value="${esc(c.project)}" autocapitalize="off"></div>
+-        ${sec('clTok', c.tokenSet, 'API token')}${sec('clSign', c.signSet, 'Signing Key')}
+-        <div class="field"><label for="clNum">${esc(T('SignalWire number', 'Số SignalWire'))}</label><input class="inp" id="clNum" type="tel" value="${esc(c.number)}" placeholder="(515) 606-1616"></div>
+-        ${linkBox(T('“A call comes in” webhook (POST)', 'Webhook “A call comes in” (POST)'), c.hook)}</details>`}
++      ${c.txNumber ? hqBox(c) : ''}${'' /* (2.99.659 SW) no SignalWire setup box any more: the salon's Telnyx number (test call + how to forward the salon line to it); set up in the Telnyx card */}
+       <div class="navbtns"><button type="button" class="btn primary" id="clSave">${esc(T('Save', 'Lưu'))}</button></div></div>`;
+     $$('[data-rep]', b).forEach(x => x.addEventListener('click', () => { const i = $('#' + x.dataset.rep, b); i.hidden = false; i.focus(); x.closest('p').remove(); }));
+-    const car = $('#clCar', b); if (car) { const draw = () => { $('#clCarTxt', b).innerHTML = fwdHow(car.value, c.number); }; car.addEventListener('change', draw); draw(); }
++    const car = $('#clCar', b); if (car) { const draw = () => { $('#clCarTxt', b).innerHTML = fwdHow(car.value, c.txNumber); }; car.addEventListener('change', draw); draw(); }
+     $$('[data-copy]', b).forEach(x => x.addEventListener('click', async () => { try { await navigator.clipboard.writeText(x.dataset.copy); toast('Copied'); } catch (e) {} }));
+     $('#clSave', b).addEventListener('click', async (e) => { const btn = e.currentTarget; btn.disabled = true;
+       try { const v = (id) => ($('#' + id, b) || {}).value || '';
+-        const res = await api('calls_cfg', { on: $('#clOn', b).checked, rec: $('#clRec', b).checked, vm: $('#clVm', b).checked, screen: $('#clScr', b).checked, ring: +v('clRing') || 20, tb: $('#clTb', b).checked, tbText: v('clTbText'), fwd: v('clFwd'), space: v('clSpace'), project: v('clProj'), token: v('clTok'), signing: v('clSign'), number: v('clNum'), block: $('#clBlk', b).checked, owner: v('clOwn'), approve: $('#clApr', b).checked, ...($('#clAgent', b) ? { agent: $('#clAgent', b).checked } : {}) });
++        const res = await api('calls_cfg', { on: $('#clOn', b).checked, rec: $('#clRec', b).checked, vm: $('#clVm', b).checked, screen: $('#clScr', b).checked, ring: +v('clRing') || 20, tb: $('#clTb', b).checked, tbText: v('clTbText'), fwd: v('clFwd'), block: $('#clBlk', b).checked, owner: v('clOwn'), approve: $('#clApr', b).checked, ...($('#clAgent', b) ? { agent: $('#clAgent', b).checked } : {}) }); /* (2.99.659 SW) no SignalWire space / project / token / signing / number sent */
+         S.callsOn = !!res.cfg.on; toast(T('Saved ✓', 'Đã lưu ✓')); setPage(b);
+       } catch (x) { oops(x); } finally { btn.disabled = false; } });
+   }
+diff -ruN int657/assets/hq-calls.js int659/assets/hq-calls.js
+--- int657/assets/hq-calls.js	2026-10-31 22:10:06.000000000 -0500
++++ int659/assets/hq-calls.js	2026-11-06 00:24:55.710733348 -0600
+@@ -1,57 +1,34 @@
+-/* (2.99.598 – LỆNH 595, anh Logan 20:12 / 20:40) AN HQ → 📞 Calls.
+-   Top bar "📞 Calls": the ONE SignalWire account (Space, Project ID, API token, Signing Key – the token / key are never shown again) + the costs of the month.
+-   A salon card "📞 Calls": the checks (code, call_in.php, routes, cron, https) → "Get a phone number" (area code → the nicest numbers first) → Buy $0.50/mo
+-   (type the last 4 digits; the Authenticator when asked) → the webhook is set by HQ; the iPhone to ring + Call assistant on; "Release number" (asked twice + the short name).
+-   A salon with its own SignalWire account (American Nails) and the demo: shown only. */
++/* (2.99.659 – anh Logan 05/11: every number on TELNYX, SignalWire dropped) AN HQ → 📞 Calls.
++   Top bar "📞 Calls": every salon – its Telnyx number, on / off, calls this month.
++   A salon card "📞 Calls": the Telnyx state read from the salon (number, on, the iPhone that rings, app, AI assistant, live booking, "API key: set / not set" – never a key)
++   + what HQ may change (the iPhone that rings, Telnyx on / off, live booking on / off) + the forwarding steps with the Telnyx number.
++   (anh Logan 23:57 "chi co HQ moi duoc lam") the Telnyx SET UP is ONLY here: the ONE Telnyx account (top bar: API key + Public Key, never shown again) and per salon
++   its Telnyx number + "Set up automatically" (the salon's own steps, one per request). 2.99.659 requirement changed: SignalWire dropped (Logan 05/11). */
+ 'use strict';
+ window.HqCalls = (function () {
+   const H = () => window.HQ;
+   const e = (s) => H().esc(s);
+-  const usd = (n) => '$' + (Number(n) || 0).toFixed(2); const rate = (n) => '$' + String(Number(n) || 0);
+-  /* ---------- top bar: the account + costs ---------- */
++  const usd = (n) => '$' + (Number(n) || 0).toFixed(2);
++  const NOT_SET = 'Telnyx not set up – type its Telnyx number below, then tap Set up automatically';
++  const yes = (b, t) => b ? (t || 'set') + ' ✓' : '<span class="hq-tag warn">not set</span>';
++  /* ---------- top bar: every salon ---------- */
+   async function top() {
+     const { api, openSheet, toast, busy, $ } = H();
+-    let sw = {}; try { sw = await api('calls_sw'); } catch (x) { return toast(x.message, true); }
+-    const draw = () => {
+-      const S = sw.status || {};
+-      openSheet(`<h2>📞 Calls</h2>
+-        <p class="hq-status" style="font-size:17px;margin:6px 0 12px"><b>SignalWire: ${e(S.space || '–')} ${S.swOk ? '✓' : '✗'}</b> · <b>OpenAI ${S.openai ? '✓' : '✗'}</b> · Balance ${S.balance != null ? '<b>' + usd(S.balance) + '</b>' : '<span class="hq-muted">– (SignalWire shows it only to a Personal Access Token; Auto Top Up is on)</span>'}</p>
+-        <details class="hq-swedit"${S.swOk ? '' : ' open'}><summary>Change the SignalWire account</summary>
+-        <h3 style="margin:10px 0 6px">SignalWire – one account for every salon</h3>
+-        <p class="hq-muted" style="margin:0 0 6px">Used by every salon that has no SignalWire account of its own (American Nails keeps its own). Kept on the server only – the token and the key are never shown again.</p>
+-        <label class="hq-lbl" for="swSpace">Space</label><input class="hq-in" id="swSpace" value="${e(sw.space)}" placeholder="nailflowapp" autocapitalize="off">
+-        <label class="hq-lbl" for="swProj">Project ID</label><input class="hq-in" id="swProj" value="${e(sw.project)}" autocapitalize="off">
+-        <label class="hq-lbl" for="swTok">API token ${sw.tokenSet ? '<small>· saved ✓ (type to replace)</small>' : ''}</label><input class="hq-in" id="swTok" type="password" autocomplete="off">
+-        <label class="hq-lbl" for="swSig">Signing Key ${sw.signSet ? '<small>· saved ✓ (type to replace)</small>' : ''}</label><input class="hq-in" id="swSig" type="password" autocomplete="off">
+-        ${sw.at ? `<p class="hq-muted small">Saved ${e(sw.at)}</p>` : ''}
+-        <div class="hq-acts"><button class="hq-btn good" id="swSave">Save</button></div></details>
+-        <h3 style="margin:16px 0 6px">Costs this month</h3><div id="clCost" class="hq-muted">…</div>
+-        <div class="hq-acts"><button class="hq-btn sm ghost" id="clCostRe">Refresh real prices</button><button class="hq-btn ghost" type="button" data-close>Close</button></div>`);
+-      $('#swSave').onclick = async (ev) => { busy(ev.target, true);
+-        try { sw = await api('calls_sw', { space: $('#swSpace').value, project: $('#swProj').value, token: $('#swTok').value, signing: $('#swSig').value }); toast('Saved ✓'); draw(); }
+-        catch (x) { toast(x.message, true); busy(ev.target, false); } };
+-      $('#clCostRe').onclick = () => costs(true);
+-      costs(false);
+-    };
+-    draw();
+-  }
+-  let MONTH = ''; // (2.99.603 – LỆNH 603) the month shown (this month by default)
+-  async function costs(refresh) {
+-    const { api, $, toast } = H(); const el = $('#clCost'); if (!el) return;
+-    let r; try { r = refresh ? await api('calls_costs', { refresh: 1, month: MONTH }) : await api('calls_costs' + (MONTH ? '&month=' + encodeURIComponent(MONTH) : '')); } catch (x) { el.textContent = x.message; return; }
+-    const sel = `<div class="hq-acts"><label class="hq-lbl" for="clMonth" style="margin:0">Month</label><select class="hq-in" id="clMonth" style="max-width:170px">${(r.months || []).map(m => `<option value="${e(m)}"${m === r.month ? ' selected' : ''}>${e(m)}</option>`).join('')}</select></div>`;
+-    if (!r.rows.length) { el.innerHTML = sel + '<p class="hq-muted">No salon has a number in ' + e(r.month) + '.</p>'; } else {
+-    const cell = (v, b) => `<td align="right">${b ? '<b>' + v + '</b>' : v}</td>`;
+-    el.innerHTML = sel + `<div style="overflow-x:auto"><table class="hq-tbl" style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr><th align="left">Salon</th><th>Plan</th><th>Min in</th><th>Over</th><th align="right">BILL</th><th align="right">Cost</th><th align="right">Profit</th><th></th></tr></thead><tbody>
+-      ${r.rows.map((x, i) => { const b = x.bill || {}; const z = x.real || x.est; return `<tr><td>${e(x.name)}<br><small class="hq-muted">${e(x.number)}${x.own ? ' · own account' : ''}${b.days < b.dim ? ' · ' + b.days + '/' + b.dim + ' days' : ''}</small></td>
+-        <td align="center">${e(b.planName)}</td><td align="center">${Number(b.minutes || 0).toLocaleString('en-US')}</td><td align="center">${b.over ? Number(b.over).toLocaleString('en-US') : '–'}</td>
+-        ${cell(usd(b.total), 1)}${cell(usd(b.cost) + '<br><small class="hq-muted">' + (x.real ? 'real' : 'estimate') + '</small>')}${cell((b.profit < 0 ? '<span class="hq-warnc">' : '') + usd(b.profit) + (b.profit < 0 ? '</span>' : ''))}
+-        <td><button class="hq-btn sm ghost" data-bill="${i}">Copy bill</button></td></tr>`; }).join('')}
+-      </tbody><tfoot><tr><td colspan="4"><b>${e(r.month)}</b></td>${cell(usd(r.total.bill), 1)}${cell(usd(r.total.cost), 1)}${cell(usd(r.total.profit), 1)}<td></td></tr></tfoot></table></div>
+-      <p class="hq-muted small">BILL = plan ($49 Calls / $39 NailFlow + Calls / Free) for the days with the number + $0.05/min over 1,000 minutes in. Cost = SignalWire's own prices (calls + iPhone leg + recordings${r.realAt ? ', read ' + e(r.realAt) : ''}) + number $0.50 + speech-to-text and AI (estimate); no real prices yet → the estimate (this salon's calls × ${rate(r.price.in)}/min in, ${rate(r.price.out)}/min iPhone, ${rate(r.price.rec)}/min recording, ${rate(r.price.stt)}/min speech-to-text, ${rate(r.price.ai)}/call AI). Not charged automatically yet.${r.realErr ? ' · real prices not read: ' + e(r.realErr) : ''}</p>`;
+-    el.querySelectorAll('[data-bill]').forEach(b => { b.onclick = async () => { const t = r.rows[+b.dataset.bill].bill.text; try { await navigator.clipboard.writeText(t); toast('Copied ✓'); } catch (x) { window.prompt('Copy the bill:', t); } }; }); }
+-    const ms = $('#clMonth'); if (ms) ms.onchange = () => { MONTH = ms.value; costs(false); };
+-    if (refresh) toast('Updated ✓');
++    let r, A; try { [r, A] = await Promise.all([api('calls_list'), api('calls_tx')]); } catch (x) { return toast(x.message, true); }
++    const rows = (r.rows || []).map(x => x.error ? `<tr><td>${e(x.name)}</td><td colspan="3" class="hq-err">${e(x.error)}</td></tr>`
++      : `<tr><td>${e(x.name)}</td><td>${x.demo ? '<span class="hq-muted">demo</span>' : x.setUp || x.number ? '<b>' + e(x.number || '–') + '</b>' : '<span class="hq-muted">not set up</span>'}</td><td align="center">${x.on ? 'on ✓' : 'off'}</td><td align="center">${Number(x.calls || 0)}</td></tr>`).join('');
++    openSheet(`<h2>📞 Calls – Telnyx</h2>
++      <p class="hq-status" id="txAcct" style="font-size:17px;margin:6px 0 12px"><b>Telnyx account: API key ${A.keySet ? '✓' : '✗'} · Public Key ${A.pubSet ? '✓' : '✗'}</b>${A.at ? ' <small class="hq-muted">saved ' + e(A.at) + '</small>' : ''}</p>
++      <details class="hq-swedit"${A.keySet ? '' : ' open'}><summary>Change the Telnyx account</summary>
++        <p class="hq-muted" style="margin:6px 0">ONE Telnyx account for every salon (American Nails too). Kept on the server only – the key is never shown again.</p>
++        <label class="hq-lbl" for="txKey">API key ${A.keySet ? '<small>· saved ✓ (type to replace)</small>' : ''}</label><input class="hq-in" id="txKey" type="password" autocomplete="new-password" value="">
++        <label class="hq-lbl" for="txPub">Public Key ${A.pubSet ? '<small>· saved ✓ (type to replace)</small>' : ''}</label><input class="hq-in" id="txPub" type="password" autocomplete="new-password" value="">
++        <div class="hq-acts"><button class="hq-btn good" id="txSave">Save</button></div></details>
++      <div style="overflow-x:auto"><table class="hq-tbl" style="width:100%;border-collapse:collapse;font-size:14px"><thead><tr><th align="left">Salon</th><th align="left">Telnyx number</th><th>On</th><th>Calls this month</th></tr></thead><tbody>${rows}</tbody></table></div>
++      <p class="hq-muted small">Open a salon's 📞 Calls for its Telnyx number, Set up automatically, the iPhone that rings, on / off and live booking.</p>
++      <div class="hq-acts"><button class="hq-btn ghost" type="button" data-close>Close</button></div>`);
++    $('#txSave').onclick = async (ev) => { busy(ev.target, true);
++      try { await api('calls_tx', { key: $('#txKey').value, pub: $('#txPub').value }); toast('Saved ✓'); top(); } catch (x) { toast(x.message, true); busy(ev.target, false); } };
+   }
+   /* ---------- one salon ---------- */
+   async function open(s) {
+@@ -59,57 +36,44 @@
+     let c; try { c = await api('calls_card&id=' + encodeURIComponent(s.id)); } catch (x) { return toast(x.message, true); }
+     sheet(s, c);
+   }
+-  function sheet(s, c, found) {
++  function sheet(s, c) {
+     const { api, openSheet, toast, busy, $ } = H();
+-    const bad = c.checks.filter(x => !x.ok);
+-    const head = `<h2>📞 Calls – ${e(c.name || s.id)}</h2>
+-      <dl class="hq-dl"><dt>AI number</dt><dd>${c.number ? '<b>' + e(c.number) + '</b>' + (c.byHq ? ' · bought in HQ' : '') + (c.number && !c.own ? (c.hookOk ? ' · webhook ✓' : ' · <span class="hq-tag warn">webhook not set</span>') : '') : 'none yet'}</dd>
+-        <dt>Rings</dt><dd>${c.fwd ? e(c.fwd) : '<span class="hq-tag warn">no iPhone yet</span>'}</dd><dt>Call assistant</dt><dd>${c.on ? 'on ✓' : 'off'}</dd><dt>Calls this month</dt><dd>${c.calls}</dd></dl>`;
+-    if (c.demo || c.own) { openSheet(head + `<p class="hq-muted">${c.demo ? 'The demo salon never gets a number.' : 'This salon has its own SignalWire account – it is changed in its own Settings → Calls, not here.'}</p><button class="hq-btn" type="button" data-close>Close</button>`); return; }
+-    const checks = `<details class="hq-ready"${bad.length ? ' open' : ''}><summary><b>Ready for calls?</b> ${bad.length ? '✗ ' + bad.length + ' not ready' : '✓ all 5'}</summary><ul class="hq-checks" style="margin:0 0 8px;padding-left:18px">${c.checks.map(x => `<li>${x.ok ? '✓' : '✗'} ${e(x.t)}</li>`).join('')}</ul>
+-      ${bad.length ? '<p class="hq-err">Not ready – ask Claude (LAMWEB) to set this salon up first.</p>' : ''}</details>`;
+-    const setup = `<h3 style="margin:12px 0 6px">The salon iPhone that rings</h3><div class="hq-acts"><input class="hq-in" id="clFwd" type="tel" inputmode="tel" value="${e(c.fwd || c.ownerCell)}" placeholder="(515) 555-0123" aria-label="iPhone to ring"><button class="hq-btn sm" id="clFwdSave">Save</button></div>${!c.fwd && c.ownerCell ? '<p class="hq-muted small" style="margin:2px 0 0">The owner\'s cell (from HQ) rings after Buy – change it here if needed.</p>' : ''}
+-      <label class="hq-chk"><input type="checkbox" id="clOn" ${c.on ? 'checked' : ''} ${c.number && c.fwd ? '' : 'disabled'}> <span><b>Call assistant on</b></span></label><p class="hq-muted small" style="margin:2px 0 0">The number answers, rings the iPhone, the AI books.</p>`;
+-    const plan = c.plans ? `<div class="hq-acts" style="margin:8px 0"><label class="hq-lbl" for="clPlan" style="margin:0"><b>Plan</b></label><select class="hq-in" id="clPlan" style="max-width:240px">${Object.entries(c.plans).map(([k, p]) => `<option value="${e(k)}"${k === c.plan ? ' selected' : ''}>${e(p.name)}${p.usd ? ' / month · 1,000 min' : ''}</option>`).join('')}</select></div>` : ''; // (2.99.603)
+-    let body = '';
+-    if (c.pending) body = `<p class="hq-err">A purchase of ${e(c.pending)} did not finish.</p><div class="hq-acts"><button class="hq-btn" id="clRe">Check the purchase</button></div>`;
+-    else if (!c.number) body = `<h3 style="margin:12px 0 6px">Get a phone number</h3>${c.shared ? '' : '<p class="hq-err">Save the SignalWire account first (top bar → 📞 Calls).</p>'}
+-      <div class="hq-acts"><input class="hq-in" id="clArea" inputmode="numeric" maxlength="3" value="${e(c.area)}" placeholder="Area code" aria-label="Area code" style="max-width:110px"><input class="hq-in" id="clHas" inputmode="numeric" maxlength="7" placeholder="Contains (optional)" aria-label="Contains" style="max-width:170px"><button class="hq-btn" id="clFind" ${bad.length || !c.shared ? 'disabled' : ''}>Search</button></div><div id="clList"></div>`;
+-    else body = `<div class="hq-fwd" style="margin:10px 0;padding:10px;border:1px solid #334155;border-radius:10px"><b>Forward the salon line:</b> from the salon phone dial <b>*72${e(c.number.replace(/\D/g, ''))}</b> (Verizon) · <b>*21*${e(c.number.replace(/\D/g, ''))}#</b> (AT&amp;T) · <b>**21*1${e(c.number.replace(/\D/g, ''))}#</b> (T-Mobile)
+-        <div class="hq-acts" style="margin-top:8px"><button class="hq-btn sm" id="clGuide" ${c.ownerCell ? '' : 'disabled'}>Text these steps to the owner ${c.ownerCell ? '(…' + e(c.ownerCell.slice(-4)) + ')' : '(no owner cell)'}</button>${c.guideAt ? `<small class="hq-muted">sent ${e(c.guideAt)}</small>` : ''}</div></div>
+-      ${c.byHq && !c.hookOk ? '<div class="hq-acts"><button class="hq-btn" id="clHook">Set the webhook again</button></div>' : ''}
+-      <p class="hq-muted small">Webhook: ${e(c.hook)} (POST)</p>${c.byHq ? '<div class="hq-acts"><button class="hq-btn sm danger" id="clRel">Release number…</button></div>' : ''}`;
+-    openSheet(head + plan + (c.number ? checks + setup + body : body + setup + checks) /* (595-C) no number yet: the number first */ + '<div class="hq-acts"><button class="hq-btn ghost" type="button" data-close>Close</button></div>');
++    const t = c.tx || {}; const A = c.ai;
++    const ai = A ? `<p class="hq-muted small" style="margin:6px 0">🤖 AI call: ${A.on ? 'allowed ✓' : 'off'} · plan ${A.free ? 'Free' : e(A.incl) + ' min · ' + usd(A.usd) + '/mo'} · this month ${Number(A.min || 0)} min (${Number(A.calls || 0)} calls) = <b>${usd(A.total)}</b> – change it in 🤖 AI call.</p>` : '';
++    const head = `<h2>📞 Calls – ${e(c.name || s.id)}</h2>`;
++    if (c.demo) { openSheet(head + '<p class="hq-muted">The demo salon has no phone number.</p><button class="hq-btn" type="button" data-close>Close</button>'); return; }
++    const d = t.numberDigits || '';
++    const info = `<dl class="hq-dl"><dt>Telnyx number</dt><dd>${t.number ? '<b>' + e(t.number) + '</b>' : '<span class="hq-tag warn">none yet</span>'}</dd>
++      <dt>Telnyx</dt><dd>${t.on ? 'on ✓' : 'off'}</dd>
++      <dt>Rings first</dt><dd>${t.fwd ? e(t.fwd) : '<span class="hq-tag warn">no iPhone – the AI answers at once</span>'}</dd>
++      <dt>API key</dt><dd>${t.keyShared ? 'HQ account ✓' : t.keyOwn ? 'own (old) key ✓' : yes(false)}</dd><dt>Application</dt><dd>${yes(t.appSet)}</dd><dt>AI assistant</dt><dd>${yes(t.aiSet)}</dd>
++      <dt>Live booking</dt><dd>${t.live ? 'on ✓' : 'off'}</dd><dt>Calls this month</dt><dd>${Number(t.calls || 0)}</dd></dl>
++      ${t.code ? '' : '<p class="hq-err">This salon\'s code has no call_tx.php – update its code first.</p>'}
++      ${!t.setUp && !t.number ? `<p class="hq-err" id="clNotSet">${e(NOT_SET)}</p>` : t.keySet && t.appSet && t.aiSet && t.number ? '' : `<p class="hq-muted small">Not finished – tap Set up automatically.</p>`}`;
++    const tx = `<h3 style="margin:12px 0 6px">Telnyx number</h3><div class="hq-acts"><input class="hq-in" id="clNum" type="tel" inputmode="tel" value="${e(t.number)}" placeholder="(515) 555-0123" aria-label="Telnyx number"><button class="hq-btn sm" id="clNumSave">Save</button></div>
++      <div class="hq-acts"><button class="hq-btn" id="clAuto" ${t.number && t.keySet && t.hqSetup ? '' : 'disabled'}>Set up automatically</button>${t.keySet ? '' : '<small class="hq-muted">Save the Telnyx account first (top bar → 📞 Calls).</small>'}${t.hqSetup ? '' : '<small class="hq-err">Update this salon\'s code first.</small>'}</div><button class="hq-btn sm ghost" id="clAi" ${t.appSet && t.aiSet && t.keySet && t.hqSetup ? '' : 'disabled'}>Update AI</button>
++      <details style="margin:4px 0"><summary class="small">AI voice / model</summary><div class="hq-acts"><input class="hq-in" id="clVoice" value="${e(t.voice)}" placeholder="Telnyx.Ultra.Clara (empty = default)" aria-label="Voice" autocapitalize="off"><input class="hq-in" id="clModel" value="${e(t.model)}" placeholder="Model (empty = default)" aria-label="Model" autocapitalize="off"><button class="hq-btn sm" id="clVmSave">Save</button></div><p class="hq-muted small" style="margin:2px 0 0">Then tap Update AI.</p></details><ul id="clSteps" class="hq-checks" style="margin:0 0 8px;padding-left:18px"></ul>`;
++    const setup = `<h3 style="margin:12px 0 6px">The salon iPhone that rings first</h3><div class="hq-acts"><input class="hq-in" id="clFwd" type="tel" inputmode="tel" value="${e(t.fwd || c.ownerCell)}" placeholder="(515) 555-0123" aria-label="iPhone to ring"><button class="hq-btn sm" id="clFwdSave">Save</button></div>${!t.fwd && c.ownerCell ? '<p class="hq-muted small" style="margin:2px 0 0">Filled with the owner\'s cell (from HQ) – tap Save to use it.</p>' : ''}
++      <label class="hq-chk"><input type="checkbox" id="clOn" ${t.on ? 'checked' : ''} ${t.number && t.keySet ? '' : 'disabled'}> <span><b>Telnyx on</b></span></label><p class="hq-muted small" style="margin:2px 0 0">The Telnyx number answers, rings the iPhone, then the AI.</p>
++      <label class="hq-chk"><input type="checkbox" id="clLive" ${t.live ? 'checked' : ''}> <span><b>Live booking</b></span></label><p class="hq-muted small" style="margin:2px 0 0">While the owner talks on the iPhone, what is agreed is booked on the call.</p>`;
++    const fwd = d ? `<div class="hq-fwd" style="margin:10px 0;padding:10px;border:1px solid #334155;border-radius:10px"><b>Forward the salon line:</b> from the salon phone dial <b>*72${e(d)}</b> (Verizon) · <b>*21*${e(d)}#</b> (AT&amp;T) · <b>**21*1${e(d)}#</b> (T-Mobile)
++        <div class="hq-acts" style="margin-top:8px"><button class="hq-btn sm" id="clGuide" ${c.ownerCell ? '' : 'disabled'}>Text these steps to the owner ${c.ownerCell ? '(…' + e(c.ownerCell.slice(-4)) + ')' : '(no owner cell)'}</button>${c.guideAt ? `<small class="hq-muted">sent ${e(c.guideAt)}</small>` : ''}</div></div>` : '';
++    openSheet(head + info + ai + tx + setup + fwd + '<div class="hq-acts"><button class="hq-btn ghost" type="button" data-close>Close</button></div>');
+     const redraw = (r) => { c = r.card; sheet(s, c); };
+-    $('#clFwdSave').onclick = async (ev) => { busy(ev.target, true); try { redraw(await api('calls_setup', { id: s.id, set: { fwd: $('#clFwd').value } })); toast('Saved ✓'); } catch (x) { toast(x.message, true); busy(ev.target, false); } };
+-    $('#clOn').onchange = async (ev) => { try { redraw(await api('calls_setup', { id: s.id, set: { on: ev.target.checked } })); toast(ev.target.checked ? 'On ✓' : 'Off ✓'); } catch (x) { toast(x.message, true); ev.target.checked = !ev.target.checked; } };
+-    const re = $('#clRe'); if (re) re.onclick = async (ev) => { busy(ev.target, true); try { const r = await api('calls_recheck', { id: s.id }); toast(r.found ? 'Found in SignalWire – saved ✓' : 'Not bought – nothing was charged. Search again.'); redraw(r); } catch (x) { toast(x.message, true); busy(ev.target, false); } };
+-    const pl = $('#clPlan'); if (pl) pl.onchange = async () => { try { await api('calls_plan', { id: s.id, plan: pl.value }); c.plan = pl.value; toast('Plan saved ✓'); } catch (x) { toast(x.message, true); pl.value = c.plan; } };
++    const set = async (o, ok, el) => { try { redraw(await api('calls_setup', { id: s.id, set: o })); toast(ok); } catch (x) { toast(x.message, true); if (el) { if (el.type === 'checkbox') el.checked = !el.checked; else busy(el, false); } } };
++    $('#clNumSave').onclick = (ev) => { busy(ev.target, true); set({ number: $('#clNum').value }, 'Saved ✓', ev.target); };
++    const run = async (ev, steps) => { busy(ev.target, true); const L = $('#clSteps'); L.innerHTML = ''; let last = null;
++      for (const st of steps) { let r; try { r = await api('calls_step', { id: s.id, step: st }); } catch (x) { L.insertAdjacentHTML('beforeend', `<li>✗ ${e(x.message)}</li>`); break; }
++        L.insertAdjacentHTML('beforeend', `<li>${r.step.ok ? '✓' : '✗'} ${e(r.step.t)}${r.step.msg && !r.step.ok ? ' – ' + e(r.step.msg) : ''}</li>`); last = r; if (!r.step.ok) break; }
++      busy(ev.target, false);
++      if (last && last.card && last.step.ok) { toast('Set up ✓'); const html = L.innerHTML; redraw(last); const L2 = $('#clSteps'); if (L2) L2.innerHTML = html; } else toast('Not finished – see the steps', true); };
++    $('#clAuto').onclick = (ev) => run(ev, ['key', 'ovp', 'app', 'num', 'ai']);
++    $('#clAi').onclick = (ev) => run(ev, ['ai']); /* (2.99.659) the prompt / voice / model again on the assistant */
++    $('#clVmSave').onclick = (ev) => { busy(ev.target, true); set({ voice: $('#clVoice').value, model: $('#clModel').value }, 'Saved ✓ – tap Update AI', ev.target); };
++    $('#clFwdSave').onclick = (ev) => { busy(ev.target, true); set({ fwd: $('#clFwd').value }, 'Saved ✓', ev.target); };
++    $('#clOn').onchange = (ev) => set({ on: ev.target.checked }, ev.target.checked ? 'On ✓' : 'Off ✓', ev.target);
++    $('#clLive').onchange = (ev) => set({ live: ev.target.checked }, ev.target.checked ? 'Live booking on ✓' : 'Live booking off ✓', ev.target);
+     const gd = $('#clGuide'); if (gd) gd.onclick = async (ev) => { busy(ev.target, true); try { const r = await api('calls_guide', { id: s.id }); toast('Texted to ' + r.to + ' ✓'); redraw(r); } catch (x) { toast(x.message, true); busy(ev.target, false); } };
+-    const hk = $('#clHook'); if (hk) hk.onclick = async (ev) => { busy(ev.target, true); try { redraw(await api('calls_rehook', { id: s.id })); toast('Webhook set ✓'); } catch (x) { toast(x.message, true); busy(ev.target, false); } };
+-    const rel = $('#clRel'); if (rel) rel.onclick = () => {
+-      if (rel.dataset.sure !== '1') { rel.dataset.sure = '1'; rel.textContent = 'Tap again to release ' + c.number; return; }
+-      const box = document.createElement('div'); box.innerHTML = `<p class="hq-err">${e(c.number)} stops working for good (SignalWire cannot give it back). Type <b>${e(c.short)}</b> to release it.</p><div class="hq-acts"><input class="hq-in" id="clRelT" autocomplete="off" aria-label="Short name"><button class="hq-btn danger" id="clRelGo">Release</button></div>`;
+-      rel.parentNode.after(box); $('#clRelT').focus();
+-      $('#clRelGo').onclick = async (ev) => { busy(ev.target, true); try { redraw(await api('calls_release', { id: s.id, short: $('#clRelT').value })); toast('Released ✓'); } catch (x) { toast(x.message, true); busy(ev.target, false); } }; };
+-    const fd = $('#clFind'); if (fd) fd.onclick = async (ev) => { busy(ev.target, true); const L = $('#clList'); L.innerHTML = '<p class="hq-muted">Searching…</p>';
+-      try { const r = await api('calls_search', { id: s.id, area: $('#clArea').value, contains: $('#clHas').value }); let shown = 10;
+-        const list = () => { L.innerHTML = r.numbers.length ? `<div class="hq-nums">${r.numbers.slice(0, shown).map((n, i) => `<div class="hq-acts" style="justify-content:space-between;margin:4px 0;border-bottom:1px solid #e5e7eb;padding:4px 0"><span><b style="font-size:18px">${e(n.pretty)}</b><br><small class="hq-muted">${e(n.city)}${n.sms ? '' : ' · no SMS'}</small></span><button class="hq-btn sm good" data-buy="${i}">Buy · $0.50/mo</button></div>`).join('')}</div>
+-            ${r.numbers.length > shown ? '<button class="hq-btn sm ghost" id="clMore">More</button>' : ''}` : '<p class="hq-muted">No number free in ' + e(r.area) + ' – try a nearby area code.</p>';
+-          const m = $('#clMore'); if (m) m.onclick = () => { shown += 10; list(); };
+-          L.querySelectorAll('[data-buy]').forEach(b => { b.onclick = () => buyAsk(s, c, r.numbers[+b.dataset.buy], b); }); };
+-        list(); } catch (x) { L.innerHTML = `<p class="hq-err">${e(x.message)}</p>`; } finally { busy(ev.target, false); } };
+-  }
+-  function buyAsk(s, c, n, btn) {
+-    const { api, toast, busy } = H(); const last4 = n.number.slice(-4);
+-    const box = document.createElement('div'); box.className = 'hq-buyask';
+-    box.innerHTML = `<p><b>Buy ${e(n.pretty)} for ${e(c.name)}?</b> $0.50 / month on the NailFlow SignalWire account. Type the last 4 digits (${e(last4)}) to buy.</p>
+-      <div class="hq-acts"><input class="hq-in" inputmode="numeric" maxlength="4" aria-label="Last 4 digits" style="max-width:110px"><button class="hq-btn good">Buy</button><button class="hq-btn ghost" type="button">Cancel</button></div>`;
+-    btn.closest('.hq-acts').after(box); const inp = box.querySelector('input'); inp.focus();
+-    const [go, no] = box.querySelectorAll('button'); no.onclick = () => box.remove();
+-    go.onclick = async () => { if (inp.value.trim() !== last4) { toast('Type ' + last4 + ' to buy.', true); return; } busy(go, true);
+-      try { const r = await api('calls_buy', { id: s.id, number: n.number }); toast(r.hook ? 'Bought ✓ · webhook set ✓' : 'Bought ✓ · the webhook did not set – tap "Set the webhook again"', !r.hook); sheet(s, r.card); }
+-      catch (x) { toast(x.message, true); busy(go, false); try { sheet(s, (await api('calls_card&id=' + encodeURIComponent(s.id)))); } catch (y) {} } };
+   }
+   return { open, top };
+ })();
+diff -ruN int657/call_in.php int659/call_in.php
+--- int657/call_in.php	2026-10-31 22:10:05.000000000 -0500
++++ int659/call_in.php	2026-11-05 23:56:28.013699933 -0600
+@@ -1,5 +1,6 @@
+ <?php
+-/* (2.99.586 – LỆNH 586) 📞 SignalWire calls this address (Phone Numbers → (515) 606-1616 → "A call comes in" → LaML Webhook → https://<salon>/call_in.php, POST).
++/* (2.99.659 SW) OLD: every salon number is on Telnyx now (call_tx.php); SignalWire is closed - only ?a=tick (the cron's minute) is still used here.
++   (2.99.586 – LỆNH 586) 📞 SignalWire called this address (Phone Numbers → the salon's SignalWire number → "A call comes in" → LaML Webhook → https://<salon>/call_in.php, POST).
+    ?a=answer (default) the call comes in → cXML: the notice + the salon iPhone (recorded) · ?a=done the iPhone call is over → voicemail when not answered
+    ?a=rec  the recording is ready → saved once, answered at once, then read (inc/calls-job.php) · ?a=end after the voicemail · ?a=tick the cron's minute (signed by this server).
+    Every SignalWire request must carry its signature (Settings → Calls → Signing Key) – a wrong / missing one → 403. */
+diff -ruN int657/call_tx.php int659/call_tx.php
+--- int657/call_tx.php	2026-11-05 21:36:24.976640836 -0600
++++ int659/call_tx.php	2026-11-05 23:56:28.014134212 -0600
+@@ -1,5 +1,5 @@
+ <?php
+-/* (2.99.612 - LENH 612) TELNYX (test) - the test number (515) 513-6667 only (TeXML Application "Voice URL" = https://<salon>/call_tx.php?a=in&t=<secret>).
++/* (2.99.659 SW) TELNYX = the salon's phone line (every salon number is on Telnyx, SignalWire closed). (2.99.612 - LENH 612) the Telnyx number (setting tx_number) (TeXML Application "Voice URL" = https://<salon>/call_tx.php?a=in&t=<secret>).
+    ?a=in the call (TeXML: "may be recorded" + the iPhone, 2 channels recorded) · ?a=amd the iPhone leg: a person or its voicemail · ?a=after the Dial ended
+    (answered -> hang up; else the AI) · ?a=aiend the AI ended (error -> the owner) · ?a=rec the recording of an answered call (read at once)
+    · ?a=vars the AI's facts for this caller · ?a=tool the AI's tools (the SAME code as SignalWire) · ?a=post the transcript · ?a=status call status (logged)
+diff -ruN int657/cron/tx-mp3.php int659/cron/tx-mp3.php
+--- int657/cron/tx-mp3.php	2026-11-02 17:02:57.000000000 -0600
++++ int659/cron/tx-mp3.php	2026-11-06 00:24:55.711057527 -0600
+@@ -6,9 +6,10 @@
+ require dirname(__DIR__) . '/inc/core.php';
+ if (!is_installed()) exit;
+ settings();
+-if ((string)setting('tx_key') === '' || (string)setting('tx_on') !== '1') exit;
++if ((string)setting('tx_on') !== '1') exit;
+ require_once dirname(__DIR__) . '/inc/calls.php';
+ require_once dirname(__DIR__) . '/inc/calls-tx.php';
++if (tx_key() === '') exit; /* (2.99.659) its own key or HQ's shared Telnyx account */
+ $lk = @fopen(sys_get_temp_dir() . '/nf-tx-mp3-' . md5(__DIR__ . pub_url()) . '.lock', 'c'); if (!$lk || !flock($lk, LOCK_EX | LOCK_NB)) exit;
+ /* (2.99.629 - LENH 629) the missed-call text back + YOU'RE BOOKED after the 10 minutes: here too, every 15 s, IN this CLI process (no web call).
+    Before, only call_in.php?a=tick (SignalWire / the turn cron's web poke) or the owner's page did it -> on Telnyx a text waited up to ~1 hour.
+diff -ruN int657/hq/api.php int659/hq/api.php
+--- int657/hq/api.php	2026-11-05 03:09:58.870751675 -0600
++++ int659/hq/api.php	2026-11-06 00:24:55.711210079 -0600
+@@ -178,27 +178,20 @@
+         hq_change(function (&$d) use ($clear, $in) { hq_log($d, '-', 'Speech-to-text key (calls)', '', $clear ? 'removed' : (trim((string)($in['key'] ?? '')) !== '' ? 'new key' : 'model ' . (string)($in['model'] ?? ''))); });
+         hq_out(['ok' => true] + $r);
+ 
+-    case 'calls_sw': // (2.99.598 - LENH 595) 📞 Calls -> the ONE SignalWire account for every salon: GET = what may be shown (never the token / key); POST = save
++    case 'calls_tx': // (2.99.659 - anh Logan 23:57) the ONE Telnyx account for every salon: GET = set or not (never the key); POST = save (Authenticator when due)
+         $need(); require_once __DIR__ . '/../inc/hq-calls.php';
+-        if ($method !== 'POST') hq_out(['ok' => true] + hqc_sw_info() + ['status' => hqc_status()]); // (595-C) taken from American Nails when HQ has none
+-        $fresh(); try { $r = hqc_sw_save($in); } catch (RuntimeException $e) { hq_fail($e->getMessage()); }
+-        hq_change(function (&$d) use ($in) { hq_log($d, '-', 'SignalWire account (calls)', '', implode(', ', array_keys(array_filter(['space' => isset($in['space']), 'project' => isset($in['project']), 'token' => trim((string)($in['token'] ?? '')) !== '', 'signing' => trim((string)($in['signing'] ?? '')) !== ''])))); });
+-        hq_out(['ok' => true] + $r);
+-    case 'calls_card': case 'calls_search': case 'calls_buy': case 'calls_recheck': case 'calls_rehook': case 'calls_setup': case 'calls_release': case 'calls_costs': case 'calls_guide': case 'calls_plan': // (2.99.598 - LENH 595) a salon's 📞 Calls
++        if ($method !== 'POST') hq_out(hqc_txacct_info());
++        $fresh(); try { hq_out(hqc_txacct_save($in)); } catch (RuntimeException $e) { hq_fail($e->getMessage()); }
++    case 'calls_list': case 'calls_card': case 'calls_setup': case 'calls_guide': case 'calls_step': // (2.99.659) 📞 Calls = Telnyx (read from each salon's settings) · 2.99.659 requirement changed: SignalWire dropped (Logan 05/11) – calls_sw / search / buy / recheck / rehook / release / costs / plan are gone
+         $need(); require_once __DIR__ . '/../inc/hq-calls.php';
+         $sid = (string)($in['id'] ?? ($_GET['id'] ?? ''));
+         try {
++            if ($action === 'calls_list') hq_out(hqc_list());
+             if ($action === 'calls_card') hq_out(hqc_card($sid));
+-            if ($action === 'calls_costs') hq_out(hqc_costs((string)($_GET['month'] ?? ($in['month'] ?? '')), !empty($in['refresh'])));
+             if ($method !== 'POST') hq_fail('POST only', 405);
+-            if ($action === 'calls_search') hq_out(hqc_search($sid, (string)($in['area'] ?? ''), (string)($in['contains'] ?? '')));
+-            if ($action === 'calls_buy') { $fresh(); hq_out(hqc_buy($sid, (string)($in['number'] ?? ''))); }
+-            if ($action === 'calls_recheck') hq_out(hqc_recheck($sid));
+-            if ($action === 'calls_rehook') hq_out(hqc_rehook($sid));
+-            if ($action === 'calls_setup') hq_out(hqc_setup($sid, (array)($in['set'] ?? [])));
+-            if ($action === 'calls_guide') hq_out(hqc_send_guide($sid)); // (595-C)
+-            if ($action === 'calls_plan') hq_out(hqc_plan_save($sid, (string)($in['plan'] ?? ''))); // (2.99.603 – LỆNH 603)
+-            if ($action === 'calls_release') { $fresh(); hq_out(hqc_release($sid, (string)($in['short'] ?? ''))); }
++            if ($action === 'calls_setup') { if (array_key_exists('number', (array)($in['set'] ?? []))) $fresh(); hq_out(hqc_setup($sid, (array)($in['set'] ?? []))); } // (2.99.659) a new Telnyx number: the Authenticator when due
++            if ($action === 'calls_guide') hq_out(hqc_send_guide($sid));
++            if ($action === 'calls_step') { if (($in['step'] ?? '') === 'key') $fresh(); hq_out(hqc_tx_step($sid, (string)($in['step'] ?? ''))); } // (2.99.659) "Set up automatically", one step per request
+         } catch (RuntimeException $e) { hq_fail($e->getMessage()); }
+         hq_fail('?');
+ 
+diff -ruN int657/inc/api/calls.php int659/inc/api/calls.php
+--- int657/inc/api/calls.php	2026-11-05 01:22:15.020372787 -0600
++++ int659/inc/api/calls.php	2026-11-05 23:58:53.932210727 -0600
+@@ -68,6 +68,11 @@
+ case 'calls_cfg': // Settings → 📞 Calls (GET: what may be shown – never a token; POST: save)
+     if ($method !== 'POST') { $clOwner(); json_out(['cfg' => cl_cfg()]); }
+     need_admin();
++    /* (2.99.659 SW - anh Logan 23:57) the phone provider set up (the old SignalWire number / space / project / token / signing key) only in NailFlow HQ:
++       refused from a salon admin; the everyday settings (iPhone to ring, ring time, recording, texts, owner phone, approve) stay the owner's. */
++    if (is_array($in)) foreach (['number', 'space', 'project', 'token', 'signing', 'tokenClear', 'signingClear'] as $k) if (array_key_exists($k, $in) && !in_array($in[$k], ['', null, false, 0, '0'], true)) {
++        try { if (function_exists('audit')) audit('nf_only', 'calls_cfg', $k, 'refused – phone set up only in NailFlow HQ'); } catch (Throwable $e) {}
++        fail('Phone setup is done by NailFlow (HQ) only. · Chỉ NailFlow (HQ) cài số điện thoại.', 403); }
+     $before = cl_cfg();
+     try { $r = cl_cfg_save(is_array($in) ? $in : []); } catch (RuntimeException $e) { settings(true); fail($e->getMessage()); }
+     if (function_exists('audit')) { foreach (['on', 'rec', 'vm', 'fwd', 'space', 'project', 'number', 'tokenSet', 'signSet'] as $k) if (($before[$k] ?? null) !== ($r[$k] ?? null))
+diff -ruN int657/inc/api/callstx.php int659/inc/api/callstx.php
+--- int657/inc/api/callstx.php	2026-11-01 21:40:10.000000000 -0600
++++ int659/inc/api/callstx.php	2026-11-05 23:58:53.931926997 -0600
+@@ -4,10 +4,16 @@
+ if (!defined('API_MAIN')) { http_response_code(404); exit; }
+ require_once APP_ROOT . '/inc/calls-tx.php';
+ if (!is_admin()) fail('Only the owner can change this.', 403);
++/* (2.99.659 SW - anh Logan 23:57) the Telnyx set up (key, Public Key, number, On / Off, voice / model, "Set up automatically", "Update AI") is done ONLY in NailFlow HQ:
++   never from a salon's admin (the owner, a manager, a support session alike). HQ changes them itself in the salon (its own server code: tx_cfg_save / tx_setup_step),
++   never through this page. Reading the status (tx_cfg GET) and the TX list stay. */
++$txHqOnly = function () use ($action): void { try { if (function_exists('audit')) audit('nf_only', $action, '', 'refused – phone set up only in NailFlow HQ'); } catch (Throwable $e) {}
++    fail('Phone setup is done by NailFlow (HQ) only. · Chỉ NailFlow (HQ) cài số điện thoại.', 403); };
+ switch ($action) {
+ case 'tx_cfg':
+     if ($method !== 'POST') json_out(['cfg' => tx_cfg()]);
+     need_admin(); if (!tx_allowed()) fail('Not for this salon.', 403);
++    $txHqOnly(); /* (2.99.659 SW) */
+     $before = tx_cfg();
+     try { $r = tx_cfg_save(is_array($in) ? $in : []); } catch (RuntimeException $e) { settings(true); fail($e->getMessage()); }
+     if (function_exists('audit')) foreach (['on', 'keySet', 'pubSet', 'number', 'voice', 'model'] as $k) if (($before[$k] ?? null) !== ($r[$k] ?? null))
+@@ -15,6 +21,7 @@
+     json_out(['ok' => true, 'cfg' => $r]);
+ case 'tx_setup':
+     need_admin(); if (!tx_allowed()) fail('Not for this salon.', 403);
++    $txHqOnly(); /* (2.99.659 SW) */
+     require_once APP_ROOT . '/inc/calls-agent.php'; require_once APP_ROOT . '/inc/calls-ivr.php';
+     @set_time_limit(60); $st = (string)($in['step'] ?? '');
+     if (!in_array($st, TX_STEPS, true)) fail('Unknown step.');
+diff -ruN int657/inc/calls-job.php int659/inc/calls-job.php
+--- int657/inc/calls-job.php	2026-11-05 23:00:41.878098141 -0600
++++ int659/inc/calls-job.php	2026-11-05 23:55:55.494654135 -0600
+@@ -212,6 +212,12 @@
+     }
+     return $status;
+ }
++/** (2.99.658 - real call #195 05/11 23:32: "Test 4 – Regular Pedicure · 2 people" hid the other person's service) A group: the name, EVERY person's services, day, time. */
++function cl_group_line(array $rows): string {
++    if (!$rows) return ''; $a = $rows[0]; if (count($rows) === 1) return cl_line($a);
++    $l = []; foreach ($rows as $r) $l[] = appt_label($r) ?: 'Appointment';
++    return trim(cl_name((string)$a['customer_name'])) . ' – ' . implode(' + ', $l) . ' – ' . date('D n/j', strtotime((string)$a['appt_date'])) . ' ' . min_to_label((int)$a['start_min']) . ' · ' . count($rows) . ' people';
++}
+ function cl_who(array $c): string { $ph = (string)$c['from_phone']; $k = $ph !== '' ? customer_by_phone($ph) : null; $n = $k ? cl_name((string)$k['name']) : '';
+     $j = json_decode((string)($c['ai_json'] ?? ''), true); if ($n === '' && is_array($j)) $n = cl_name((string)($j['customer_name'] ?? ''));
+     return trim($n . ' ' . ($ph !== '' ? pretty_phone($ph) : '')) ?: 'Unknown number'; }
+@@ -598,9 +604,9 @@
+     $a = $rows[0];
+     q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], empty($GLOBALS['cl_live']) ? now_str() : '', $c['id']]); /* (2.99.654) */ // like one person (589): one YOU'RE BOOKED for the group, sent at once
+     if (empty($GLOBALS['cl_live'])) foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (2.99.654 #6) */
+-    cl_end($c, 'booked', '', cl_line($a) . ' · ' . count($rows) . ' people', false);
++    cl_end($c, 'booked', '', cl_group_line($rows), false); /* (2.99.658) every person's services */
+     cl_confirm_due(); // after 'booked' is saved (cl_confirm_due only takes booked calls)
+-    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_line($a) . ' · ' . count($rows) . ' people' . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); /* (2.99.654) */
++    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_group_line($rows) . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); /* (2.99.654) */
+     return 'booked';
+ }
+ 
+@@ -668,7 +674,7 @@
+ 
+ /* ---------- 8. (2.99.590 – LỆNH 590, anh Logan 18:35) a MISSED call → one text to the caller: "Sorry we missed your call … Book online: <link> or reply" ----------
+    Goes through the salon's texting (Android / SMS Server, like YOU'RE BOOKED). Never: Text back off, not 10 digits, STOP / Wrong number / opted out (autosend checks),
+-   the salon's own numbers (landline, SignalWire number, the owner's iPhone, the salon phone), the same number texted in the last 30 minutes,
++   the salon's own numbers (cl_own_numbers: landline, the Telnyx number, the owner's iPhone, the salon phone), the same number texted in the last 30 minutes,
+    a call that ended BOOKED (YOU'RE BOOKED already went – 1 text per customer). No answer + voicemail: it waits for the voicemail (≤ 130 s). */
+ /* ---------- (2.99.651 - anh Logan 05/11 14:21) an AI call that ENDED BEFORE THE BOOKING WAS DONE (the caller asked for an appointment, the call
+    dropped / they hung up, nothing booked): at once a text to the caller ("we got cut off - book here or reply with the day and time") from the
+@@ -690,7 +696,7 @@
+     $c = q('SELECT * FROM calls WHERE id = ?', [$id])->fetch(); if (!$c || (int)$c['appt_id'] || !cl_cut_wants($c)) return '';
+     $p = norm_phone((string)$c['from_phone']);
+     if (strlen($p) !== 12 || !str_starts_with($p, '+1') || (function_exists('phone_real') && !phone_real($p))) return '';
+-    $own = array_filter(array_map(fn($x) => norm_phone((string)$x), [setting('call_fwd'), setting('sw_number'), setting('salon_phone'), setting('as_iphone')]));
++    $own = cl_own_numbers(); /* (2.99.659 SW) + the Telnyx number, no longer only the SignalWire one */
+     if (in_array($p, $own, true) || (function_exists('no_text_phone') && no_text_phone($p))) return '';
+     $due = json_decode((string)setting('cl_cut_due'), true); $due = is_array($due) ? $due : []; $due[(string)$id] = time() + CL_CUT_AFTER; set_setting('cl_cut_due', json_encode($due));
+     $say = 'wanted an appointment, the call ended first';
+@@ -736,7 +742,7 @@
+     if (!cl_on() || !cl_tb_on()) return $skip('Text back off');
+     $p = norm_phone((string)$c['from_phone']);
+     if (strlen($p) !== 12 || !str_starts_with($p, '+1') || (function_exists('phone_real') && !phone_real($p))) return $skip('not a US mobile number');
+-    $own = array_filter(array_map(fn($x) => norm_phone((string)$x), [setting('call_fwd'), setting('sw_number'), setting('salon_phone'), setting('as_iphone')]));
++    $own = cl_own_numbers(); /* (2.99.659 SW) + the Telnyx number, no longer only the SignalWire one */
+     if (in_array($p, $own, true) || (function_exists('no_text_phone') && no_text_phone($p))) return $skip('the salon\'s own number');
+     $rq = $GLOBALS['cl_req'][(int)$c['id']] ?? null; // (2.99.602B) what we got + what is missing: sent even after a plain missed-call text (not after another such text in 30 min)
+     if ($rq ? q("SELECT 1 FROM autosend WHERE phone = ? AND src LIKE 'ui:callreq:%' AND created_at >= ? AND src <> ?", [$p, date('Y-m-d H:i:s', time() - CL_TB_GAP), 'ui:callreq:' . (int)$c['id']])->fetchColumn()
+diff -ruN int657/inc/calls-live.php int659/inc/calls-live.php
+--- int657/inc/calls-live.php	2026-11-05 22:55:18.885204622 -0600
++++ int659/inc/calls-live.php	2026-11-05 23:43:43.094111892 -0600
+@@ -33,11 +33,18 @@
+     $who = $party ?: [['service_ids' => (array)($j['service_ids'] ?? []), 'service_text' => (string)($j['service_text'] ?? '')]];
+     foreach ($who as $p) {
+         $cand = trim((string)($p['service_text'] ?? '')); foreach ((array)($p['service_ids'] ?? []) as $id) $cand .= ' ' . ($names[(int)$id] ?? '');
+-        $hit = false; foreach (array_unique(explode(' ', cl_norm($cand))) as $t) if (strlen($t) >= 3 && !in_array($t, $skip, true) && str_contains($w, ' ' . $t . ' ')) { $hit = true; break; }
++        $hit = false; foreach (array_unique(explode(' ', cl_norm($cand))) as $t) if (strlen($t) >= 3 && !in_array($t, $skip, true) && preg_match('/ ' . preg_quote($t, '/') . '(s|es)? /', $w) /* (2.99.658) "two pedicures" = pedicure */) { $hit = true; break; }
+         if (!$hit) return false;
+     }
+     return true;
+ }
++/** (2.99.658) 2+ people with the SAME services although the caller never said "both / the same": the AI probably copied one person's service to another
++    (real call #195) -> not booked on the call (the recording after the call decides). */
++function txl_copied(array $j): bool {
++    if (!empty($j['same_services'])) return false;
++    $seen = []; foreach (array_values(array_filter((array)($j['party'] ?? []), 'is_array')) as $p) { $x = array_map('intval', (array)($p['service_ids'] ?? [])); sort($x); $k = implode(',', $x); if ($k === '') continue; if (isset($seen[$k])) return true; $seen[$k] = 1; }
++    return false;
++}
+ /** (2.99.656) An "add" that still came for a booking made on this call, with everybody in the party = the whole booking. */
+ function txl_add_whole(array $j): array {
+     if (strtolower(trim((string)($j['intent'] ?? ''))) !== 'add') return $j;
+@@ -134,6 +141,7 @@
+         $ai = cl_weekday_fix($cc, cl_ai_after($cc, cl_ai($cc))); if (!empty($st['ids'])) $ai = txl_add_whole($ai); /* (2.99.656) */
+         if (strtolower(trim((string)($ai['intent'] ?? ''))) !== 'book') return;
+         if (!txl_svc_said($ai, $tc . ' ' . $ts)) return; /* (2.99.657) a service nobody said: not booked on the call */
++        if (txl_copied($ai)) return; /* (2.99.658 - real call #195: "care manicure for me and another person for a pedicure" -> both got the pedicure) */
+         $sig = txl_sig($ai); if ($sig === (string)($st['sig'] ?? '')) return;
+         $old = txl_rows((array)($st['ids'] ?? []));
+         if ($old) txl_drop($old, 'Changed on the call – booked again with what the caller said');
+@@ -164,20 +172,22 @@
+             $GLOBALS['cl_txl_try'] = 1;
+             try { $r = cl_decide0($c, $j); } catch (Throwable $e) { txl_back($rows); throw $e; } finally { $GLOBALS['cl_txl_try'] = 0; }
+             if ($r === 'booked') return $r;
++            $rc = q('SELECT reason, result FROM calls WHERE id = ?', [$c['id']])->fetch() ?: []; /* (2.99.658) why the recording's booking could not be made: told to the owner */
+             txl_back($rows);
++            return txl_keep($c, $rows, false, [], 'the recording says ' . trim((string)($rc['result'] ?? '')) . ' but ' . lcfirst(rtrim(trim((string)($rc['reason'] ?? 'it could not be booked')), '.')));
+         }
+         return txl_keep($c, $rows, false);
+     } finally { txl_unlock($lk); }
+ }
+ /** The booking made on the call is the one: texted (the recording says the same) or kept for the owner to check (no text). */
+ function txl_keep(array $c, array $rows, bool $text, array $ask = [], string $why = ''): string {
+-    $a = $rows[0]; $line = cl_line($a) . (count($rows) > 1 ? ' · ' . count($rows) . ' people' : '');
++    $a = $rows[0]; $line = cl_group_line($rows); /* (2.99.658) */
+     q('UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = ? WHERE id = ?', [(int)$a['id'], $text ? now_str() : '', $text ? 0 : 1, $c['id']]);
+     foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (review #6) the techs: once, after the call */
+     $GLOBALS['cl_ask'] = $text ? $ask : []; /* (review #3) the type question only with the text, never a leftover */
+     cl_end($c, 'booked', $text ? '' : 'Booked on the call – ' . ($why !== '' ? rtrim($why, '.') . ' – ' : 'the recording did not confirm it – ') . 'check it (no text sent).', $line, false);
+     if ($text) cl_confirm_due();
+-    else cl_push((int)$c['id'], '📞 Check booking', $line . ' · booked on the call, not texted – check it');
++    else cl_push((int)$c['id'], '📞 Check booking', $line . ' · booked on the call, not texted' . ($why !== '' ? ' – ' . mb_substr($why, 0, 160) : '') . ' – check it'); /* (2.99.658) why */
+     return 'booked';
+ }
+ /** (review #4) The call ends in review / callback before the recording could decide (long call, no key, the AI cap, errors…): a booking made on it is kept, no text, the owner checks it. */
+diff -ruN int657/inc/calls-tx.php int659/inc/calls-tx.php
+--- int657/inc/calls-tx.php	2026-11-05 21:44:09.593676414 -0600
++++ int659/inc/calls-tx.php	2026-11-06 00:24:55.711364965 -0600
+@@ -1,5 +1,6 @@
+ <?php
+-/* (2.99.612 - LENH 612) TELNYX (test) for the AI receptionist: the test number (515) 513-6667 runs SIDE BY SIDE with SignalWire.
++/* (2.99.659 SW) TELNYX = the salon's phone line: every salon number is on Telnyx (setting tx_number), SignalWire is closed.
++   (2.99.612 - LENH 612) Telnyx for the AI receptionist (first a test number next to SignalWire).
+    Telnyx -> call_tx.php (TeXML Application "Voice URL"). The iPhone rings first (Dial, 2 channels recorded); nobody answers -> <Connect><AIAssistant>.
+    The assistant uses the SAME tools as the SignalWire AI (cl_agent_tool), the same facts (cl_agent_data) and the same prompt (cl_agent_prompt).
+    SignalWire (call_in.php, call_agent.php, calls-agent / ivr / talk) is NOT changed. The API key is pasted by the owner (stored encrypted, never shown). */
+@@ -17,9 +18,21 @@
+ /* the settings */
+ function tx_allowed(): bool { if (!function_exists('cl_agent_allowed')) require_once __DIR__ . '/calls-agent.php'; return cl_agent_allowed(); }
+ function tx_on(): bool { return setting('tx_on') === '1'; }
+-function tx_key(): string { if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php'; return ad_dec((string)setting('tx_key')); }
+-function tx_pub(): string { if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php'; return trim(ad_dec((string)setting('tx_pub'))); }
+-function tx_number(): string { $n = norm_phone((string)setting('tx_number')); return strlen($n) === 12 ? $n : '+15155136667'; }
++/* (2.99.659 - anh Logan 05/11 23:57 "chi co HQ moi duoc lam" + 23:59 "moi tiem cung 1 duong, AN cung vay") ONE Telnyx account for EVERY salon, American Nails
++   included, saved in AN HQ: <app>/shared/call-tx.json (0600, outside the web, like the old shared call-sw.json). Lookup: HQ's shared key FIRST; the salon's old
++   own key (setting tx_key - American Nails') only as a fallback so nothing breaks during the switch (it is removed later, after a verified live call).
++   The Public Key goes with the key it belongs to (HQ's, or the old own one). */
++function tx_shared_file(): string { require_once __DIR__ . '/colorlib.php'; return clib_dir() . '/call-tx.json'; }
++function tx_shared(): array { $f = tx_shared_file(); $j = is_file($f) ? json_decode((string)@file_get_contents($f), true) : null; return is_array($j) ? $j : []; }
++/** Where the key comes from: 'hq' (the shared account), 'own' (the old salon key - fallback), '' none. */
++function tx_key_src(): string { if (trim((string)(tx_shared()['key'] ?? '')) !== '') return 'hq'; return (string)setting('tx_key') !== '' ? 'own' : ''; }
++function tx_key(): string { if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php'; $src = tx_key_src();
++    return $src === 'hq' ? trim((string)tx_shared()['key']) : ($src === 'own' ? ad_dec((string)setting('tx_key')) : ''); }
++function tx_pub(): string { if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php';
++    return tx_key_src() === 'hq' ? trim((string)(tx_shared()['pub'] ?? '')) : trim(ad_dec((string)setting('tx_pub'))); }
++/* (2.99.659 - review 06/11) no tx_number = '' for EVERY salon (American Nails too - its tx_number is set): the old fallback to AN's (515) 513-6667
++   could show / set up / forward another salon onto AN's number. Callers: the setup steps refuse, a <Dial> uses the caller's number as callerId. */
++function tx_number(): string { $n = norm_phone((string)setting('tx_number')); return strlen($n) === 12 ? $n : ''; }
+ function tx_base(): string { $b = (string)getenv('NF_TX_BASE'); return $b !== '' ? rtrim($b, '/') : TX_API; }
+ function tx_voice(): string { $v = trim((string)setting('tx_voice')); return preg_match('/^[A-Za-z]+\.[A-Za-z0-9._-]+$/', $v) ? $v : ''; }
+ /* (2.99.613 - CHAT 20:15) no voice set: the Telnyx voice list (GET /v2/text-to-speech/voices?provider=telnyx) -> "Maeve" (else the first en-US female), kept in tx_voice */
+@@ -99,7 +112,7 @@
+     $x = tx_say(CL_NOTICE);
+     if ($fwd === '') return tx_xml($x . tx_ai($q));
+     if (txl_on()) $x .= txl_start($q); /* (2.99.654) the words while the owner talks -> booked on the call (calls-live.php) */
+-    $x .= '<Dial timeout="' . cl_ring() . '" answerOnBridge="true" callerId="' . cl_x($from !== '' ? $from : tx_number()) . '" record="record-from-answer-dual" recordingChannels="dual"'
++    $x .= '<Dial timeout="' . cl_ring() . '" answerOnBridge="true" callerId="' . cl_x($from !== '' ? $from : (tx_number() ?: $to)) . '" record="record-from-answer-dual" recordingChannels="dual"'
+         . ' recordingStatusCallback="' . cl_x(tx_url('rec', $q)) . '" recordingStatusCallbackEvent="completed" recordingStatusCallbackMethod="POST"'
+         . ' action="' . cl_x(tx_url('after', $q)) . '" method="POST">'
+         . '<Number' . (cl_screen_on() ? ' url="' . cl_x(tx_url('screen', $q)) . '" method="POST"' : '') . ' machineDetection="Enable" statusCallbackEvent="amd completed" statusCallback="' . cl_x(tx_url('amd', $q)) . '" statusCallbackMethod="POST">' . cl_x($fwd) . '</Number></Dial>';
+@@ -121,6 +134,7 @@
+ }
+ function tx_screened(array $in): string {
+     tx_log('screened', $in); $sid = mb_substr((string)($_GET['sid'] ?? ''), 0, 64); $said = strtolower(tx_f($in, ['SpeechResult', 'speech_result']));
++    if ($said !== '' && $sid !== '') @file_put_contents(cl_dir() . '/txh-' . md5($sid) . '.txt', $said); /* (2.99.658 #198) what was heard, for the AMD that may come a moment later (it skips when nothing was heard) */
+     $vm = $said !== '' && (preg_match(CL_VM_HEAR, $said) || (str_word_count($said) >= 10 && !preg_match(TX_PERSON, $said))); /* (2.99.616 L1) a long hello from the owner is a person */
+     if (!$vm && $sid !== '' && preg_match(TX_PERSON, $said)) { tx_table(); q("UPDATE calls SET screen = 'person' WHERE call_sid = ? AND screen <> 'vmai'", [$sid]); } /* (612p) a person said hello: the AMD never moves this call */
+     if (!$vm && $sid !== '' && $said !== '' && !preg_match(TX_PERSON, $said) && (string)q('SELECT screen FROM calls WHERE call_sid = ?', [$sid])->fetchColumn() === 'vm') $vm = true; /* (CHAT 01/11 612o) AN #110: the Gather stopped at a pause ("you call...") before the voicemail words, but Telnyx AMD already said machine -> the AI, unless a person's greeting was heard */
+@@ -199,7 +213,7 @@
+ const TX_CB_SAY = 'Sorry, no one can come to the phone right now. The salon will call you back shortly. Goodbye.';
+ function tx_xfer_dial(array $c, string $o): string {
+     $from = (string)$c['from_phone'];
+-    return '<Dial timeout="20" callerId="' . cl_x($from !== '' ? $from : tx_number()) . '" action="' . cl_x(tx_url('xfer', '&sid=' . rawurlencode((string)$c['call_sid']))) . '" method="POST">' . cl_x($o) . '</Dial>';
++    return '<Dial timeout="20" callerId="' . cl_x($from !== '' ? $from : (tx_number() ?: (string)($c['to_phone'] ?? ''))) . '" action="' . cl_x(tx_url('xfer', '&sid=' . rawurlencode((string)$c['call_sid']))) . '" method="POST">' . cl_x($o) . '</Dial>';
+ }
+ function tx_xfer_start(array $c, string $why): string {
+     $o = cl_ivr_owner_tx(); $id = (int)$c['id'];
+@@ -376,7 +390,7 @@
+ }
+ /* the cron (every minute, cron/turn.php): AI calls of the last 30 minutes still without their transcript -> a=sweep (a web request, like the calls tick) */
+ function tx_due(): bool {
+-    try { if ((string)setting('tx_schema') !== '1' || (string)setting('tx_key') === '') return false;
++    try { if ((string)setting('tx_schema') !== '1' || tx_key() === '') return false; /* (2.99.659) own or HQ's shared key */
+         return (bool)q("SELECT 1 FROM calls WHERE prov = 'tx' AND kind = 'agent' AND (text_c IS NULL OR text_c = '') AND (text_s IS NULL OR text_s = '') AND created_at BETWEEN ? AND ? LIMIT 1", [date('Y-m-d H:i:s', time() - 1800), date('Y-m-d H:i:s', time() - 60)])->fetchColumn();
+     } catch (Throwable $e) { return false; }
+ }
+@@ -388,7 +402,7 @@
+ /* (CHAT 01/11 612d) the web PHP may not run programs (exec is off there): an answered Telnyx call whose MP3 could not become WAV is fetched again HERE
+    (the cron, PHP CLI, every minute: mpg123 runs), then queued -> read by the usual job (cl_cron_poke). Calls of the last 30 minutes only. */
+ function tx_cli_mp3(): void {
+-    if ((string)setting('tx_key') === '') return; tx_table(); tx_tmp_clean();
++    if (tx_key() === '') return; tx_table(); tx_tmp_clean(); /* (2.99.659) own or HQ's shared key */
+     try { tx_cli_airec(); } catch (Throwable $e) { error_log('646 tx airec: ' . $e->getMessage()); }
+     $l = q("SELECT id, rec_sid FROM calls WHERE prov = 'tx' AND status = 'review' AND reason LIKE 'Telnyx recording:%' AND rec_sid <> '' AND (file IS NULL OR file = '') AND created_at >= ? ORDER BY id LIMIT 3", [date('Y-m-d H:i:s', time() - 1800)])->fetchAll();
+     if (!$l) return; $n = 0;
+@@ -402,7 +416,7 @@
+    filter[call_control_id] = the TeXML CallSid (the same id tx_post_call uses for the conversation), keeps the MP3 here (owner-only, like the others),
+    then deletes it on Telnyx. At most once a minute, 3 calls a time, 6 tries per call (the file may need a few minutes), calls of the last 3 hours. */
+ function tx_cli_airec(): void {
+-    if ((string)setting('tx_key') === '' || time() - (int)setting('tx_airec_at') < 60) return; set_setting('tx_airec_at', (string)time());
++    if (tx_key() === '' || time() - (int)setting('tx_airec_at') < 60) return; /* (2.99.659) own or HQ's shared key */ set_setting('tx_airec_at', (string)time());
+     /* (2.99.647 - LENH 647) tx_airec_try = [id => [asks, failed downloads]]: "no finished recording on Telnyx yet" (a long call) is only an ask (up to 45),
+        a failed download counts (up to 6); the calls asked least go first, so a few calls never block the others. */
+     $tries = json_decode((string)setting('tx_airec_try'), true); $tries = is_array($tries) ? $tries : [];
+@@ -487,7 +501,7 @@
+     return implode(',', array_slice(array_unique(array_filter($t)), 0, 40));
+ }
+ function tx_assistant_body(): array {
+-    return ['name' => 'NailFlow ' . (trim((string)setting('salon_name')) ?: 'salon') . ' receptionist (Telnyx test)', 'instructions' => tx_instructions(), 'greeting' => tx_greeting(),
++    return ['name' => 'NailFlow ' . (trim((string)setting('salon_name')) ?: 'salon') . ' receptionist', 'instructions' => tx_instructions(), 'greeting' => tx_greeting(),
+         'model' => tx_model(), 'tools' => tx_tools(),
+         'voice_settings' => ['voice' => tx_voice_pick(), 'voice_speed' => 1.0, 'background_audio' => ['type' => 'predefined_media', 'value' => 'silence']],
+         'transcription' => ['model' => 'deepgram/flux', 'language' => 'en', 'settings' => ['keyterm' => tx_keyterms()]],
+@@ -504,6 +518,7 @@
+ function tx_setup_step(string $step): array {
+     $t = ['key' => 'API key', 'ovp' => 'Outbound voice profile', 'app' => 'TeXML Application', 'num' => 'Number ' . tx_number(), 'ai' => 'AI assistant'][$step] ?? $step;
+     if (tx_key() === '') return ['t' => 'API key', 'ok' => false, 'msg' => 'Paste the Telnyx API key first.'];
++    if (tx_number() === '') return ['t' => $t, 'ok' => false, 'msg' => 'Type the Telnyx number first.']; /* (2.99.659) never set up with no number */
+     try { $m = (string)tx_setup_do($step); return ['t' => $t, 'ok' => true, 'msg' => $m]; }
+     catch (Throwable $e) { error_log('613 tx setup ' . $step . ': ' . $e->getMessage()); return ['t' => $t, 'ok' => false, 'msg' => mb_substr($e->getMessage(), 0, 220)]; }
+ }
+@@ -516,7 +531,7 @@
+         if ($ovp === '') { $r = tx_api('POST', '/outbound_voice_profiles', ['name' => 'NailFlow']); $ovp = (string)($r['data']['id'] ?? ''); if ($ovp === '') throw new RuntimeException('no profile id'); set_setting('tx_ovp', $ovp); return 'created ' . $ovp; }
+         set_setting('tx_ovp', $ovp); return 'using ' . $ovp; }
+     if ($step === 'app') { $ovp = (string)setting('tx_ovp'); if ($ovp === '') throw new RuntimeException('do the outbound voice profile first');
+-        $b = ['friendly_name' => 'NailFlow ' . (trim((string)setting('salon_name')) ?: 'salon') . ' (Telnyx test)', 'voice_url' => tx_url('in'), 'voice_method' => 'post', 'status_callback' => tx_url('status'), 'status_callback_method' => 'post', 'active' => true, 'outbound' => ['outbound_voice_profile_id' => $ovp]];
++        $b = ['friendly_name' => 'NailFlow ' . (trim((string)setting('salon_name')) ?: 'salon'), 'voice_url' => tx_url('in'), 'voice_method' => 'post', 'status_callback' => tx_url('status'), 'status_callback_method' => 'post', 'active' => true, 'outbound' => ['outbound_voice_profile_id' => $ovp]];
+         $id = (string)setting('tx_app_id');
+         if ($id !== '') { try { tx_api('PATCH', '/texml_applications/' . rawurlencode($id), $b); return 'updated ' . $id; } catch (RuntimeException $e) { if (!str_contains($e->getMessage(), ': 404')) throw $e; } }
+         $r = tx_api('POST', '/texml_applications', $b); $nid = (string)($r['data']['id'] ?? ''); if ($nid === '') throw new RuntimeException('no application id in the answer');
+@@ -537,7 +552,7 @@
+ /* Settings -> Calls -> Telnyx: what may be shown (never the key itself) */
+ function tx_cfg(): array {
+     $k = tx_key();
+-    return ['allowed' => tx_allowed(), 'on' => tx_on(), 'keySet' => $k !== '', 'keyTail' => $k !== '' ? substr($k, -4) : '', 'pubSet' => tx_pub() !== '', 'number' => tx_number(),
++    return ['allowed' => tx_allowed(), 'on' => tx_on(), 'keySet' => $k !== '', 'keyTail' => tx_key_src() === 'own' ? substr($k, -4) : '', 'keyShared' => tx_key_src() === 'hq' /* (2.99.659) HQ's account: never its tail */, 'pubSet' => tx_pub() !== '', 'number' => tx_number(),
+         'appId' => (string)setting('tx_app_id'), 'assistantId' => (string)setting('tx_assistant_id'), 'sodium' => function_exists('sodium_crypto_sign_verify_detached'),
+         'voice' => tx_voice(), 'model' => tx_model(), 'hook' => cl_secret_ok() ? tx_url('in') : '' /* (2.99.646 - LENH 646) the secret t only to NailFlow */, 'strict' => setting('tx_sig_strict') === '1'];
+ }
+diff -ruN int657/inc/calls.php int659/inc/calls.php
+--- int657/inc/calls.php	2026-11-05 01:22:14.844372780 -0600
++++ int659/inc/calls.php	2026-11-06 00:17:56.037502932 -0600
+@@ -1,5 +1,6 @@
+ <?php
+-/* (2.99.586 – LỆNH 586, anh Logan 31/10 15:44 + 16:02 + 16:21) 📞 CALL ASSISTANT (SignalWire) – part 1: the plain functions (safe to load anywhere: web, cron, api).
++/* (2.99.659 SW) every salon number is on Telnyx now (inc/calls-tx.php, call_tx.php); the SignalWire parts below (cl_space / cl_project / cl_sw_*, cl_answer_xml…) are old and unused.
++   (2.99.586 – LỆNH 586, anh Logan 31/10 15:44 + 16:02 + 16:21) 📞 CALL ASSISTANT (SignalWire) – part 1: the plain functions (safe to load anywhere: web, cron, api).
+    A customer calls the salon's SignalWire number → call_in.php answers with cXML: "This call may be recorded." → the salon iPhone rings 20 s
+    (the call is recorded, 2 channels: customer / salon) → no answer: the customer leaves a voicemail. When the recording is ready SignalWire tells
+    call_in.php?a=rec → one row in `calls` (RecordingSid only once) → the job (inc/calls-job.php): the file is fetched and kept OUTSIDE public_html,
+@@ -67,7 +68,7 @@
+ }
+ /* (2.99.624) a person's first words on the iPhone leg: a long greeting with these is the owner, not the voicemail (the voicemail words above still win) */
+ const CL_PERSON_HEAR = '/\\b(hello|hi|hey|american|nails|salon|speaking|this is|yes|yeah)\\b/i';
+-const CL_VM_HEAR = '/(leave (me |us )?(a |your )?(message|voicemail|name)|after the (tone|beep)|not available|unavailable|voice ?mail|record your message|mailbox|can.?t (take|get to|answer) (your|the|this) (call|phone)|(you.?ve|you have) reached|is busy|please (record|hold)|the person you.?re calling|the number you.?ve dialed)/i';
++const CL_VM_HEAR = '/(leave (me |us )?(a |your )?(message|voicemail|name)|after the (tone|beep)|not available|unavailable|voice ?mail|record your message|mailbox|can.?t (take|get to|answer) (your|the|this) (call|phone)|(you.?ve|you have) reached|is busy|please (record|hold)|the person you.?re calling|the number you.?ve dialed|you.?re trying to reach|\b(is|isn.?t) available)/i'; /* (2.99.658 - real call #198 05/11 23:48: "The person you're trying to reach is not available" cut after "reach" -> the iPhone voicemail was connected instead of the AI) */
+ function cl_tb_on(): bool { return setting('call_tb_on') !== '0'; } // (2.99.590) Text back missed calls – on unless turned off
+ /* (2.99.594 - LENH 594.2, anh Logan 19:51) a caller with no real number (blocked / private / anonymous / restricted / unknown / not a 10-digit US number):
+    Settings -> Calls "Hang up on blocked numbers" (on unless turned off). */
+@@ -79,6 +80,18 @@
+ }
+ function cl_tb_text(): string { $t = trim((string)setting('call_tb_text')); return $t !== '' ? $t : CL_TB_TEXT; }
+ function cl_fwd(): string { $p = norm_phone((string)setting('call_fwd')); return strlen($p) === 12 ? $p : ''; }
++/* (2.99.659 SW) every salon number is on Telnyx now (SignalWire closed): the salon's OWN numbers (never texted back, never the iPhone to ring) =
++   the iPhone that rings, the Telnyx number (tx_number), the salon phone, the texting phone + an old sw_number only while that setting is still there. */
++/** (2.99.659 SW) the salon LINE numbers (a loop if the iPhone to ring / the owner phone were one): the salon phone, the Telnyx number, an old sw_number. */
++function cl_line_numbers(): array {
++    if (!function_exists('tx_number')) require_once __DIR__ . '/calls-tx.php';
++    return array_values(array_filter(array_map(fn($x) => norm_phone((string)$x), [setting('salon_phone'), tx_number(), setting('sw_number')]), fn($x) => strlen($x) === 12));
++}
++function cl_own_numbers(): array {
++    if (!function_exists('tx_number')) require_once __DIR__ . '/calls-tx.php';
++    $l = array_map(fn($x) => norm_phone((string)$x), [setting('call_fwd'), tx_number(), setting('salon_phone'), setting('as_iphone'), setting('sw_number')]);
++    return array_values(array_unique(array_filter($l, fn($x) => strlen($x) === 12)));
++}
+ function cl_sec(string $k): string { if (!function_exists('ad_dec')) require_once __DIR__ . '/android.php'; $v = ad_dec((string)setting($k));
+     if ($v === '' && !cl_own() && ($k === 'sw_token' || $k === 'sw_signing')) $v = (string)(cl_sw_shared()[$k === 'sw_token' ? 'token' : 'signing'] ?? ''); return $v; } // (2.99.598 - LENH 595) none of its own: NailFlow's
+ /* (2.99.598 - LENH 595, anh Logan 20:12) ONE SignalWire account for every salon (HQ -> 📞 Calls): Space, Project ID, API token, Signing Key in shared/call-sw.json
+@@ -109,7 +122,8 @@
+         + ['block' => cl_block_on()] // (2.99.594)
+         + ['owner' => ($o = norm_phone((string)setting('call_owner'))) !== '' ? pretty_phone($o) : '', 'approve' => function_exists('cl_pend_on') ? cl_pend_on() : cl_pend_on_cfg(), 'approveAuto' => (string)setting('call_approve') === '' && cl_pend_on_cfg()] // (2.99.604 – 602B v3)
+         + (static function (): array { require_once __DIR__ . '/calls-agent.php'; $ok = cl_agent_allowed(); // (2.99.605 – LỆNH 605) the real-time AI receptionist (American Nails)
+-            return ['agentOk' => $ok, 'agent' => $ok && cl_agent_on(), 'agentUrl' => $ok && cl_agent_on() && cl_secret_ok() /* (2.99.646 - LENH 646) */ ? cl_agent_url('swml') : '']; })();
++            return ['agentOk' => $ok, 'agent' => $ok && cl_agent_on(), 'agentUrl' => $ok && cl_agent_on() && cl_secret_ok() /* (2.99.646 - LENH 646) */ ? cl_agent_url('swml') : '']; })()
++        + (static function (): array { if (!function_exists('tx_number')) require_once __DIR__ . '/calls-tx.php'; $n = tx_allowed() ? tx_number() : ''; return ['txNumber' => $n !== '' ? pretty_phone($n) : '']; })(); /* (2.99.659 SW) the salon's phone number = its Telnyx number */
+ }
+ function cl_pend_on_cfg(): bool { $v = (string)setting('call_approve'); if ($v !== '') return $v === '1'; $b = strtotime((string)setting('sw_bought_at')); return (string)setting('sw_by') === 'hq' && $b && $b > time() - 14 * 86400; } // = cl_pend_on (calls-job)
+ /** (2.99.604 – 602B v3 1b) outside the opening hours / a closed day: no ring – the switchboard at once. */
+@@ -121,9 +135,9 @@
+     if (array_key_exists('tbText', $in)) { $t = trim(preg_replace('/[ \t]+/', ' ', (string)$in['tbText'])); if (mb_strlen($t) > 320) throw new RuntimeException('The missed-call text is too long (320 letters at most).'); set_setting('call_tb_text', $t === CL_TB_TEXT ? '' : $t); } // (2.99.590)
+     foreach (['on' => 'call_on', 'rec' => 'call_rec_on', 'vm' => 'call_vm_on', 'tb' => 'call_tb_on', 'screen' => 'call_screen', 'block' => 'call_block'] as $k => $s) if (array_key_exists($k, $in)) set_setting($s, !empty($in[$k]) ? '1' : '0');
+     if (array_key_exists('fwd', $in)) { $p = trim((string)$in['fwd']); $n = norm_phone($p); if ($p !== '' && strlen($n) !== 12) throw new RuntimeException('The iPhone number must have 10 digits.');
+-        if ($p !== '' && in_array($n, [norm_phone((string)setting('salon_phone')), norm_phone((string)setting('sw_number'))], true)) throw new RuntimeException('The iPhone to ring must be another number than the salon line you forward (it would ring in a loop).'); /* (2.99.598) */ set_setting('call_fwd', $p === '' ? '' : $n); }
++        if ($p !== '' && in_array($n, cl_line_numbers(), true)) /* (2.99.659 SW) + the Telnyx number */ throw new RuntimeException('The iPhone to ring must be another number than the salon line you forward (it would ring in a loop).'); /* (2.99.598) */ set_setting('call_fwd', $p === '' ? '' : $n); }
+     if (array_key_exists('owner', $in)) { $p = trim((string)$in['owner']); $n = norm_phone($p); if ($p !== '' && strlen($n) !== 12) throw new RuntimeException('The owner phone must have 10 digits.'); // (2.99.604) questions → this phone
+-        if ($p !== '' && in_array($n, [norm_phone((string)setting('salon_phone')), norm_phone((string)setting('sw_number'))], true)) throw new RuntimeException('The owner phone must be another number than the salon line (it would ring in a loop).'); set_setting('call_owner', $p === '' ? '' : $n); }
++        if ($p !== '' && in_array($n, cl_line_numbers(), true)) /* (2.99.659 SW) + the Telnyx number */ throw new RuntimeException('The owner phone must be another number than the salon line (it would ring in a loop).'); set_setting('call_owner', $p === '' ? '' : $n); }
+     if (array_key_exists('agent', $in)) { require_once __DIR__ . '/calls-agent.php'; if (cl_agent_allowed()) set_setting('call_engine', !empty($in['agent']) ? 'agent' : 'ivr'); } // (2.99.605)
+     if (array_key_exists('approve', $in) && (bool)$in['approve'] !== cl_pend_on_cfg()) set_setting('call_approve', !empty($in['approve']) ? '1' : '0'); // (2.99.604) only when changed (the 14 days of a new salon stay automatic)
+     if (array_key_exists('number', $in)) { $p = trim((string)$in['number']); $n = norm_phone($p); if ($p !== '' && strlen($n) !== 12) throw new RuntimeException('The SignalWire number must have 10 digits.'); set_setting('sw_number', $p === '' ? '' : $n); }
+diff -ruN int657/inc/core.php int659/inc/core.php
+--- int657/inc/core.php	2026-11-05 22:55:11.335072847 -0600
++++ int659/inc/core.php	2026-11-06 00:25:01.317967511 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.657');
++define('APP_VERSION', '2.99.659');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN int657/inc/hq-calls.php int659/inc/hq-calls.php
+--- int657/inc/hq-calls.php	2026-10-31 22:10:06.000000000 -0500
++++ int659/inc/hq-calls.php	2026-11-06 00:24:55.711703430 -0600
+@@ -1,377 +1,152 @@
+ <?php
+-/* (2.99.598 - LENH 595, anh Logan 20:12 / 20:40) AN HQ -> 📞 Calls: the AI call assistant for another salon in about a minute.
+-   - ONE SignalWire account (Space, Project ID, API token, Signing Key) saved once in HQ: shared/call-sw.json (0600, outside the web) – the token / key
+-     never come back to a page, a log or the audit (only "set").
+-   - A salon: "Get a phone number" (area code → SignalWire search, the nicest numbers first) → Buy $0.50/mo (asked once + the Authenticator) → the number's
+-     "A call comes in" = https://<the salon's own address>/call_in.php (POST) set through the API, its SignalWire name = the salon name → saved in the salon
+-     (sw_number, sw_number_id, sw_by = hq). Never bought twice: a purchase in progress is written first; a broken answer → the project's numbers are looked at
+-     before anything else. "Release number" (asked twice + the short name + the Authenticator).
+-   - A salon with its OWN SignalWire token (American Nails 606-1616) and the demo: shown only, never changed here.
+-   - Costs per salon / month: the real SignalWire prices (Calls + Recordings of the month, read at most once a day) + an estimate from the salon's calls.
+-   SignalWire REST (docs 31/10/2026): GET/POST /api/relay/rest/phone_numbers[/search], PUT/DELETE /api/relay/rest/phone_numbers/{id};
+-   Compatibility: /api/laml/2010-04-01/Accounts/{project}/Calls.json · Recordings.json. Basic auth = Project ID : API token (scope Numbers). */
++/* (2.99.659 - anh Logan 05/11: "tat ca so chuyen qua TELNYX, bo SignalWire") AN HQ -> 📞 Calls = what TELNYX does for each salon, read from the salon's own settings.
++   - A salon: its Telnyx number (tx_number; none = "not set up", American Nails too), Telnyx on / off (tx_on), the iPhone that rings
++     first (call_fwd), app set (tx_app_id), AI assistant set (tx_assistant_id), live booking (tx_live), "API key: set / not set" (tx_key - NEVER the key),
++     the Telnyx calls this month (calls.prov = 'tx').
++   - HQ may change: the iPhone that rings (loop check vs the salon line / the Telnyx number), Telnyx on / off, live booking on / off - audited in the salon.
++   - (2.99.659 + anh Logan 23:57 "chi co HQ moi duoc lam") the Telnyx SET UP is done ONLY here: ONE Telnyx account (API key + Public Key) for every salon, saved once
++     in <app>/shared/call-tx.json (0600, outside the web, never shown / logged again - the salon reads it when it has no key of its own: tx_key() in calls-tx.php);
++     per salon: its Telnyx number (tx_number, never a number of another salon) + "Set up automatically" = the salon's OWN tx_setup_step() run in the salon
++     (tx_hq.php, signed with the salon's own key that only HQ on this server can make from its config) - no Telnyx call is written here.
++   - The plan of the AI call minutes is 🤖 AI call (hq_ai_* in inc/hq.php) - shown here, changed there.
++   2.99.659 requirement changed: SignalWire dropped (Logan 05/11) - no SignalWire account / search / buy / release / costs in HQ any more
++   (the old 598 / 603 code is gone; hq.json keys sw_buy / sw_guide / call_plan are left as they are, unused). */
+ declare(strict_types=1);
+-require_once __DIR__ . '/calls.php';
+ 
+-const HQC_PRICE = ['number' => 0.50, 'in' => 0.0066, 'out' => 0.008, 'rec' => 0.002, 'stt' => 0.003, 'ai' => 0.001]; // $ – SignalWire pricing page 31/10/2026 · OpenAI gpt-4o-mini-transcribe ~ · AI ~ per call
+-const HQC_MIN_VER = '2.99.598';
+ 
+-/* ---------- the shared SignalWire keys ---------- */
+-function hqc_sw(): array { $d = cl_sw_shared(); return ['space' => (string)($d['space'] ?? ''), 'project' => (string)($d['project'] ?? ''), 'token' => (string)($d['token'] ?? ''), 'signing' => (string)($d['signing'] ?? ''), 'at' => (string)($d['at'] ?? '')]; }
+-function hqc_sw_info(): array { $d = hqc_sw(); return ['space' => $d['space'], 'project' => $d['project'], 'tokenSet' => $d['token'] !== '', 'signSet' => $d['signing'] !== '', 'at' => $d['at']]; }
+-function hqc_sw_save(array $in): array {
+-    $d = cl_sw_shared();
+-    if (array_key_exists('space', $in)) { $s = strtolower(trim((string)$in['space'])); $s = preg_replace('#^https?://#', '', $s); $s = (string)preg_replace('#\.signalwire\.com.*$#', '', $s);
+-        if ($s !== '' && !preg_match('/^[a-z0-9-]{2,60}$/', $s)) throw new RuntimeException('Space: the part before .signalwire.com (e.g. nailflowapp).'); $d['space'] = $s; }
+-    if (array_key_exists('project', $in)) { $p = strtolower(trim((string)$in['project'])); if ($p !== '' && !preg_match('/^[0-9a-f-]{36}$/', $p)) throw new RuntimeException('Project ID: 36 letters / numbers with dashes.'); $d['project'] = $p; }
+-    foreach (['token' => 'API token', 'signing' => 'Signing Key'] as $k => $name) {
+-        if (!empty($in[$k . 'Clear'])) $d[$k] = '';
+-        elseif (trim((string)($in[$k] ?? '')) !== '') { $v = trim((string)$in[$k]); if (strlen($v) < 16 || strlen($v) > 200 || preg_match('/\s/', $v)) throw new RuntimeException('This does not look like a SignalWire ' . $name . '.'); $d[$k] = $v; }
+-    }
++/* ---------- the ONE Telnyx account (HQ) ---------- */
++function hqc_txacct_file(): string { require_once __DIR__ . '/colorlib.php'; return clib_dir() . '/call-tx.json'; } // = tx_shared_file() of every salon
++function hqc_txacct(): array { $f = hqc_txacct_file(); $j = is_file($f) ? json_decode((string)@file_get_contents($f), true) : null; return is_array($j) ? $j : []; }
++function hqc_txacct_info(): array { $d = hqc_txacct(); return ['ok' => true, 'keySet' => trim((string)($d['key'] ?? '')) !== '', 'pubSet' => trim((string)($d['pub'] ?? '')) !== '', 'at' => (string)($d['at'] ?? '')]; }
++function hqc_txacct_save(array $in): array {
++    $d = hqc_txacct(); $chg = [];
++    if (!empty($in['keyClear'])) { $d['key'] = ''; $chg[] = 'API key removed'; }
++    elseif (trim((string)($in['key'] ?? '')) !== '') { $k = trim((string)$in['key']); if (!preg_match('/^[A-Za-z0-9_\-.]{20,200}$/', $k)) throw new RuntimeException('That does not look like a Telnyx API key.'); $d['key'] = $k; $chg[] = 'new API key'; }
++    if (!empty($in['pubClear'])) { $d['pub'] = ''; $chg[] = 'Public Key removed'; }
++    elseif (trim((string)($in['pub'] ?? '')) !== '') { $p = trim((string)$in['pub']); $b = base64_decode($p, true); if ($b === false || strlen($b) !== 32) throw new RuntimeException('The Public Key must be the base64 key from Telnyx (Keys & Credentials → Public Key).'); $d['pub'] = $p; $chg[] = 'new Public Key'; }
++    if (!$chg) return hqc_txacct_info();
+     $d['at'] = date('Y-m-d H:i');
+-    $f = cl_sw_file(); $dir = dirname($f); if (!is_dir($dir)) @mkdir($dir, 0700, true);
+-    if (@file_put_contents($f, json_encode($d, JSON_UNESCAPED_SLASHES), LOCK_EX) === false) throw new RuntimeException('Could not save it on the server.');
+-    @chmod($f, 0600);
+-    return hqc_sw_info();
++    $f = hqc_txacct_file(); $dir = dirname($f); if (!is_dir($dir)) @mkdir($dir, 0700, true);
++    $tmp = $f . '.tmp' . bin2hex(random_bytes(4)); $old = umask(0077);
++    try { if (@file_put_contents($tmp, json_encode($d, JSON_UNESCAPED_SLASHES), LOCK_EX) === false || !@chmod($tmp, 0600) || !@rename($tmp, $f)) { @unlink($tmp); throw new RuntimeException('Could not save it on the server.'); } }
++    finally { umask($old); }
++    hq_change(function (&$x) use ($chg) { hq_log($x, '-', 'Telnyx account (calls)', '', implode(', ', $chg) . ' – not shown'); });
++    return hqc_txacct_info();
+ }
+ 
+-/* (595-C, anh Logan 20:49 "anh chỉ bấm mua số") the shared account is TAKEN from American Nails' own Settings → Calls (sw_space, sw_project, the token and the
+-   Signing Key there are encrypted with AN's own key: opened here on the server only) – nobody pastes anything. Done once, when the shared file has no token yet. */
++/** American Nails' entry in HQ (its web folder = HQ's own). */
+ function hqc_main(): ?array { foreach (hq_salon_list() as $sl) if (rtrim((string)$sl['root'], '/') === rtrim(hq_root(), '/')) return $sl; return null; }
+-function hqc_dec(string $box, array $c): string { // = ad_dec() of that salon (its key comes from its own config)
+-    if ($box === '') return ''; $k = hash('sha256', 'an-android|' . ($c['db_pass'] ?? '') . '|' . ($c['db_name'] ?? '') . '|' . ($c['db_user'] ?? '') . '|' . ($c['sqlite_path'] ?? ''), true);
+-    $raw = base64_decode(substr($box, 3), true); if ($raw === false) return '';
+-    if (str_starts_with($box, 's1:') && function_exists('sodium_crypto_secretbox_open')) { $p = @sodium_crypto_secretbox_open(substr($raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES), substr($raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES), $k); return $p === false ? '' : $p; }
+-    if (str_starts_with($box, 'g1:')) { $p = openssl_decrypt(substr($raw, 28), 'aes-256-gcm', $k, OPENSSL_RAW_DATA, substr($raw, 0, 12), substr($raw, 12, 16)); return $p === false ? '' : $p; }
+-    return '';
+-}
+-function hqc_import_main(): bool {
+-    if (hqc_sw()['token'] !== '') return false;
+-    $sl = hqc_main(); if (!$sl) return false;
+-    try { $c = hq_cfg($sl['root']); $s = hq_set(hq_pdo($c), $c); } catch (Throwable $e) { return false; }
+-    $tok = hqc_dec((string)($s['sw_token'] ?? ''), $c); $sig = hqc_dec((string)($s['sw_signing'] ?? ''), $c);
+-    if ($tok === '' || trim((string)($s['sw_project'] ?? '')) === '' || trim((string)($s['sw_space'] ?? '')) === '') return false;
+-    hqc_sw_save(['space' => (string)$s['sw_space'], 'project' => (string)$s['sw_project'], 'token' => $tok, 'signing' => $sig]);
+-    hq_change(function (&$d) { hq_log($d, '-', 'SignalWire account (calls)', '', 'taken from American Nails (Settings → Calls) – not shown'); });
+-    return true;
+-}
+-/** "SignalWire: nailflowapp ✓ · OpenAI ✓ · Balance …" (balance: SignalWire gives it only to a Personal Access Token – tried with the project token, cached 1 hour). */
+-function hqc_status(): array {
+-    hqc_import_main(); $sw = hqc_sw_info(); $stt = cl_stt_info()['set'];
+-    $bal = null; $f = hq_dir() . '/calls-balance.json'; $x = is_file($f) ? (json_decode((string)@file_get_contents($f), true) ?: []) : [];
+-    if ($sw['tokenSet'] && (int)($x['t'] ?? 0) < time() - 3600) { $x = ['t' => time(), 'v' => null];
+-        try { [$code, $j] = hqc_req('GET', '/api/space/balance'); if ($code === 200 && is_array($j) && is_numeric($j['current_balance'] ?? null)) $x['v'] = round((float)$j['current_balance'], 2); } catch (Throwable $e) {}
+-        @file_put_contents($f, json_encode($x), LOCK_EX); }
+-    $bal = $x['v'] ?? null;
+-    return ['space' => $sw['space'], 'swOk' => $sw['tokenSet'] && $sw['signSet'] && $sw['project'] !== '', 'openai' => $stt, 'balance' => $bal];
+-}
+-
+-/* ---------- SignalWire REST (the shared account) ---------- */
+-function hqc_base(): string { $b = (string)getenv('NF_SW_BASE'); if ($b !== '') return rtrim($b, '/'); $s = hqc_sw()['space']; return $s !== '' ? 'https://' . $s . '.signalwire.com' : ''; }
+-/** [http code, decoded JSON or null]; code 0 = no answer (network). Never logs the token. */
+-function hqc_req(string $method, string $path, ?array $body = null): array {
+-    $d = hqc_sw(); $base = hqc_base();
+-    if ($base === '' || $d['project'] === '' || $d['token'] === '') throw new RuntimeException('Save the SignalWire account first (HQ → 📞 Calls → SignalWire).');
+-    $ch = curl_init($base . $path);
+-    $o = [CURLOPT_CUSTOMREQUEST => $method, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 25, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+-        CURLOPT_USERPWD => $d['project'] . ':' . $d['token'], CURLOPT_HTTPHEADER => ['Accept: application/json', 'Content-Type: application/json']];
+-    if ($body !== null) $o[CURLOPT_POSTFIELDS] = json_encode($body, JSON_UNESCAPED_SLASHES);
+-    curl_setopt_array($ch, $o); $raw = curl_exec($ch); $code = $raw === false ? 0 : (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+-    $j = is_string($raw) && $raw !== '' ? json_decode($raw, true) : null;
+-    return [$code, is_array($j) ? $j : null];
+-}
+-function hqc_err(int $code, ?array $j): string {
+-    $m = ''; if (is_array($j)) { $e = $j['errors'][0] ?? null; $m = is_array($e) ? (string)($e['detail'] ?? ($e['message'] ?? '')) : (string)($j['message'] ?? ($j['error'] ?? '')); }
+-    return 'SignalWire said ' . ($code ?: 'nothing (no connection)') . ($m !== '' ? ': ' . mb_substr($m, 0, 160) : '') . '.';
+-}
+-/** A number already in the shared project (null = not there). Looks through the pages (a filter the API may ignore is checked by hand). */
+-function hqc_find(string $e164): ?array {
+-    $path = '/api/relay/rest/phone_numbers?filter_number=' . rawurlencode($e164) . '&page_size=100';
+-    for ($i = 0; $i < 20 && $path !== ''; $i++) {
+-        [$code, $j] = hqc_req('GET', $path); if ($code !== 200 || !$j) throw new RuntimeException(hqc_err($code, $j));
+-        foreach ((array)($j['data'] ?? []) as $n) if (hq_norm_phone((string)($n['number'] ?? '')) === $e164) return $n;
+-        $next = (string)($j['links']['next'] ?? ''); $path = $next !== '' ? (string)preg_replace('#^https?://[^/]+#', '', $next) : '';
+-    }
+-    return null;
+-}
+-/** How nice a number looks: repeats, pairs, 168 / 68 / 86 / 88 / 99, ABAB / AABB / ABBA endings, few different digits. */
+-function hqc_score(string $e164): int {
+-    $d = substr(preg_replace('/\D/', '', $e164), -7); $l4 = substr($d, -4); $sc = 0;
+-    if (preg_match('/(\d)\1\1\1/', $d)) $sc += 40; elseif (preg_match('/(\d)\1\1/', $d)) $sc += 18;
+-    $sc += 4 * preg_match_all('/(\d)\1/', $d);
+-    foreach (['168' => 16, '1688' => 10, '6868' => 14, '8888' => 20, '68' => 5, '86' => 5, '88' => 6, '99' => 4] as $p => $v) if (str_contains($d, (string)$p)) $sc += $v;
+-    if ($l4[0] === $l4[2] && $l4[1] === $l4[3]) $sc += 22;                     // ABAB (1616)
+-    if ($l4[0] === $l4[1] && $l4[2] === $l4[3]) $sc += 18;                     // AABB
+-    if ($l4[0] === $l4[3] && $l4[1] === $l4[2]) $sc += 12;                     // ABBA
+-    if (preg_match('/(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|3210)/', $d)) $sc += 14;
+-    $sc += 3 * (7 - count(array_unique(str_split($d))));
+-    return $sc;
+-}
+-
+-/* ---------- one salon ---------- */
+ function hqc_ctx(string $id): array {
+     $sl = hq_salon($id); $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('Cannot read this salon.');
+     $p = hq_pdo($c); return [$sl, $c, $p, hq_set($p, $c)];
+ }
+-function hqc_url(array $c): string { return rtrim((string)($c['site_url'] ?? ''), '/'); }
+-function hqc_hook(array $c): string { return hqc_url($c) . '/call_in.php'; }
+-function hqc_ver(string $root): string { return preg_match("/define\\('APP_VERSION', '([^']+)'\\)/", (string)@file_get_contents($root . '/inc/core.php'), $m) ? $m[1] : ''; }
+-/** What must be true before a number is bought (a salon of the shared code too): new code, call_in.php in its web folder, the calls routes in ITS api.php, the cron running, https. */
+-function hqc_checks(array $sl, array $c, array $s): array {
+-    $root = rtrim((string)$sl['root'], '/'); $v = hqc_ver($root); $api = (string)@file_get_contents($root . '/api.php');
+-    $cron = (string)($s['cron_turn_at'] ?? ''); $cronOk = $cron !== '' && strtotime($cron) > time() - 600;
+-    $chk = [
+-        ['code', $v !== '' && version_compare($v, HQC_MIN_VER, '>='), 'Code ' . ($v ?: '?') . ' (needs ' . HQC_MIN_VER . '+)'],
+-        ['callin', is_file($root . '/call_in.php'), 'call_in.php in the web folder'],
+-        ['routes', str_contains($api, "'calls_state'") || (str_contains($api, 'API_ROUTES') && is_file($root . '/inc/api/calls.php')), 'Calls routes in this salon\'s api.php'],
+-        ['cron', $cronOk, 'Cron every minute' . ($cron !== '' ? ' (last ' . $cron . ')' : ' (never ran)')],
+-        ['https', str_starts_with(hqc_url($c), 'https://'), 'Address ' . (hqc_url($c) ?: '?')],
+-    ];
+-    return array_map(fn($x) => ['k' => $x[0], 'ok' => (bool)$x[1], 't' => $x[2]], $chk);
++function hqc_is_main(array $sl): bool { return hq_is_main_root((string)$sl['root']); }
++/** The salon's Telnyx number (E.164) – '' = none (= tx_number() in the salon: no fallback, American Nails too). */
++function hqc_tx_number(array $sl, array $s): string { return hq_norm_phone((string)($s['tx_number'] ?? '')); }
++/** Telnyx calls since the 1st of this month (a salon without the calls table / the prov column yet: 0). */
++function hqc_tx_calls(PDO $p): int {
++    try { $st = $p->prepare("SELECT COUNT(*) FROM calls WHERE prov = 'tx' AND created_at >= ?"); $st->execute([date('Y-m-01') . ' 00:00:00']); return (int)$st->fetchColumn(); }
++    catch (Throwable $e) { return 0; }
++}
++/** What HQ shows of a salon's Telnyx (never a key / secret / id). */
++function hqc_tx(array $sl, array $c, PDO $p, array $s): array {
++    $num = hqc_tx_number($sl, $s); $fwd = hq_norm_phone((string)($s['call_fwd'] ?? ''));
++    $own = (string)($s['tx_key'] ?? '') !== ''; $shared = hqc_txacct_info()['keySet']; $key = $own || $shared; /* = tx_key(): HQ's first, the old own key only as a fallback */ $app = trim((string)($s['tx_app_id'] ?? '')) !== ''; $ai = trim((string)($s['tx_assistant_id'] ?? '')) !== '';
++    $setUp = $own || $app || hq_norm_phone((string)($s['tx_number'] ?? '')) !== '';
++    return ['setUp' => $setUp, 'number' => $num !== '' ? hq_pretty_phone($num) : '', 'numberDigits' => $num !== '' ? substr($num, 2) : '', 'on' => ($s['tx_on'] ?? '') === '1',
++        'fwd' => $fwd !== '' ? hq_pretty_phone($fwd) : '', 'keySet' => $key, 'keyOwn' => $own, 'keyShared' => $shared, 'appSet' => $app, 'aiSet' => $ai, 'live' => ($s['tx_live'] ?? '') === '1',
++        'voice' => (string)($s['tx_voice'] ?? ''), 'model' => (string)($s['tx_model'] ?? ''),
++        'code' => is_file(rtrim((string)$sl['root'], '/') . '/call_tx.php'), 'hqSetup' => is_file(rtrim((string)$sl['root'], '/') . '/tx_hq.php'), 'calls' => hqc_tx_calls($p)];
+ }
+ function hqc_card(string $id): array {
+-    hqc_import_main(); [$sl, $c, $p, $s] = hqc_ctx($id);
+-    $own = (string)($s['sw_token'] ?? '') !== ''; $demo = !empty($c['demo']);
+-    $month = date('Y-m') . '-01';
+-    $n = fn(string $sql, array $a) => (int)(($st = $p->prepare($sql)) && $st->execute($a) ? $st->fetchColumn() : 0);
+-    $calls = 0; try { $calls = $n('SELECT COUNT(*) FROM calls WHERE created_at >= ?', [$month . ' 00:00:00']); } catch (Throwable $e) {}
+-    $num = hq_norm_phone((string)($s['sw_number'] ?? ''));
+-    $pending = (array)(hq_load()['sw_buy'][$id] ?? []);
+-    return ['ok' => true, 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id), 'own' => $own, 'demo' => $demo, 'byHq' => ($s['sw_by'] ?? '') === 'hq',
+-        'number' => $num !== '' ? hq_pretty_phone($num) : '', 'numberId' => (string)($s['sw_number_id'] ?? ''), 'hookOk' => ($s['sw_hook_ok'] ?? '') === '1', 'hook' => hqc_hook($c),
+-        'on' => ($s['call_on'] ?? '') === '1', 'fwd' => ($f = hq_norm_phone((string)($s['call_fwd'] ?? ''))) !== '' ? hq_pretty_phone($f) : '',
+-        'area' => substr(preg_replace('/\D/', '', preg_replace('/^\+?1(?=\d{10}$)/', '', preg_replace('/\D/', '', (string)($s['salon_phone'] ?? '')))), 0, 3),
+-        'salonPhone' => (string)($s['salon_phone'] ?? ''), 'calls' => $calls, 'checks' => hqc_checks($sl, $c, $s), 'shared' => hqc_sw_info()['tokenSet'],
+-        'pending' => $pending ? (string)($pending['number'] ?? '') : '', 'short' => hq_prefix($s),
+-        'ownerCell' => ($oc = hq_norm_phone((string)($s['owner_cell'] ?? ''))) !== '' ? hq_pretty_phone($oc) : '', 'guideAt' => (string)(hq_load()['sw_guide'][$id] ?? ''),
+-        'plan' => hqc_plan($id), 'plans' => HQC_PLANS];
+-}
+-function hqc_guard(string $id, bool $needFree): array {
+-    $x = hqc_ctx($id); [$sl, $c, $p, $s] = $x;
+-    if (!empty($c['demo'])) throw new RuntimeException('The demo salon never gets a number.');
+-    if ((string)($s['sw_token'] ?? '') !== '') throw new RuntimeException('This salon has its own SignalWire account – change it in its own Settings → Calls.');
+-    if ($needFree && hq_norm_phone((string)($s['sw_number'] ?? '')) !== '') throw new RuntimeException('This salon already has a number.');
+-    return $x;
+-}
+-function hqc_search(string $id, string $area, string $contains): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, true);
+-    $area = preg_replace('/\D/', '', $area); $contains = preg_replace('/\D/', '', $contains);
+-    if (!preg_match('/^[2-9]\d{2}$/', $area)) throw new RuntimeException('Area code: 3 digits.');
+-    if ($contains !== '' && (strlen($contains) < 3 || strlen($contains) > 7)) throw new RuntimeException('"Contains": 3 to 7 digits (or empty).');
+-    [$code, $j] = hqc_req('GET', '/api/relay/rest/phone_numbers/search?areacode=' . $area . '&max_results=100' . ($contains !== '' ? '&contains=' . $contains : ''));
+-    if ($code !== 200 || !$j) throw new RuntimeException(hqc_err($code, $j));
+-    $out = [];
+-    foreach ((array)($j['data'] ?? []) as $x) { $e = hq_norm_phone((string)($x['e164'] ?? ($x['number'] ?? ''))); $cap = (array)($x['capabilities'] ?? []); $has = fn($k) => in_array($k, $cap, true) || !empty($cap[$k]); /* (2.99.601) SignalWire: e164 + capabilities list */ if (strlen($e) !== 12 || !$has('voice')) continue;
+-        $out[] = ['number' => $e, 'pretty' => hq_pretty_phone($e), 'city' => trim((string)($x['rate_center'] ?? ($x['city'] ?? '')) . ' ' . (string)($x['region'] ?? '')), 'score' => hqc_score($e), 'sms' => $has('sms')]; }
+-    usort($out, fn($a, $b) => [$b['score'], $a['number']] <=> [$a['score'], $b['number']]);
+-    return ['ok' => true, 'area' => $area, 'numbers' => $out];
+-}
+-/** Point the number to the salon: "A call comes in" = its call_in.php (POST), its name = the salon name; read back to be sure. */
+-function hqc_set_hook(array $c, array $s, string $nid): bool {
+-    $url = hqc_hook($c);
+-    [$code, $j] = hqc_req('PUT', '/api/relay/rest/phone_numbers/' . rawurlencode($nid), ['name' => mb_substr('NailFlow – ' . (string)($s['salon_name'] ?? ''), 0, 60),
+-        'call_handler' => 'laml_webhooks', 'call_request_url' => $url, 'call_request_method' => 'POST']);
+-    if ($code !== 200) { error_log('598 hq calls hook: ' . hqc_err($code, $j)); return false; }
+-    [$code, $j] = hqc_req('GET', '/api/relay/rest/phone_numbers/' . rawurlencode($nid));
+-    return $code === 200 && is_array($j) && (string)($j['call_request_url'] ?? '') === $url && (string)($j['call_handler'] ?? '') === 'laml_webhooks';
+-}
+-function hqc_buy(string $id, string $number): array {
+-    $e = hq_norm_phone($number); if (!preg_match('/^\+1[2-9]\d{2}[2-9]\d{6}$/', $e)) throw new RuntimeException('Pick a number from the list.');
+-    $lock = fopen(hq_dir() . '/calls-buy.lock', 'c'); if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) throw new RuntimeException('Another purchase is running – wait a few seconds.');
+-    try {
+-        [$sl, $c, $p, $s] = hqc_guard($id, true);
+-        if (array_filter(hqc_checks($sl, $c, $s), fn($x) => !$x['ok'])) throw new RuntimeException('This salon is not ready for calls yet (see the checks).');
+-        $was = (array)(hq_load()['sw_buy'][$id] ?? []);
+-        if ($was && (string)($was['number'] ?? '') !== $e) throw new RuntimeException('A purchase of ' . hq_pretty_phone((string)$was['number']) . ' did not finish – tap "Check the purchase" first.');
+-        hq_change(function (&$d) use ($id, $e) { $d['sw_buy'][$id] = ['number' => $e, 'at' => date('Y-m-d H:i:s')]; }); // written BEFORE asking SignalWire
+-        $n = $was ? hqc_find($e) : null; // a purchase that broke before: maybe it is there already
+-        if (!$n) {
+-            [$code, $j] = hqc_req('POST', '/api/relay/rest/phone_numbers', ['number' => $e]);
+-            if (($code === 200 || $code === 201) && is_array($j) && !empty($j['id'])) $n = $j;
+-            elseif ($code === 0 || $code >= 500) { $n = hqc_find($e); if (!$n) { hq_change(function (&$d) use ($id) { unset($d['sw_buy'][$id]); }); throw new RuntimeException('Not bought (' . hqc_err($code, $j) . ') – nothing was charged. Try again.'); } }
+-            else { hq_change(function (&$d) use ($id) { unset($d['sw_buy'][$id]); }); throw new RuntimeException('Not bought – ' . hqc_err($code, $j)); }
+-        }
+-        $nid = (string)$n['id'];
+-        hq_put($p, $c, 'sw_number', $e); hq_put($p, $c, 'sw_number_id', $nid); hq_put($p, $c, 'sw_by', 'hq'); hq_put($p, $c, 'sw_hook_ok', ''); hq_put($p, $c, 'sw_bought_at', date('Y-m-d')); // (2.99.603) the bill's first day
+-        hq_change(function (&$d) use ($id) { unset($d['sw_buy'][$id]); });
+-        $hook = hqc_set_hook($c, $s, $nid); hq_put($p, $c, 'sw_hook_ok', $hook ? '1' : '');
+-        $fwd = hq_norm_phone((string)($s['call_fwd'] ?? ''));
+-        if ($fwd === '' && ($oc = hq_norm_phone((string)($s['owner_cell'] ?? ''))) !== '' && !in_array($oc, [hq_norm_phone((string)($s['salon_phone'] ?? '')), $e], true)) { hq_put($p, $c, 'call_fwd', $oc); $fwd = $oc; } // (595-C) the owner's cell saved in HQ rings (changeable)
+-        if ($hook && $fwd !== '') hq_put($p, $c, 'call_on', '1');
+-        hq_salon_audit($p, 'Calls: AI phone number', '–', hq_pretty_phone($e) . ' (bought in HQ' . ($hook ? '' : ', webhook NOT set') . ')');
+-        hq_change(function (&$d) use ($id, $e, $hook) { hq_log($d, $id, 'Calls: bought number', '', hq_pretty_phone($e) . ' · $0.50/mo' . ($hook ? ' · webhook ✓' : ' · webhook FAILED')); });
+-        return ['ok' => true, 'hook' => $hook, 'card' => hqc_card($id)];
+-    } finally { flock($lock, LOCK_UN); fclose($lock); }
+-}
+-/** "Check the purchase": a purchase that broke in the middle → found in the project (saved) or not (cleared, nothing charged). */
+-function hqc_recheck(string $id): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, false); $was = (array)(hq_load()['sw_buy'][$id] ?? []);
+-    if (!$was) return ['ok' => true, 'card' => hqc_card($id)];
+-    $e = (string)$was['number']; $n = hqc_find($e);
+-    if ($n) { hq_put($p, $c, 'sw_number', $e); hq_put($p, $c, 'sw_number_id', (string)$n['id']); hq_put($p, $c, 'sw_by', 'hq'); $hook = hqc_set_hook($c, $s, (string)$n['id']); hq_put($p, $c, 'sw_hook_ok', $hook ? '1' : '');
+-        hq_change(function (&$d) use ($id, $e) { unset($d['sw_buy'][$id]); hq_log($d, $id, 'Calls: number found after a broken purchase', '', hq_pretty_phone($e)); }); }
+-    else hq_change(function (&$d) use ($id) { unset($d['sw_buy'][$id]); });
+-    return ['ok' => true, 'found' => (bool)$n, 'card' => hqc_card($id)];
+-}
+-function hqc_rehook(string $id): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, false); $nid = (string)($s['sw_number_id'] ?? ''); if ($nid === '') throw new RuntimeException('No number bought in HQ.');
+-    $ok = hqc_set_hook($c, $s, $nid); hq_put($p, $c, 'sw_hook_ok', $ok ? '1' : '');
+-    if ($ok && hq_norm_phone((string)($s['call_fwd'] ?? '')) !== '' && ($s['sw_hook_ok'] ?? '') !== '1') hq_put($p, $c, 'call_on', '1'); // the first time the webhook is set: on (like a purchase)
+-    hq_change(function (&$d) use ($id, $ok) { hq_log($d, $id, 'Calls: webhook set again', '', $ok ? 'ok' : 'failed'); });
+-    if (!$ok) throw new RuntimeException('SignalWire did not take the webhook – try again in a minute.');
+-    return ['ok' => true, 'card' => hqc_card($id)];
++    [$sl, $c, $p, $s] = hqc_ctx($id); $main = hqc_is_main($sl);
++    $ai = null; try { $plan = hq_ai_plan($id, $main); [$n, $min] = hq_ai_minutes($p, date('Y-m')); $ai = ['on' => $main || ($s['call_agent_ok'] ?? '') === '1', 'free' => $plan['free'], 'incl' => $plan['incl'], 'usd' => $plan['usd'], 'calls' => $n, 'min' => $min, 'total' => hq_ai_bill($plan, $min)['total']]; } catch (Throwable $e) {}
++    return ['ok' => true, 'id' => $id, 'name' => (string)($s['salon_name'] ?? $id), 'demo' => !empty($c['demo']), 'main' => $main, 'tx' => hqc_tx($sl, $c, $p, $s), 'ai' => $ai,
++        'salonPhone' => (string)($s['salon_phone'] ?? ''), 'ownerCell' => ($oc = hq_norm_phone((string)($s['owner_cell'] ?? ''))) !== '' ? hq_pretty_phone($oc) : '',
++        'guideAt' => (string)(hq_load()['tx_guide'][$id] ?? '')];
++}
++/** Top bar 📞 Calls: every salon in one list (number, on, calls this month). A salon that cannot be read: its row says so, the others still show. */
++function hqc_list(): array {
++    $rows = [];
++    foreach (hq_salon_list() as $sl) {
++        try { $c = hq_cfg($sl['root']); if (!$c) throw new RuntimeException('no config'); $p = hq_pdo($c); $s = hq_set($p, $c);
++            $rows[] = ['id' => $sl['id'], 'name' => (string)($s['salon_name'] ?? $sl['id']), 'demo' => !empty($c['demo'])] + hqc_tx($sl, $c, $p, $s); }
++        catch (Throwable $e) { $rows[] = ['id' => $sl['id'], 'name' => (string)$sl['id'], 'error' => 'Cannot read this salon.']; error_log('AN HQ calls list ' . $sl['id'] . ': ' . get_class($e)); }
++    }
++    return ['ok' => true, 'rows' => $rows];
++}
++function hqc_guard(string $id): array {
++    $x = hqc_ctx($id); if (!empty($x[1]['demo'])) throw new RuntimeException('The demo salon has no phone number.'); return $x;
+ }
+-/** The salon iPhone that rings + the assistant on / off (anh Logan types the iPhone for a new salon). */
++/** HQ changes for a salon: the iPhone that rings (fwd), Telnyx on / off (on), live booking on / off (live). */
+ function hqc_setup(string $id, array $in): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, false); $was = ['fwd' => (string)($s['call_fwd'] ?? ''), 'on' => (string)($s['call_on'] ?? '')];
++    [$sl, $c, $p, $s] = hqc_guard($id);
++    $snap = fn(array $s) => ['number' => hq_norm_phone((string)($s['tx_number'] ?? '')), 'fwd' => hq_norm_phone((string)($s['call_fwd'] ?? '')), 'tx_on' => (string)($s['tx_on'] ?? ''), 'tx_live' => (string)($s['tx_live'] ?? ''), 'voice' => (string)($s['tx_voice'] ?? ''), 'model' => (string)($s['tx_model'] ?? '')];
++    $was = $snap($s);
++    if (array_key_exists('number', $in)) { $raw = trim((string)$in['number']); $n = hq_norm_phone($raw); // (2.99.659) the salon's Telnyx number – set only in HQ
++        if ($raw !== '' && strlen($n) !== 12) throw new RuntimeException('The Telnyx number must have 10 digits.');
++        if ($n !== '' && $n === hq_norm_phone((string)($s['salon_phone'] ?? ''))) throw new RuntimeException('The Telnyx number is the AI number, not the salon line.');
++        if ($n !== '' && $n === hq_norm_phone((string)($s['call_fwd'] ?? ''))) throw new RuntimeException('That is the iPhone that rings – the Telnyx number must be another one.');
++        if ($n !== '') foreach (hq_salon_list() as $o) { if ($o['id'] === $id) continue;
++            try { $oc = hq_cfg($o['root']); if (!$oc) continue; $os = hq_set(hq_pdo($oc), $oc); } catch (Throwable $e) { continue; }
++            if (hqc_tx_number($o, $os) === $n) throw new RuntimeException(hq_pretty_phone($n) . ' is already the Telnyx number of ' . (string)($os['salon_name'] ?? $o['id']) . '.'); }
++        hq_put($p, $c, 'tx_number', $n); if ($n === '') hq_put($p, $c, 'tx_on', '0'); $s = hq_set($p, $c); }
++    $num = hqc_tx_number($sl, $s);
+     if (array_key_exists('fwd', $in)) { $raw = trim((string)$in['fwd']); $f = hq_norm_phone($raw);
+         if ($raw !== '' && strlen($f) !== 12) throw new RuntimeException('The iPhone number must have 10 digits.');
+-        if ($raw !== '' && in_array($f, [hq_norm_phone((string)($s['salon_phone'] ?? '')), hq_norm_phone((string)($s['sw_number'] ?? ''))], true)) throw new RuntimeException('The iPhone to ring must be another number than the salon line / the AI number (it would ring in a loop).');
+-        hq_put($p, $c, 'call_fwd', $raw === '' ? '' : $f); $s['call_fwd'] = $f; }
++        if ($raw !== '' && in_array($f, array_filter([hq_norm_phone((string)($s['salon_phone'] ?? '')), $num]), true)) throw new RuntimeException('The iPhone to ring must be another number than the salon line / the Telnyx number (it would ring in a loop).');
++        hq_put($p, $c, 'call_fwd', $raw === '' ? '' : $f); }
+     if (array_key_exists('on', $in)) { $on = !empty($in['on']);
+-        if ($on && (hq_norm_phone((string)($s['sw_number'] ?? '')) === '' || hq_norm_phone((string)($s['call_fwd'] ?? '')) === '')) throw new RuntimeException('First the number and the iPhone to ring.');
+-        hq_put($p, $c, 'call_on', $on ? '1' : '0'); }
+-    $now = ['fwd' => hq_norm_phone((string)(hq_set($p, $c)['call_fwd'] ?? '')), 'on' => (string)(hq_set($p, $c)['call_on'] ?? '')];
+-    hq_salon_audit($p, 'Calls (HQ)', json_encode($was), json_encode($now));
+-    hq_change(function (&$d) use ($id, $was, $now) { hq_log($d, $id, 'Calls: iPhone / on', json_encode($was), json_encode($now)); });
+-    return ['ok' => true, 'card' => hqc_card($id)];
+-}
+-function hqc_release(string $id, string $typed): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, false);
+-    $short = hq_prefix($s); if (mb_strtolower(trim($typed)) !== mb_strtolower($short)) throw new RuntimeException('Type the salon\'s short name (' . $short . ') to release its number.');
+-    if (($s['sw_by'] ?? '') !== 'hq') throw new RuntimeException('This number was not bought in HQ.');
+-    $nid = (string)($s['sw_number_id'] ?? ''); $num = hq_norm_phone((string)($s['sw_number'] ?? ''));
+-    if ($nid !== '') { [$code, $j] = hqc_req('DELETE', '/api/relay/rest/phone_numbers/' . rawurlencode($nid)); if (!in_array($code, [200, 204, 404], true)) throw new RuntimeException('Not released – ' . hqc_err($code, $j)); }
+-    hq_put($p, $c, 'call_on', '0'); foreach (['sw_number', 'sw_number_id', 'sw_by', 'sw_hook_ok'] as $k) hq_put($p, $c, $k, '');
+-    hq_salon_audit($p, 'Calls: AI phone number', hq_pretty_phone($num), 'released in HQ');
+-    hq_change(function (&$d) use ($id, $num) { hq_log($d, $id, 'Calls: released number', hq_pretty_phone($num), '–'); });
++        if ($on && ($num === '' || ((string)($s['tx_key'] ?? '') === '' && !hqc_txacct_info()['keySet']))) throw new RuntimeException('First the Telnyx number and the Telnyx account (top bar → 📞 Calls).');
++        hq_put($p, $c, 'tx_on', $on ? '1' : '0'); }
++    if (array_key_exists('live', $in)) hq_put($p, $c, 'tx_live', !empty($in['live']) ? '1' : '0');
++    /* (2.99.659) the voice / model of the AI (= tx_cfg_save in the salon; "Update AI" pushes them to the assistant) */
++    if (array_key_exists('voice', $in)) { $v = trim((string)$in['voice']); if ($v !== '' && !preg_match('/^[A-Za-z]+\.[A-Za-z0-9._-]+$/', $v)) throw new RuntimeException('Voice like Telnyx.Ultra.Clara'); hq_put($p, $c, 'tx_voice', $v); }
++    if (array_key_exists('model', $in)) { $m = trim((string)$in['model']); if ($m !== '' && !preg_match('#^[A-Za-z0-9._/:-]{3,100}$#', $m)) throw new RuntimeException('Model name not valid'); hq_put($p, $c, 'tx_model', $m); }
++    $now = $snap(hq_set($p, $c));
++    if ($now !== $was) { hq_salon_audit($p, 'Calls – Telnyx (HQ)', json_encode($was), json_encode($now));
++        hq_change(function (&$d) use ($id, $was, $now) { hq_log($d, $id, 'Calls: Telnyx (HQ)', json_encode($was), json_encode($now)); }); }
+     return ['ok' => true, 'card' => hqc_card($id)];
+ }
+ 
+-/* ---------- costs per salon / month ---------- */
+-function hqc_costs_file(): string { return hq_dir() . '/calls-costs.json'; }
+-/** The real prices of the month from SignalWire (every call of the project: the inbound call to a salon number + its iPhone leg (ParentCallSid) + the recordings). */
+-function hqc_real(string $month, array $numbers): array {
+-    $d = hqc_sw(); $acc = '/api/laml/2010-04-01/Accounts/' . rawurlencode($d['project']);
+-    $from = $month . '-01'; $to = date('Y-m-d', strtotime($from . ' +1 month'));
+-    $list = function (string $what, string $q) use ($acc) { $rows = []; $path = $acc . '/' . $what . '.json?' . $q . '&PageSize=1000';
+-        for ($i = 0; $i < 30 && $path !== ''; $i++) { [$code, $j] = hqc_req('GET', $path); if ($code !== 200 || !$j) throw new RuntimeException(hqc_err($code, $j));
+-            $rows = array_merge($rows, (array)($j[strtolower($what)] ?? [])); $nx = (string)($j['next_page_uri'] ?? ''); $path = $nx !== '' ? $nx : ''; }
+-        return $rows; };
+-    $calls = $list('Calls', 'StartTime%3E=' . $from . '&StartTime%3C=' . $to); $recs = $list('Recordings', 'DateCreated%3E=' . $from . '&DateCreated%3C=' . $to);
+-    $own = []; $out = [];
+-    foreach ($numbers as $id => $num) $out[$id] = ['calls' => 0, 'in_min' => 0, 'out_min' => 0, 'rec_min' => 0, 'usd' => 0.0];
+-    $byNum = array_flip($numbers);
+-    foreach ($calls as $x) { $to2 = hq_norm_phone((string)($x['to'] ?? '')); if (empty($x['parent_call_sid']) && isset($byNum[$to2])) $own[(string)$x['sid']] = $byNum[$to2]; }
+-    foreach ($calls as $x) { $sid = (string)$x['sid']; $par = (string)($x['parent_call_sid'] ?? ''); $id = $own[$sid] ?? ($own[$par] ?? null); if ($id === null) continue;
+-        $min = (int)ceil(max(0, (int)($x['duration'] ?? 0)) / 60); $out[$id]['usd'] += abs((float)($x['price'] ?? 0));
+-        if ($par === '') { $out[$id]['calls']++; $out[$id]['in_min'] += $min; } else $out[$id]['out_min'] += $min; }
+-    foreach ($recs as $r) { $id = $own[(string)($r['call_sid'] ?? '')] ?? null; if ($id === null) continue; $out[$id]['rec_min'] += (int)ceil(max(0, (int)($r['duration'] ?? 0)) / 60); $out[$id]['usd'] += abs((float)($r['price'] ?? 0)); }
+-    return $out;
+-}
+-/** Estimate from a salon's own calls table (always there): inbound = talk + ring, the iPhone leg = talk, recording = talk, speech-to-text = 2 channels, AI = 1 per call read. */
+-function hqc_estimate(PDO $p, array $s, string $month): array {
+-    $ring = max(10, min(30, (int)($s['call_ring'] ?? 20) ?: 20)); $from = $month . '-01 00:00:00'; $to = date('Y-m-d', strtotime($month . '-01 +1 month')) . ' 00:00:00';
+-    $e = ['calls' => 0, 'in_min' => 0, 'out_min' => 0, 'rec_min' => 0, 'stt_min' => 0, 'ai' => 0];
+-    try { $st = $p->prepare("SELECT kind, status, dur_sec, ai_json, text_c FROM calls WHERE created_at >= ? AND created_at < ?"); $st->execute([$from, $to]);
+-        foreach ($st->fetchAll() as $r) { $d = max(0, (int)$r['dur_sec']); $e['calls']++; $blocked = $r['status'] === 'blocked';
+-            $e['in_min'] += (int)ceil(($d + ($blocked ? 8 : $ring)) / 60); if ($r['kind'] === 'call' && $d > 0) $e['out_min'] += (int)ceil($d / 60);
+-            if ($d > 0) { $e['rec_min'] += (int)ceil($d / 60); $e['stt_min'] += (int)ceil($d / 60) * ($r['kind'] === 'vm' ? 1 : 2); }
+-            if ((string)$r['ai_json'] !== '') $e['ai']++; } } catch (Throwable $x) {}
+-    $P = HQC_PRICE; $e['usd'] = round($P['number'] + $e['in_min'] * $P['in'] + $e['out_min'] * $P['out'] + $e['rec_min'] * $P['rec'] + $e['stt_min'] * $P['stt'] + $e['ai'] * $P['ai'], 2);
+-    return $e;
+-}
+-function hqc_costs(string $month = '', bool $refresh = false): array {
+-    if (!preg_match('/^\d{4}-\d{2}$/', $month)) $month = date('Y-m');
+-    $rows = []; $numbers = [];
+-    foreach (hq_salon_list() as $sl) { try { $c = hq_cfg($sl['root']); if (!$c) continue; $p = hq_pdo($c); $s = hq_set($p, $c); } catch (Throwable $x) { continue; }
+-        $num = hq_norm_phone((string)($s['sw_number'] ?? '')); if ($num === '') continue; $numbers[$sl['id']] = $num;
+-        $rows[$sl['id']] = ['id' => $sl['id'], 'name' => (string)($s['salon_name'] ?? $sl['id']), 'number' => hq_pretty_phone($num), 'own' => (string)($s['sw_token'] ?? '') !== '', 'est' => hqc_estimate($p, $s, $month), 'real' => null]; }
+-    $f = hqc_costs_file(); $cache = is_file($f) ? (json_decode((string)@file_get_contents($f), true) ?: []) : [];
+-    $have = $cache[$month] ?? null; $realErr = '';
+-    $stale = !$have || (string)($have['day'] ?? '') !== date('Y-m-d') || array_diff_key($numbers, (array)($have['rows'] ?? []));
+-    if (($stale || $refresh) && hqc_sw_info()['tokenSet'] && (!$refresh || !$have || (int)($have['t'] ?? 0) < time() - 600)) { // at most once a day by itself; "Refresh" at most every 10 min
+-        try { $have = ['day' => date('Y-m-d'), 't' => time(), 'at' => date('Y-m-d H:i'), 'rows' => hqc_real($month, $numbers)]; $cache[$month] = $have; @file_put_contents($f, json_encode($cache), LOCK_EX); @chmod($f, 0600); }
+-        catch (Throwable $x) { $realErr = $x->getMessage(); error_log('598 hq costs: ' . $realErr); }
+-    }
+-    foreach ($rows as $id => &$r) if (isset($have['rows'][$id])) { $x = $have['rows'][$id]; $x['usd'] = round((float)$x['usd'] + HQC_PRICE['number'] + $r['est']['stt_min'] * HQC_PRICE['stt'] + $r['est']['ai'] * HQC_PRICE['ai'], 2); $r['real'] = $x; } unset($r);
+-    hqc_bill_rows($rows, $month); // (2.99.603 – LỆNH 603) Plan · Min in · Over · BILL · Cost · Profit
+-    $tot = ['bill' => round(array_sum(array_column(array_column($rows, 'bill'), 'total')), 2), 'cost' => round(array_sum(array_map(fn($r) => (float)$r['bill']['cost'], $rows)), 2)]; $tot['profit'] = round($tot['bill'] - $tot['cost'], 2);
+-    return ['ok' => true, 'month' => $month, 'rows' => array_values($rows), 'realAt' => (string)($have['at'] ?? ''), 'realErr' => $realErr, 'price' => HQC_PRICE, 'total' => $tot, 'plans' => HQC_PLANS, 'months' => hqc_months()];
++/* ---------- "Set up automatically" for a salon: ONE step per request (key, ovp, app, num, ai – TX_STEPS of calls-tx.php), run IN the salon (tx_hq.php) ---------- */
++const HQC_TX_STEPS = ['key', 'ovp', 'app', 'num', 'ai'];
++/** The salon's own key (= ad_key() there: from its config, which HQ reads on this server). */
++function hqc_salon_key(array $c): string { return hash('sha256', 'an-android|' . ($c['db_pass'] ?? '') . '|' . ($c['db_name'] ?? '') . '|' . ($c['db_user'] ?? '') . '|' . ($c['sqlite_path'] ?? ''), true); }
++function hqc_tx_step(string $id, string $step): array {
++    if (!in_array($step, HQC_TX_STEPS, true)) throw new RuntimeException('Unknown step.');
++    [$sl, $c, $p, $s] = hqc_guard($id);
++    if (hqc_tx_number($sl, $s) === '') throw new RuntimeException('Type the salon\'s Telnyx number first.');
++    if ((string)($s['tx_key'] ?? '') === '' && !hqc_txacct_info()['keySet']) throw new RuntimeException('Save the Telnyx account first (top bar → 📞 Calls).');
++    if (!is_file(rtrim((string)$sl['root'], '/') . '/tx_hq.php')) throw new RuntimeException('This salon\'s code is too old for the set up from HQ – update its code first.');
++    $url = rtrim((string)($c['site_url'] ?? ''), '/'); if (!preg_match('#^https?://#', $url)) throw new RuntimeException('This salon has no web address.');
++    $body = json_encode(['step' => $step, 'n' => (int)floor(microtime(true) * 1000)]); $sig = hash_hmac('sha256', 'hq-tx|' . $body, hqc_salon_key($c));
++    $to = $url . '/tx_hq.php'; $h = ['Content-Type: application/json', 'X-NF-HQ: ' . $sig, 'Cache-Control: no-store'];
++    $loop = (string)getenv('NF_HQ_LOOP'); if ($loop !== '') { $to = rtrim($loop, '/') . '/tx_hq.php'; $h[] = 'Host: ' . (string)parse_url($url, PHP_URL_HOST); } // tests: the local server
++    $ch = curl_init($to); curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body, CURLOPT_HTTPHEADER => $h, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 50, CURLOPT_CONNECTTIMEOUT => 6, CURLOPT_NOSIGNAL => true]);
++    $raw = curl_exec($ch); $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
++    $j = is_string($raw) ? json_decode($raw, true) : null;
++    if ($code !== 200 || !is_array($j) || !is_array($j['step'] ?? null)) { error_log('659 hq tx step ' . $id . ' ' . $step . ': http ' . $code); throw new RuntimeException('The salon did not answer (' . ($code ?: 'no connection') . (is_array($j) && !empty($j['error']) ? ': ' . mb_substr((string)$j['error'], 0, 80) : '') . ').'); }
++    $r = ['t' => (string)($j['step']['t'] ?? $step), 'ok' => !empty($j['step']['ok']), 'msg' => mb_substr((string)($j['step']['msg'] ?? ''), 0, 220)];
++    hq_change(function (&$d) use ($id, $r) { hq_log($d, $id, 'Calls: Telnyx set up', '', $r['t'] . ($r['ok'] ? ' OK' : ' ERROR: ' . $r['msg'])); });
++    $last = $step === 'ai' || !$r['ok']; // 'ai' = the last step, and "Update AI" alone
++    return ['ok' => true, 'step' => $r, 'steps' => HQC_TX_STEPS] + ($last ? ['card' => hqc_card($id)] : []);
+ }
+ 
+-/* ---------- (595-C) the forwarding steps → the owner's cell (one text, from NailFlow's own list like the support code; sent at once) ---------- */
++/* ---------- the forwarding steps → the owner's cell (one text from NailFlow's own list, like the support code; sent at once) ---------- */
+ function hqc_guide_text(string $name, string $e164): string {
+     $n = substr(preg_replace('/\D/', '', $e164), -10);
+     return $name . ': your AI phone number is ' . hq_pretty_phone($e164) . '. To send the salon calls to it, from the salon phone dial: Verizon *72' . $n . ' · AT&T *21*' . $n . '# · T-Mobile **21*1' . $n . '#. To stop: *73 · #21# · ##21#. Test: call ' . hq_pretty_phone($e164) . '. – NailFlow';
+ }
+ function hqc_send_guide(string $id): array {
+-    [$sl, $c, $p, $s] = hqc_guard($id, false);
+-    $num = hq_norm_phone((string)($s['sw_number'] ?? '')); if ($num === '') throw new RuntimeException('No AI number yet.');
++    [$sl, $c, $p, $s] = hqc_guard($id);
++    $num = hqc_tx_number($sl, $s); if ($num === '') throw new RuntimeException('No Telnyx number yet – Admin → Settings → Calls → Telnyx.');
+     $cell = hq_norm_phone((string)($s['owner_cell'] ?? '')); if ($cell === '') throw new RuntimeException('No owner cell for this salon – add it in ✏️ Edit info.');
+-    $last = (string)(hq_load()['sw_guide'][$id] ?? ''); if ($last !== '' && strtotime($last) > time() - 600) throw new RuntimeException('Sent at ' . date('g:i A', strtotime($last)) . ' – wait 10 minutes.');
++    $last = (string)(hq_load()['tx_guide'][$id] ?? ''); if ($last !== '' && strtotime($last) > time() - 600) throw new RuntimeException('Sent at ' . date('g:i A', strtotime($last)) . ' – wait 10 minutes.');
+     $mc = hq_cfg(hq_root()); $mp = hq_pdo($mc);
+     $mp->prepare("INSERT INTO autosend (kind, src, phone, name, body, info, state, created_at) VALUES ('code', ?, ?, ?, ?, ?, 'wait', ?)")
+         ->execute(['sup:fwd:' . $id . ':' . time(), $cell, 'Owner ' . (string)($s['salon_name'] ?? $id), hqc_guide_text((string)($s['salon_name'] ?? 'Your salon'), $num), 'NailFlow – how to forward the salon line (AN HQ)', date('Y-m-d H:i:s')]);
+     hq_sup_kick_main($mc); // sent now (2.99.597)
+-    hq_change(function (&$d) use ($id, $cell) { $d['sw_guide'][$id] = date('Y-m-d H:i:s'); hq_log($d, $id, 'Calls: forwarding steps texted', '', 'owner cell …' . substr($cell, -4)); });
++    hq_change(function (&$d) use ($id, $cell) { $d['tx_guide'][$id] = date('Y-m-d H:i:s'); hq_log($d, $id, 'Calls: forwarding steps texted', '', 'owner cell …' . substr($cell, -4)); });
+     return ['ok' => true, 'to' => '…' . substr($cell, -4), 'card' => hqc_card($id)];
+ }
+-
+-/* ---------- (2.99.603 – LỆNH 603, anh Logan 21:58) the BILL of each salon (what NailFlow charges – not collected yet, Payroc / Valor later) ----------
+-   Calls $49 / month (1,000 minutes in) · NailFlow + Calls $39 / month (the same 1,000 minutes) · Free (American Nails). Over 1,000 minutes: $0.05 a minute.
+-   "Minutes" = minutes of the calls INTO the salon's AI number (SignalWire's own count when read, else the estimate). The first month counts from the day the
+-   number was bought, the last month to the day it was released (days / days of the month × the plan; the 1,000 minutes stay whole). */
+-const HQC_PLANS = ['49' => ['name' => 'Calls $49', 'usd' => 49.0], '39' => ['name' => 'NailFlow + Calls $39', 'usd' => 39.0], 'free' => ['name' => 'Free', 'usd' => 0.0]];
+-const HQC_INCL = 1000; const HQC_OVER = 0.05;
+-function hqc_plan(string $id): string { $p = (string)(hq_load()['call_plan'][$id] ?? ''); if (isset(HQC_PLANS[$p])) return $p; $m = hqc_main(); return $m && $m['id'] === $id ? 'free' : '49'; } // American Nails: Free
+-function hqc_plan_save(string $id, string $plan): array {
+-    if (!isset(HQC_PLANS[$plan])) throw new RuntimeException('Pick a plan.');
+-    [$sl, $c, $p, $s] = hqc_ctx($id); $was = hqc_plan($id); if ($was === $plan) return ['ok' => true, 'plan' => $plan];
+-    hq_change(function (&$d) use ($id, $plan, $was) { $d['call_plan'][$id] = $plan; hq_log($d, $id, 'Calls: plan', HQC_PLANS[$was]['name'], HQC_PLANS[$plan]['name']); });
+-    hq_salon_audit($p, 'Calls plan (NailFlow)', HQC_PLANS[$was]['name'], HQC_PLANS[$plan]['name']);
+-    return ['ok' => true, 'plan' => $plan];
+-}
+-/** One bill: [base (prorated), over minutes, over $, total]. $days = days with the number this month, $dim = days of the month. */
+-function hqc_bill(string $plan, int $minutes, int $days, int $dim): array {
+-    $usd = HQC_PLANS[$plan]['usd'] ?? 49.0; $base = $usd <= 0 ? 0.0 : round($usd * max(0, min($days, $dim)) / max(1, $dim), 2);
+-    $over = $usd <= 0 ? 0 : max(0, $minutes - HQC_INCL); $ou = round($over * HQC_OVER, 2);
+-    return ['base' => $base, 'over' => $over, 'overUsd' => $ou, 'total' => round($base + $ou, 2)];
+-}
+-/** The days of $month the salon had its number: from the purchase day (setting sw_bought_at, else HQ's log) to the release day (HQ's log) or the month's end. */
+-function hqc_days(string $id, string $month, array $s): array {
+-    $dim = (int)date('t', strtotime($month . '-01')); $first = 1; $last = $dim;
+-    $bought = (string)($s['sw_bought_at'] ?? ''); $rel = '';
+-    foreach ((array)(hq_load()['log'] ?? []) as $x) { if (($x['salon'] ?? '') !== $id) continue; $d = substr((string)($x['at'] ?? ''), 0, 10);
+-        if ($bought === '' && ($x['what'] ?? '') === 'Calls: bought number') $bought = $d; // the log is newest first: the last purchase
+-        if ($rel === '' && ($x['what'] ?? '') === 'Calls: released number') $rel = $d; }
+-    if ($bought !== '' && substr($bought, 0, 7) === $month) $first = (int)substr($bought, 8, 2);
+-    if ($bought !== '' && substr($bought, 0, 7) > $month) return [0, $dim];
+-    if ($rel !== '' && $rel >= $bought && substr($rel, 0, 7) === $month) $last = (int)substr($rel, 8, 2);
+-    if ($rel !== '' && $rel >= $bought && substr($rel, 0, 7) < $month) return [0, $dim];
+-    return [max(0, $last - $first + 1), $dim];
+-}
+-function hqc_bill_rows(array &$rows, string $month): void {
+-    foreach (hq_salon_list() as $sl) { // a salon that released its number this month still gets its bill (to the release day)
+-        if (isset($rows[$sl['id']])) continue; $rel = false;
+-        foreach ((array)(hq_load()['log'] ?? []) as $x) if (($x['salon'] ?? '') === $sl['id'] && ($x['what'] ?? '') === 'Calls: released number' && substr((string)($x['at'] ?? ''), 0, 7) === $month) { $rel = true; break; }
+-        if (!$rel) continue;
+-        try { $c = hq_cfg($sl['root']); $p = hq_pdo($c); $s = hq_set($p, $c); } catch (Throwable $e) { continue; }
+-        $rows[$sl['id']] = ['id' => $sl['id'], 'name' => (string)($s['salon_name'] ?? $sl['id']), 'number' => 'released', 'own' => false, 'est' => hqc_estimate($p, $s, $month), 'real' => null, '_s' => $s];
+-    }
+-    foreach ($rows as $id => &$r) {
+-        try { $c = hq_cfg(hq_salon($id)['root']); $s = $r['_s'] ?? hq_set(hq_pdo($c), $c); } catch (Throwable $e) { $s = []; }
+-        unset($r['_s']); $plan = hqc_plan($id); [$days, $dim] = hqc_days($id, $month, $s);
+-        $min = (int)($r['real']['in_min'] ?? $r['est']['in_min']); $cost = round((float)($r['real']['usd'] ?? $r['est']['usd']), 2);
+-        $b = hqc_bill($plan, $min, $days, $dim);
+-        $r['bill'] = $b + ['plan' => $plan, 'planName' => HQC_PLANS[$plan]['name'], 'minutes' => $min, 'days' => $days, 'dim' => $dim, 'cost' => $cost, 'profit' => round($b['total'] - $cost, 2),
+-            'text' => hqc_bill_text((string)$r['name'], $month, $plan, $min, $days, $dim, $b)];
+-    } unset($r);
+-}
+-function hqc_bill_text(string $name, string $month, string $plan, int $min, int $days, int $dim, array $b): string {
+-    $m = date('F Y', strtotime($month . '-01')); $P = HQC_PLANS[$plan];
+-    if ($P['usd'] <= 0) return "$name – NailFlow Calls – $m: Free plan · " . number_format($min) . ' minutes · Total $0.00';
+-    return "$name – NailFlow Calls – $m: " . $P['name'] . '/month (' . number_format(HQC_INCL) . ' minutes included)' . ($days < $dim ? ' · ' . $days . '/' . $dim . ' days = $' . number_format($b['base'], 2) : '')
+-        . ' · ' . number_format($min) . ' minutes used' . ($b['over'] ? ' · ' . number_format($b['over']) . ' extra × $0.05 = $' . number_format($b['overUsd'], 2) : '') . ' · Total $' . number_format($b['total'], 2);
+-}
+-function hqc_months(): array { $o = []; for ($i = 0; $i < 6; $i++) $o[] = date('Y-m', strtotime(date('Y-m-01') . " -$i month")); return $o; }
+diff -ruN int657/tx_hq.php int659/tx_hq.php
+--- int657/tx_hq.php	1969-12-31 18:00:00.000000000 -0600
++++ int659/tx_hq.php	2026-11-06 00:25:23.298257940 -0600
+@@ -0,0 +1,25 @@
++<?php
++/* (2.99.659 - anh Logan 05/11 23:57 "Telnyx setup chi co HQ moi duoc lam") AN HQ -> THIS salon: run ONE Telnyx "Set up automatically" step (key, ovp, app, num, ai)
++   here, in the salon's own code (tx_setup_step in inc/calls-tx.php: its own address, its own TeXML application / AI assistant, its own settings).
++   Only AN HQ can ask: POST JSON {step, n} signed X-NF-HQ = HMAC-SHA256(this salon's own key - from ITS config, which only HQ on the same server reads - , "hq-tx|" + body);
++   n = milliseconds, within 2 minutes and newer than the last one (never replayed). Nothing secret comes in or goes out (the Telnyx key is HQ's shared file or the salon's own). */
++declare(strict_types=1);
++require __DIR__ . '/inc/core.php';
++header('Content-Type: application/json; charset=utf-8'); header('Cache-Control: no-store'); header('X-Robots-Tag: noindex, nofollow');
++$out = function (array $a, int $code = 200): void { http_response_code($code); echo json_encode($a, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); exit; };
++if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') $out(['error' => 'POST only'], 405);
++if (!is_installed()) $out(['error' => 'Not installed'], 404);
++settings();
++require_once __DIR__ . '/inc/android.php';
++$raw = (string)file_get_contents('php://input'); $sig = (string)($_SERVER['HTTP_X_NF_HQ'] ?? '');
++if ($raw === '' || strlen($raw) > 2000 || !preg_match('/^[a-f0-9]{64}$/', $sig) || !hash_equals(hash_hmac('sha256', 'hq-tx|' . $raw, ad_key()), $sig)) $out(['error' => 'Not allowed'], 403);
++$in = json_decode($raw, true); $in = is_array($in) ? $in : [];
++$n = (int)($in['n'] ?? 0); $step = (string)($in['step'] ?? '');
++if (abs(intdiv($n, 1000) - time()) > 120 || $n <= (int)setting('tx_hq_n')) $out(['error' => 'Too old – try again.'], 403);
++set_setting('tx_hq_n', (string)$n);
++require_once __DIR__ . '/inc/calls-tx.php'; require_once __DIR__ . '/inc/calls-agent.php'; require_once __DIR__ . '/inc/calls-ivr.php'; /* = Settings → Calls → tx_setup */
++if (!in_array($step, TX_STEPS, true)) $out(['error' => 'Unknown step.'], 400);
++@set_time_limit(60);
++$r = tx_setup_step($step);
++if (function_exists('audit')) { try { audit('setting', 'tx_setup', '', 'AN HQ: ' . $r['t'] . ($r['ok'] ? ' OK' : ' ERROR')); } catch (Throwable $e) {} }
++$out(['ok' => true, 'step' => $r, 'steps' => TX_STEPS]);
