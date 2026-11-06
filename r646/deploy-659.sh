@@ -24,7 +24,8 @@ mkdir -p "$T/hair"; for f in $FILES; do mkdir -p "$(dirname "$T/hair/$f")"; if [
 patch -s -p1 -d "$T/hair" < "$T/r659.diff" || die "the diff does not apply to the hair copy"
 (cd "$T/hair" && md5sum -c --quiet "$T/MD5S-659") || die "hair files differ from the tested copy"
 # the salon web folders: where call_tx.php is, tx_hq.php goes the same way (a link -> a link to the same place; an own copy -> a copy)
-WEBS=$($PHP -r 'define("NF_CLI",1); require "'"$T/rel"'/inc/release.php"; foreach (rel_sites() as $id => $s) echo $id, " ", rtrim((string)($s["web"] ?? ""), "/"), "\n";' 2>/dev/null) || die "rel_sites"
+WEBS=$($PHP -r 'foreach ((require "'"$A"'/sites.php") as $id => $s) echo $id, " ", rtrim((string)($s["web"] ?? ""), "/"), "\n";') || die "sites.php"
+[ -n "$WEBS" ] || die "no salon web folders"
 echo "$WEBS"
 echo "$WEBS" | while read -r id w; do [ -n "$w" ] || continue; c="$w/call_tx.php"; if [ -L "$c" ]; then echo "$id link $(readlink "$c")"; elif [ -f "$c" ]; then echo "$id copy $(md5sum < "$c" | cut -c1-8) (657 $(md5sum < "$OLD/call_tx.php" | cut -c1-8))"; else echo "$id none"; fi; done
 # American Nails keeps its Telnyx number (2.99.659 has no built-in number any more)
