@@ -1,0 +1,287 @@
+diff -ruN int653/call_tx.php int654/call_tx.php
+--- int653/call_tx.php	2026-11-01 22:45:20.000000000 -0600
++++ int654/call_tx.php	2026-11-05 21:36:24.976640836 -0600
+@@ -68,6 +68,7 @@
+         tx_reply_then('{}', $JS);
+         try { tx_post_call($cc, $conv); } catch (Throwable $e) { error_log('612 tx post: ' . $e->getMessage()); }
+         exit;
++    case 'tr': tx_lib(); tx_reply_then('{}', $JS); try { txl_in($in); } catch (Throwable $e) { error_log('654 tx tr: ' . mb_substr($e->getMessage(), 0, 200)); } exit; /* (2.99.654) the words while the owner talks */
+     case 'status': tx_log('status', $in); try { tx_status($in); } catch (Throwable $e) { error_log('616 tx status: ' . $e->getMessage()); } header('Content-Type: ' . $JS); echo '{}'; exit;
+     case 'xfer': tx_lib(); header('Content-Type: ' . $XML); echo tx_xfer_end($in); exit; /* (2.99.616 B2) the owner leg of a transfer ended */
+     }
+diff -ruN int653/inc/calls-job.php int654/inc/calls-job.php
+--- int653/inc/calls-job.php	2026-11-05 20:46:16.502784986 -0600
++++ int654/inc/calls-job.php	2026-11-05 21:44:09.592279270 -0600
+@@ -11,6 +11,7 @@
+ require_once __DIR__ . '/push.php';
+ require_once __DIR__ . '/noaccent.php';
+ require_once __DIR__ . '/calls-ask.php'; // (2.99.602 - LENH 602) manicure / pedicure type: asked by text when not said
++require_once __DIR__ . '/calls-live.php'; /* (2.99.654) the booking made while the owner is on the call */
+ require_once __DIR__ . '/calls-ivr.php'; // (2.99.602 - 602 Cách A) no answer: the questions on the phone
+ 
+ const CL_AI_MODEL = 'claude-haiku-4-5-20251001';
+@@ -193,13 +194,17 @@
+ }
+ /** The end of a call's work: its status + why, and the owner's notification. */
+ function cl_end(array $c, string $status, string $reason, string $result, bool $push): string {
++    if (!empty($GLOBALS['cl_live'])) { /* (2.99.654) on the call: only the booking's line; the call's status, its texts and the owner's "needs review" come after the call */
++        if ($status === 'booked') q('UPDATE calls SET result = ? WHERE id = ?', [mb_substr($result, 0, 250), $c['id']]);
++        $GLOBALS['cl_live_ask'] = $status === 'booked' ? (array)($GLOBALS['cl_ask'] ?? []) : []; $GLOBALS['cl_ask'] = []; return $status; }
++    if (in_array($status, ['review', 'callback'], true) && empty($GLOBALS['cl_txl_try'])) { $k = txl_pending($c, $reason); if ($k !== null) return $k; } /* (2.99.654 review #4) the call could not be read (long, no key, AI cap, errors…) but a booking was made on it: kept, owner asked to check */
+     q('UPDATE calls SET status = ?, reason = ?, result = ?, err = ?, lock_at = ? WHERE id = ?', [$status, mb_substr($reason, 0, 250), mb_substr($result, 0, 250), '', '', $c['id']]);
+     if ($status === 'booked' && !empty($GLOBALS['cl_ask'])) { try { cla_start($c, $GLOBALS['cl_ask']); } catch (Throwable $e) { error_log('602 ask #' . $c['id'] . ': ' . $e->getMessage()); } $GLOBALS['cl_ask'] = []; } // (2.99.602) the question instead of YOU'RE BOOKED
+     if ($status === 'booked') q("UPDATE calls SET tb_state = 'skip' WHERE id = ? AND tb_state = 'wait'", [$c['id']]); // (2.99.590) booked: YOU'RE BOOKED is the one text
+     if ($status === 'moved') q("UPDATE calls SET tb_state = 'skip' WHERE id = ? AND tb_state = 'wait'", [$c['id']]); // (2.99.592-B) moved: the NEW TIME text is the one text
+     if ($status === 'cancelled') q("UPDATE calls SET tb_state = 'skip' WHERE id = ? AND tb_state = 'wait'", [$c['id']]); // (2.99.592) cancelled: the CANCELLED text is the one text
+     if (!in_array($status, ['booked', 'cancelled', 'moved'], true) && (string)($c['kind'] ?? '') === 'vm') { try { cl_textback((int)$c['id']); } catch (Throwable $e) { error_log('590 textback #' . $c['id'] . ': ' . $e->getMessage()); } } // (2.99.590) a voicemail not booked: the missed-call text now
+-    if ($push && in_array($status, ['review', 'callback'], true)) {
++    if ($push && in_array($status, ['review', 'callback'], true) && empty($GLOBALS['cl_txl_try'])) { /* (2.99.654) not while the recording's try replaces a booking made on the call (txl_keep tells the owner) */
+         $who = cl_who($c); $sum = '';
+         $j = json_decode((string)($c['ai_json'] ?? ''), true); if (is_array($j)) $sum = trim((string)($j['summary'] ?? ''));
+         $body = $who . ' – ' . ($sum !== '' ? mb_substr($sum, 0, 90) : $reason);
+@@ -409,9 +414,15 @@
+     }
+     return 0;
+ }
++/** (2.99.654) After the call: a booking made ON the call (calls-live.php) is checked against the recording first; on the call itself / nothing booked on it: as before. */
+ function cl_decide(array $c, array $j): string {
++    if (empty($GLOBALS['cl_live'])) { $r = txl_after($c, $j); if ($r !== null) return $r; }
++    return cl_decide0($c, $j);
++}
++function cl_decide0(array $c, array $j): string {
+     $GLOBALS['cl_ask'] = []; $GLOBALS['cl_last_tech'] = 0; /* (2.99.653) */ // (2.99.602) a question about the manicure / pedicure type, sent when the call is booked
+-    if ($c['kind'] !== 'vm' && (($j['salon_side'] ?? '') === 'voicemail' || cl_vm_greeting((string)$c['text_s']))) { // (2.99.591 – LỖI 591 #8) the iPhone's own voicemail answered: it IS a voicemail (no OK needed, missed-call text)
++    if (!empty($GLOBALS['cl_live']) && ($j['salon_side'] ?? '') === 'voicemail') return 'review'; /* (2.99.654 review #1) on the call: never turned into a voicemail (kind / missed-call text) - the recording decides after the call */
++    if (empty($GLOBALS['cl_live']) && $c['kind'] !== 'vm' && (($j['salon_side'] ?? '') === 'voicemail' || cl_vm_greeting((string)$c['text_s']))) { // (2.99.591 – LỖI 591 #8) the iPhone's own voicemail answered: it IS a voicemail (no OK needed, missed-call text)
+         q("UPDATE calls SET kind = 'vm' WHERE id = ?", [$c['id']]); $c['kind'] = 'vm';
+         if (function_exists('cl_tb_wait')) cl_tb_wait((string)$c['call_sid'], 0);
+         $j['salon_agreed'] = false; $j['salon_quote'] = '';
+@@ -477,10 +488,10 @@
+     } finally { book_unlock(); }
+     cl_pend_mark($rows); // (2.99.604 – 602B v3) "Owner approves phone bookings" on: the place is kept, the customer gets the texts as usual, the owner taps OK / Cancel
+     $a = $rows[0];
+-    q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], now_str(), $c['id']]); // (2.99.589) anh Logan 31/10 17:52: the customer's text goes at once (no 10-min wait, no Undo)
+-    foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']);
++    q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], empty($GLOBALS['cl_live']) ? now_str() : '', $c['id']]); /* (2.99.654) on the call: the text after the call */ // (2.99.589) anh Logan 31/10 17:52: the customer's text goes at once (no 10-min wait, no Undo)
++    if (empty($GLOBALS['cl_live'])) foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (2.99.654 #6) on the call: the techs are told after the call (txl_keep) */
+     cl_end($c, 'booked', '', cl_line($a) . ($staff ? ' – ' . staff_name($staff) : ''), false);
+-    cl_push((int)$c['id'], '📞 Booked', cl_line($a) . (!empty($GLOBALS['cl_last_tech']) ? ' – ' . staff_name($staff) . ' (the tech from last time)' : '') . ' · texted to the customer'); cl_confirm_due(); // (2.99.589) text now
++    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_line($a) . (!empty($GLOBALS['cl_last_tech']) ? ' – ' . staff_name($staff) . ' (the tech from last time)' : '') . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); cl_confirm_due(); // (2.99.589) text now
+     return 'booked';
+ }
+ /** '' = free; else why not (the same checks as Book: the tech's other customers, day off, clocked out today; Any tech = enough free techs). */
+@@ -584,11 +595,11 @@
+     } finally { book_unlock(); }
+     cl_pend_mark($rows); // (2.99.604) waiting for the owner's OK (when on)
+     $a = $rows[0];
+-    q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], now_str(), $c['id']]); // like one person (589): one YOU'RE BOOKED for the group, sent at once
+-    foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']);
++    q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], empty($GLOBALS['cl_live']) ? now_str() : '', $c['id']]); /* (2.99.654) */ // like one person (589): one YOU'RE BOOKED for the group, sent at once
++    if (empty($GLOBALS['cl_live'])) foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (2.99.654 #6) */
+     cl_end($c, 'booked', '', cl_line($a) . ' · ' . count($rows) . ' people', false);
+     cl_confirm_due(); // after 'booked' is saved (cl_confirm_due only takes booked calls)
+-    cl_push((int)$c['id'], '📞 Booked', cl_line($a) . ' · ' . count($rows) . ' people · texted to the customer');
++    cl_push((int)$c['id'], empty($GLOBALS['cl_live']) ? '📞 Booked' : '📞 Booked (on the call)', cl_line($a) . ' · ' . count($rows) . ' people' . (empty($GLOBALS['cl_live']) ? ' · texted to the customer' : ' · the text goes after the call')); /* (2.99.654) */
+     return 'booked';
+ }
+ 
+diff -ruN int653/inc/calls-live.php int654/inc/calls-live.php
+--- int653/inc/calls-live.php	1969-12-31 18:00:00.000000000 -0600
++++ int654/inc/calls-live.php	2026-11-05 21:44:42.435736822 -0600
+@@ -0,0 +1,156 @@
++<?php
++/* (2.99.654 - anh Logan 05/11 21:31 "Telnyx và book hẹn ngay lập tức trong lúc đang nói chuyện")
++   LIVE BOOKING on a call the OWNER answers (Telnyx): the call's words come in while they talk (<Start><Transcription> Deepgram nova-3, both legs),
++   and as soon as service + day + time are said and the salon said OK, the appointment is booked (the SAME cl_decide as after the call).
++   The caller adds a person / a service / changes the time -> the booking made on the call is replaced (nothing was texted yet).
++   The customer's YOU'RE BOOKED text goes only AFTER the call: the recording (both channels) is read as before (cl_job) and
++     - says the same            -> the booking made on the call is kept, the text goes;
++     - says something different -> the booking is replaced by the recording's one (texted once);
++     - cannot be read / no OK   -> the booking made on the call stays, NO text, the owner is asked to check it (📞 Check booking).
++   Off (default): nothing changes. Setting tx_live = '1' (AN HQ). Only a call the owner's iPhone answered (screen 'human'); the AI part never. */
++declare(strict_types=1);
++
++const TXL_ENGINE = 'Deepgram';
++const TXL_MODEL = 'deepgram/nova-3';
++const TXL_GAP = 3;      // seconds between two readings of the same call (the words keep coming)
++const TXL_MAX_N = 60;   // readings per call at most (cost guard)
++
++function txl_on(): bool { return setting('tx_live') === '1'; }
++/** The TeXML before the iPhone's <Dial>: the words of both legs to ?a=tr. */
++function txl_start(string $q): string {
++    return '<Start><Transcription transcriptionEngine="' . TXL_ENGINE . '" model="' . TXL_MODEL . '" transcriptionTracks="both" language="en" interimResults="false"'
++        . ' transcriptionCallback="' . cl_x(tx_url('tr', $q)) . '" transcriptionCallbackMethod="POST"/></Start>';
++}
++function txl_file(string $sid, string $ext): string { return cl_dir() . '/txl-' . md5($sid) . '.' . $ext; }
++/** The leg of a transcript: 'c' the caller (inbound = the leg that asked for it), 's' the salon (outbound), '' not given. */
++function txl_track(array $in): string {
++    $t = strtolower(tx_f($in, ['Track', 'track', 'TranscriptionTrack', 'transcription_track', 'Leg', 'leg']));
++    if ($t === '' && isset($in['transcription_data']) && is_array($in['transcription_data'])) $t = strtolower((string)($in['transcription_data']['transcription_track'] ?? ''));
++    return str_starts_with($t, 'out') ? 's' : (str_starts_with($t, 'in') ? 'c' : '');
++}
++/** ?a=tr - one piece of the call's words (final pieces only). */
++function txl_in(array $in): void {
++    $sid = mb_substr((string)($_GET['sid'] ?? tx_f($in, ['CallSid', 'call_sid'])), 0, 64); if ($sid === '') return;
++    $d = isset($in['transcription_data']) && is_array($in['transcription_data']) ? $in['transcription_data'] : [];
++    $txt = trim(tx_f($in, ['Transcript', 'transcript', 'TranscriptionText'])); if ($txt === '') $txt = trim((string)($d['transcript'] ?? ''));
++    $fin = strtolower(tx_f($in, ['IsFinal', 'is_final'])); if ($fin === '' && isset($d['is_final'])) $fin = $d['is_final'] ? 'true' : 'false';
++    if (($in['IsFinal'] ?? null) === false || ($in['is_final'] ?? null) === false) $fin = 'false'; /* (review) a JSON false is '' for tx_f */
++    $k = txl_track($in);
++    tx_log('tr', ['keys' => array_keys($in), 'final' => $fin, 'track' => $k, 'len' => mb_strlen($txt)]); /* the first ones: what Telnyx really sends (no words in the log) */
++    if ($txt === '' || ($fin !== '' && !in_array($fin, ['true', '1'], true))) return;
++    $r = q('SELECT kind, status FROM calls WHERE call_sid = ?', [$sid])->fetch(); if (!$r || (string)$r['kind'] !== 'call' || (string)$r['status'] !== 'ring') return; /* (review) the AI part / an ended call: nothing kept */
++    if (!is_dir(cl_dir())) @mkdir(cl_dir(), 0700, true);
++    @file_put_contents(txl_file($sid, 'jsonl'), json_encode(['t' => time(), 'k' => $k, 'x' => mb_substr($txt, 0, 1000)], JSON_UNESCAPED_UNICODE) . "\n", FILE_APPEND | LOCK_EX);
++    try { txl_try($sid); } catch (Throwable $e) { error_log('654 live ' . get_class($e) . ': ' . mb_substr($e->getMessage(), 0, 200)); }
++}
++function txl_lines(string $sid): array {
++    $f = txl_file($sid, 'jsonl'); if (!is_file($f)) return [];
++    $o = []; foreach (file($f, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $l) { $j = json_decode($l, true); if (is_array($j) && trim((string)($j['x'] ?? '')) !== '') $o[] = $j; }
++    return $o;
++}
++/** [caller's words, salon's words]. No leg given by Telnyx: both get the whole talk (the recording after the call checks who said OK). */
++function txl_texts(array $L): array {
++    $c = []; $s = []; $all = [];
++    foreach ($L as $l) { $x = trim((string)$l['x']); $all[] = $x; if (($l['k'] ?? '') === 'c') $c[] = $x; elseif (($l['k'] ?? '') === 's') $s[] = $x; }
++    if (count($c) + count($s) < count($all)) return [implode("\n", $all), implode("\n", $all)];
++    return [implode("\n", $c), implode("\n", $s)];
++}
++function txl_state(string $sid): array { $j = json_decode((string)@file_get_contents(txl_file($sid, 'json')), true); return is_array($j) ? $j : []; }
++function txl_save(string $sid, array $st): void { @file_put_contents(txl_file($sid, 'json'), json_encode($st), LOCK_EX); }
++/** What a booking is (who / services / day / time / tech): the same = the same booking. The name is left out (spelled differently). */
++function txl_sig(array $j): string {
++    $ids = fn($a) => implode(',', (function ($x) { $x = array_values(array_unique(array_filter(array_map('intval', (array)$x)))); sort($x); return $x; })($a));
++    $party = array_values(array_filter((array)($j['party'] ?? []), 'is_array')); $sv = (array)($j['service_ids'] ?? []); $tid = (int)($j['tech_id'] ?? 0);
++    $n = max(1, (int)($j['people'] ?? 1), count($party));
++    if ($n === 1 && $party) { $sv = array_merge($sv, (array)($party[0]['service_ids'] ?? [])); if (!$tid) $tid = (int)($party[0]['tech_id'] ?? 0); $party = []; } /* (review #7) one person: 'party' [] or [1 entry] = the same */
++    $p = []; foreach ($party as $e) $p[] = $ids($e['service_ids'] ?? []) . '/' . (int)($e['tech_id'] ?? 0); sort($p);
++    $ph = norm_phone((string)($j['customer_phone'] ?? ''));
++    return md5(json_encode([strtolower((string)($j['intent'] ?? '')), (string)($j['date'] ?? ''), (string)($j['time'] ?? ''), $n, $ids($sv), $tid, !$tid && !empty($j['tech_last']), $p,
++        !empty($j['same_services']), (string)($j['mani_type'] ?? ''), (string)($j['pedi_type'] ?? ''), strlen($ph) === 12 ? $ph : '']));
++}
++/** (review #2) The recording really has the salon's OK (the same check as cl_decide0) and the AI is sure enough. */
++function txl_ok(array $c, array $j): bool {
++    $cf = $j['confidence'] ?? null; if ((is_int($cf) || is_float($cf)) && (float)$cf < CL_MIN_CONF) return false;
++    if ((string)$c['kind'] === 'vm') return true;
++    $q = cl_norm((string)($j['salon_quote'] ?? ''));
++    return !empty($j['salon_agreed']) && $q !== '' && str_contains(' ' . cl_norm((string)$c['text_s']) . ' ', ' ' . $q . ' ');
++}
++/** The call's lock (a reading on the call and the reading after it never at the same time). */
++function txl_lock(string $sid, bool $wait) { $fh = @fopen(txl_file($sid, 'lock'), 'c'); if (!$fh) return null; if (!flock($fh, $wait ? LOCK_EX : LOCK_EX | LOCK_NB)) { fclose($fh); return null; } return $fh; }
++function txl_unlock($fh): void { if ($fh) { flock($fh, LOCK_UN); fclose($fh); } }
++/** The appointments of a booking made on the call that are still booked. */
++function txl_rows(array $ids): array { $o = []; foreach (array_unique(array_map('intval', $ids)) as $id) { $a = q('SELECT * FROM appointments WHERE id = ?', [$id])->fetch(); if ($a && (string)$a['status'] === 'booked') $o[] = $a; } return $o; }
++function txl_ids_of(int $first): array { $a = $first ? q('SELECT * FROM appointments WHERE id = ?', [$first])->fetch() : null; if (!$a) return []; return array_map(fn($m) => (int)$m['id'], group_members($a)); }
++/** Taken off quietly (made on the call, never texted): the place is free again for the new one. */
++function txl_drop(array $rows, string $why): void { foreach ($rows as $a) { q("UPDATE appointments SET status = 'cancelled', confirm_state = 'no' WHERE id = ? AND status = 'booked'", [$a['id']]); appt_log($a, 'cancelled', $why); } }
++function txl_back(array $rows): void { foreach ($rows as $a) { q("UPDATE appointments SET status = 'booked', confirm_state = '' WHERE id = ? AND status = 'cancelled'", [$a['id']]); /* (review #5) */ appt_log($a, 'changed', 'Kept – the booking made on the call'); } }
++
++/** One reading while they talk: booked as soon as everything is said and the salon said OK; changed when the caller changes it. */
++function txl_try(string $sid): void {
++    if (!txl_on()) return;
++    $lk = txl_lock($sid, false); if (!$lk) return; // a reading is running; the next words read again
++    try {
++        $c = q('SELECT * FROM calls WHERE call_sid = ?', [$sid])->fetch();
++        if (!$c || (string)$c['kind'] !== 'call' || (string)$c['status'] !== 'ring' || !in_array((string)$c['screen'], ['human', 'person'], true) /* the iPhone answered by a person (AMD) / the screened owner (2.99.591) */ || is_demo_site()) return; // only while the owner is on the call
++        $L = txl_lines($sid); $st = txl_state($sid);
++        if (count($L) <= (int)($st['n'] ?? 0) || (int)($st['reads'] ?? 0) >= TXL_MAX_N || time() - (int)($st['at'] ?? 0) < TXL_GAP) return;
++        [$tc, $ts] = txl_texts($L); $st['n'] = count($L); $st['at'] = time();
++        if (!cl_ivr_has_when($tc . ' ' . $ts) || !cl_ai_ready()) { txl_save($sid, $st); return; }
++        $cc = $c; $cc['text_c'] = $tc; $cc['text_s'] = $ts;
++        if (empty($st['counted'])) { if (!cl_count()) { $st['reads'] = TXL_MAX_N; txl_save($sid, $st); return; } $st['counted'] = 1; } /* (review) the day's AI cap: one per call */
++        $st['reads'] = (int)($st['reads'] ?? 0) + 1; txl_save($sid, $st);
++        $GLOBALS['actor'] = ['call', '📞 Call assistant'];
++        $ai = cl_weekday_fix($cc, cl_ai_after($cc, cl_ai($cc)));
++        if (strtolower(trim((string)($ai['intent'] ?? ''))) !== 'book') return;
++        $sig = txl_sig($ai); if ($sig === (string)($st['sig'] ?? '')) return;
++        $old = txl_rows((array)($st['ids'] ?? []));
++        if ($old) txl_drop($old, 'Changed on the call – booked again with what the caller said');
++        $GLOBALS['cl_live'] = 1; $GLOBALS['cl_live_ask'] = []; q('UPDATE calls SET appt_id = 0 WHERE id = ?', [$c['id']]);
++        try { $r = cl_decide($cc, $ai); }
++        catch (Throwable $e) { if ($old) { txl_back($old); q('UPDATE calls SET appt_id = ? WHERE id = ?', [(int)$old[0]['id'], $c['id']]); } throw $e; } /* (review #9) */
++        finally { $GLOBALS['cl_live'] = 0; }
++        $first = (int)q('SELECT appt_id FROM calls WHERE id = ?', [$c['id']])->fetchColumn();
++        if ($r === 'booked' && $first) { $st['ids'] = txl_ids_of($first); $st['sig'] = $sig; $st['ask'] = (array)($GLOBALS['cl_live_ask'] ?? []); txl_save($sid, $st); return; }
++        if ($old) { txl_back($old); q('UPDATE calls SET appt_id = ? WHERE id = ?', [(int)$old[0]['id'], $c['id']]); } // not bookable yet (e.g. the new time is taken): the earlier one stays
++    } finally { txl_unlock($lk); }
++}
++
++/** After the call (cl_job -> cl_decide): the booking made on the call vs what the recording says. null = nothing was booked on the call. */
++function txl_after(array $c, array $j): ?string {
++    $sid = (string)$c['call_sid']; if ($sid === '' || !is_file(txl_file($sid, 'json'))) return null;
++    $lk = txl_lock($sid, true);
++    try {
++        $st = txl_state($sid); $rows = txl_rows((array)($st['ids'] ?? []));
++        if (!$rows) return null;
++        if (!empty($st['done'])) return 'booked'; /* (review) read again (a retry): already decided - never a 2nd booking */
++        $st['done'] = 1; txl_save($sid, $st); @unlink(txl_file($sid, 'jsonl')); /* (review #8) the words are not kept */
++        $intent = strtolower(trim((string)($j['intent'] ?? '')));
++        if ($intent === 'book' && txl_sig($j) === (string)($st['sig'] ?? '') && txl_ok($c, $j)) return txl_keep($c, $rows, true, (array)($st['ask'] ?? []));
++        if ($intent === 'book' && txl_sig($j) !== (string)($st['sig'] ?? '')) {
++            txl_drop($rows, 'Replaced by the recording of the call');
++            $GLOBALS['cl_txl_try'] = 1;
++            try { $r = cl_decide0($c, $j); } catch (Throwable $e) { txl_back($rows); throw $e; } finally { $GLOBALS['cl_txl_try'] = 0; }
++            if ($r === 'booked') return $r;
++            txl_back($rows);
++        }
++        return txl_keep($c, $rows, false);
++    } finally { txl_unlock($lk); }
++}
++/** The booking made on the call is the one: texted (the recording says the same) or kept for the owner to check (no text). */
++function txl_keep(array $c, array $rows, bool $text, array $ask = [], string $why = ''): string {
++    $a = $rows[0]; $line = cl_line($a) . (count($rows) > 1 ? ' · ' . count($rows) . ' people' : '');
++    q('UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = ? WHERE id = ?', [(int)$a['id'], $text ? now_str() : '', $text ? 0 : 1, $c['id']]);
++    foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (review #6) the techs: once, after the call */
++    $GLOBALS['cl_ask'] = $text ? $ask : []; /* (review #3) the type question only with the text, never a leftover */
++    cl_end($c, 'booked', $text ? '' : 'Booked on the call – ' . ($why !== '' ? rtrim($why, '.') . ' – ' : 'the recording did not confirm it – ') . 'check it (no text sent).', $line, false);
++    if ($text) cl_confirm_due();
++    else cl_push((int)$c['id'], '📞 Check booking', $line . ' · booked on the call, not texted – check it');
++    return 'booked';
++}
++/** (review #4) The call ends in review / callback before the recording could decide (long call, no key, the AI cap, errors…): a booking made on it is kept, no text, the owner checks it. */
++function txl_pending(array $c, string $why): ?string {
++    $sid = (string)($c['call_sid'] ?? ''); if ($sid === '' || !is_file(txl_file($sid, 'json'))) return null;
++    $st = txl_state($sid); if (!empty($st['done'])) return null; $rows = txl_rows((array)($st['ids'] ?? [])); if (!$rows) return null;
++    $st['done'] = 1; txl_save($sid, $st); @unlink(txl_file($sid, 'jsonl'));
++    return txl_keep($c, $rows, false, [], $why);
++}
+diff -ruN int653/inc/calls-tx.php int654/inc/calls-tx.php
+--- int653/inc/calls-tx.php	2026-11-05 12:52:52.938656560 -0600
++++ int654/inc/calls-tx.php	2026-11-05 21:44:09.593676414 -0600
+@@ -5,6 +5,7 @@
+    SignalWire (call_in.php, call_agent.php, calls-agent / ivr / talk) is NOT changed. The API key is pasted by the owner (stored encrypted, never shown). */
+ declare(strict_types=1);
+ require_once __DIR__ . '/calls.php';
++require_once __DIR__ . '/calls-live.php'; /* (2.99.654) */
+ 
+ const TX_API = 'https://api.telnyx.com/v2';
+ const TX_VOICE_NAME = 'Maeve';
+@@ -97,6 +98,7 @@
+     $fwd = cl_fwd(); $q = '&sid=' . rawurlencode($sid);
+     $x = tx_say(CL_NOTICE);
+     if ($fwd === '') return tx_xml($x . tx_ai($q));
++    if (txl_on()) $x .= txl_start($q); /* (2.99.654) the words while the owner talks -> booked on the call (calls-live.php) */
+     $x .= '<Dial timeout="' . cl_ring() . '" answerOnBridge="true" callerId="' . cl_x($from !== '' ? $from : tx_number()) . '" record="record-from-answer-dual" recordingChannels="dual"'
+         . ' recordingStatusCallback="' . cl_x(tx_url('rec', $q)) . '" recordingStatusCallbackEvent="completed" recordingStatusCallbackMethod="POST"'
+         . ' action="' . cl_x(tx_url('after', $q)) . '" method="POST">'
+@@ -381,7 +383,7 @@
+ /* (2.99.616 L5 / 617.3) the per-call files (txg- guard, txh- heard, .dl- downloads) older than 24 h are removed - at most once an hour */
+ function tx_tmp_clean(): void {
+     $d = cl_dir(); $st = $d . '/.tx-clean'; if (is_file($st) && @filemtime($st) > time() - 3600) return; @touch($st);
+-    foreach (array_merge(glob($d . '/txg-*.json') ?: [], glob($d . '/txh-*.txt') ?: [], glob($d . '/.dl-*') ?: []) as $f) if (@filemtime($f) < time() - 86400) @unlink($f);
++    foreach (array_merge(glob($d . '/txg-*.json') ?: [], glob($d . '/txh-*.txt') ?: [], glob($d . '/.dl-*') ?: [], glob($d . '/txl-*') ?: []) as $f) /* (2.99.654 #8) the words read on the call: 1 day */ if (@filemtime($f) < time() - 86400) @unlink($f);
+ }
+ /* (CHAT 01/11 612d) the web PHP may not run programs (exec is off there): an answered Telnyx call whose MP3 could not become WAV is fetched again HERE
+    (the cron, PHP CLI, every minute: mpg123 runs), then queued -> read by the usual job (cl_cron_poke). Calls of the last 30 minutes only. */
+diff -ruN int653/inc/core.php int654/inc/core.php
+--- int653/inc/core.php	2026-11-05 20:46:16.665785682 -0600
++++ int654/inc/core.php	2026-11-05 21:36:08.143526354 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.653');
++define('APP_VERSION', '2.99.654');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
