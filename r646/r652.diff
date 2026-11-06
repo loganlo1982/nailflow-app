@@ -1,0 +1,62 @@
+diff -ruN int651/assets/admin/turn-ex.js int652/assets/admin/turn-ex.js
+--- int651/assets/admin/turn-ex.js	2026-11-02 23:30:29.000000000 -0600
++++ int652/assets/admin/turn-ex.js	2026-11-05 19:50:37.132174499 -0600
+@@ -94,7 +94,7 @@
+  "VD: tiệm mở 9 giờ, muốn khách bắt đầu trước 8:30 không tính → ghi \"8:30\" ở ô ghi chú bên dưới.",
+  "E.g. the salon opens at 9 and customers before 8:30 should not count → write \"8:30\" in the note below."
+  ],
+- "q8:1": [
++ "q8:L:skipfirst": [
+  "VD: tới lượt Lan nhưng Lan không nhận khách → Lan xuống cuối hàng, khách giao người kế.",
+  "E.g. it is Lan's turn but she says no → Lan goes to the end, the customer goes to the next tech."
+  ],
+diff -ruN int651/inc/core.php int652/inc/core.php
+--- int651/inc/core.php	2026-11-05 14:22:18.788181691 -0600
++++ int652/inc/core.php	2026-11-05 19:50:42.931592634 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.651');
++define('APP_VERSION', '2.99.652');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN int651/setup/index.php int652/setup/index.php
+--- int651/setup/index.php	2026-11-02 23:30:29.000000000 -0600
++++ int652/setup/index.php	2026-11-05 19:50:40.537120063 -0600
+@@ -65,7 +65,7 @@
+     ['1', V('Khách bắt đầu lúc 9:15 sáng hoặc sớm hơn (trước giờ mở cửa) không tính', 'A customer started at 9:15 AM or earlier (before opening) counts nothing')],
+     ['0', V('Tính từ khách đầu tiên / từ lúc mở cửa', 'From the first customer / from opening')], ['L:othertime', V('Không tính trước một giờ khác (ghi giờ ở ghi chú)', 'Not counted before another time (write it in the note)')]] },
+   { id: 'q8', t: V('Thợ từ chối khách', 'A tech turns a customer down'), k: 'turn_skip_max', o: [
+-    ['1', V('Mất lượt, xuống cuối hàng', 'Loses the turn, to the end of the line'), 1], ['N', V('Giữ chỗ, quá … lần/ngày thì xuống cuối', 'Keeps the place; after … times a day to the end')], ['0', V('Luôn giữ chỗ', 'Always keeps the place')]] },
++    ['N', V('Giữ chỗ, quá … lần/ngày thì xuống cuối', 'Keeps the place; after … times a day to the end'), 1], ['L:skipfirst', V('Mất lượt ngay lần đầu, xuống cuối hàng', 'Loses the turn the first time, to the end of the line')] /* (2.99.652 - anh Logan 05/11) the app sends a tech to the end only after MORE than turn_skip_max Skips (inc/turnauto-state.php ta_skip): 'first time' is not a setting yet */, ['0', V('Luôn giữ chỗ', 'Always keeps the place')]] },
+   { id: 'q9', t: V('Thợ đi ăn / nghỉ', 'A tech on a break'), k: 'turn_brk_max', o: [
+     ['0', V('Giữ chỗ, nghỉ bao lâu cũng được', 'Keeps the place however long'), 1], ['N', V('Nghỉ quá … phút thì xuống cuối hàng', 'Over … min: to the end of the line')]] },
+   { id: 'q10', t: V('Khách bỏ về / đổi thợ giữa chừng', 'A customer leaves / changes tech midway'), o: [['L:giveback', V('Trả lại turn cho thợ cũ', 'Give the turn back to the first tech')], ['L:keep', V('Vẫn tính cho thợ cũ', 'Still counts for the first tech')]] },
+@@ -76,13 +76,13 @@
+ ];
+ const EX = window.TURN_EX || {}; /* (2.99.636) the shared table: assets/admin/turn-ex.js */
+ const ex = (q, v) => { const t = EX[q + ':' + v]; return t ? `<small class="ex">${esc(V(t[0], t[1]))}</small>` : ''; };
+-const cur = q => { if (!q.k) return q.o.find(o => o[0][0] === '=')?.[0] || ''; const v = String(D.turn[q.k]); if (q.k === 'turn_skip_max' || q.k === 'turn_brk_max') return v === '0' ? '0' : (q.k === 'turn_skip_max' && v === '1' ? '1' : 'N'); return v; };
++const cur = q => { if (!q.k) return q.o.find(o => o[0][0] === '=')?.[0] || ''; const v = String(D.turn[q.k]); if (q.k === 'turn_skip_max' || q.k === 'turn_brk_max') return v === '0' ? '0' : 'N'; return v; }; /* (2.99.652) any skip limit = 'N' (the number as saved) */
+ function qHtml(q) {
+   if (q.num) { const [k, lo, hi, lab] = q.num; return `<div class="q" data-q="${q.id}"><h3>${esc(q.t)}</h3><div class="f"><span>${esc(lab)}</span>${ex(q.id, '')}<input class="n" type="number" min="${lo}" max="${hi}" data-k="${k}" value="${esc(D.turn[k])}"></div></div>`; }
+-  const c = cur(q), nv = q.k === 'turn_skip_max' ? Math.max(1, (+D.turn.turn_skip_max || 3) - 1) : (+D.turn.turn_brk_max || 30);
++  const c = cur(q), nv = q.k === 'turn_skip_max' ? Math.max(1, +D.turn.turn_skip_max || 2) /* (2.99.652) the saved number itself */ : (+D.turn.turn_brk_max || 30);
+   return `<div class="q" data-q="${q.id}"><h3>${esc(q.t)}</h3>` + q.o.map(([v, l, pop, amt]) => {
+     const later = v.startsWith('L:'), same = v.startsWith('=');
+-    const num = v === 'N' ? ` <input class="n" type="number" min="1" max="${q.k === 'turn_brk_max' ? 600 : 19}" data-n="${q.id}" value="${nv}">` : (amt ? ` <input class="n" type="number" min="1" max="1000" data-k="${amt}" value="${esc(D.turn[amt])}">` : '');
++    const num = v === 'N' ? ` <input class="n" type="number" min="1" max="${q.k === 'turn_brk_max' ? 600 : 20}" data-n="${q.id}" value="${nv}">` : (amt ? ` <input class="n" type="number" min="1" max="1000" data-k="${amt}" value="${esc(D.turn[amt])}">` : '');
+     return `<label class="o"><input type="radio" name="${q.id}" value="${esc(v)}"${v === c ? ' checked' : ''}><span>${esc(l)}${num}${pop ? `<span class="tag pop">${V('Phổ biến', 'Common')}</span>` : ''}${v === c && !later ? `<span class="tag now">${V('Đang dùng', 'Now')}</span>` : ''}${same ? `<span class="tag now">${V('App làm sẵn', 'Built in')}</span>` : ''}${later ? `<span class="tag later">${V('NailFlow sẽ liên hệ cài thêm', 'NailFlow will set this up')}</span>` : ''}${ex(q.id, v)}</span></label>`; }).join('')
+     + (q.extra ? q.extra() : '') + `<div class="f"><textarea data-note="${q.id}" placeholder="${V('Khác / ghi chú', 'Other / note')}"></textarea></div></div>`;
+ }
+@@ -94,7 +94,7 @@
+     if (v.startsWith('L:') || nt.trim()) notes.push({ q: q.id, pick: v.startsWith('L:') ? v.slice(2) : '', text: nt.trim().slice(0, 500) });
+     if (q.num) { o[q.num[0]] = +$(`[data-k="${q.num[0]}"]`).value; continue; }
+     if (!q.k || !v || v.startsWith('L:') || v.startsWith('=')) continue;
+-    if (v === 'N') { const n = +$(`[data-n="${q.id}"]`).value || 1; o[q.k] = q.k === 'turn_skip_max' ? n + 1 : n; }
++    if (v === 'N') { const n = +$(`[data-n="${q.id}"]`).value || 1; o[q.k] = n; } /* (2.99.652) 'more than N Skips' = turn_skip_max N (was N + 1: one Skip too many) */
+     else o[q.k] = q.k === 'turn_rare_keep' || q.k === 'turn_pre_open' || q.k === 'turn_auto_on' || q.k === 'turn_skip_max' || q.k === 'turn_brk_max' ? +v : v;
+     if (q.id === 'q2') { const amt = q.o.find(x => x[0] === v)?.[3]; if (amt) o[amt] = +$(`[data-k="${amt}"]`).value; }
+   }
