@@ -1,0 +1,227 @@
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int665/inc/android.php int666/inc/android.php
+--- int665/inc/android.php	2026-11-04 18:01:14.000000000 -0600
++++ int666/inc/android.php	2026-11-06 14:48:23.033421781 -0600
+@@ -288,7 +288,7 @@
+         if (preg_match('/^\s*[1-9]\s*(?:(?:,|\/|&|\s|and|y)+\s*[1-9])?\s*[.!]?\s*$/i', $text) && (string)setting('call_asks') !== '') { require_once __DIR__ . '/calls-ask.php'; // (2.99.602 - LENH 602) "2" = the answer to a call's manicure / pedicure question
+             if (($ca = cla_try($from, $text)) !== null) { $keep(); return ['ok' => true, 'kind' => 'call-choice'] + $ca; } }
+         $r = rp_handle($from, $text, $helpAgain);
+-        if (!empty($r['mid']) && !in_array((string)($r['result'] ?? ''), ['cancelled', 'cancelled-late', 'many', 'resched', 'off', 'started'], true)) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); } /* (2.99.572) a CANCEL text: only its own cancel notice (1 push), no 2nd 'message' push */ // (2.99.221 – order 420) owner + managers told, tap → the conversation
++        if (!empty($r['mid']) && !in_array((string)($r['result'] ?? ''), ['cancelled', 'cancelled-late', 'many', 'resched', 'off', 'started', 'moved' /* (2.99.666) moved by the reply: its own push */], true)) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); } /* (2.99.572) a CANCEL text: only its own cancel notice (1 push), no 2nd 'message' push */ // (2.99.221 – order 420) owner + managers told, tap → the conversation
+         if (!empty($r['mid']) && empty($r['dup']) && (string)($r['result'] ?? '') === 'kept' && empty($rt['unsure']) && !isset(sd_unsure()[norm_phone($from)])) { try { ib_own_ack($from, (int)$r['mid']); } catch (Throwable $e) { error_log('own ack: ' . $e->getMessage()); } } // (2.99.352 – lệnh 590) only when the text is SURELY this salon's (shared 601: an "unsure" text is kept by both salons → no 2 answers) · (2.99.351 – lệnh 584) a plain text (not a cancel)
+         return ['kind' => 'reply'] + $r;
+     } finally { $GLOBALS['actor'] = $prev; }
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int665/inc/core.php int666/inc/core.php
+--- int665/inc/core.php	2026-11-06 13:24:27.543572849 -0600
++++ int666/inc/core.php	2026-11-06 14:41:51.178651789 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.665');
++define('APP_VERSION', '2.99.666');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int665/inc/outbox-2.php int666/inc/outbox-2.php
+--- int665/inc/outbox-2.php	2026-11-04 18:01:14.000000000 -0600
++++ int666/inc/outbox-2.php	2026-11-06 14:48:33.546934940 -0600
+@@ -100,11 +100,23 @@
+     if ($a['status'] !== 'booked' || !out_appt_ok($a)) return null;
+     if ($conf = out_conf_refresh($a)) return $conf; // its own confirmation, not sent yet (To send, or Auto send not handed to the iPhone yet): it now shows the new time
+     if (!out_on('change')) return null;
++    if ($one = out_moved_same($a, $in)) return $one; /* (2.99.666) the party already got (or gets) its NEW TIME text for this same day + time a moment ago: no 2nd text */
+     $ref = 'change:' . $a['id'] . ':' . $a['appt_date'] . ':' . $a['start_min'];
+     $had = q('SELECT status FROM outbox WHERE ref = ?', [$ref])->fetchColumn();
+     if ($had !== false && $had !== 'pending') $ref .= ':' . date('ymdHis'); // (2.99.92) moved back to a time it had before: that old text is done – a new "new time" text
+     return out_add('change', $ref, (string)$a['phone'], (string)$a['customer_name'], out_appt_body('change', $a), (int)$a['id']);
+ }
++/* (2.99.666 – anh Logan 06/11, LAURIE: a party of 2 moved 3:00 → 2:30 one person at a time (2 saves, 5 s apart) → 2 identical "NEW TIME" texts:
++   the 1st was already handed to the Android (status 'auto' / 'sent', not 'pending'), so the 2nd move made a new one.) ONE text per party: the party's
++   latest NEW TIME text, made in the last 10 minutes and still going / gone (auto / sent), already says this day + time (its ref) → no 2nd text;
++   still waiting for the Android → its words brought up to date (now "2 people" at the new time). Another time (moved again / moved back) → a new text as before. */
++function out_moved_same(array $a, string $in): ?array {
++    $o = q("SELECT * FROM outbox WHERE kind = 'change' AND appt_id IN ($in) AND status IN ('auto', 'sent') AND created_at >= ? ORDER BY id DESC LIMIT 1", [date('Y-m-d H:i:s', time() - 600)])->fetch();
++    if (!$o || !preg_match('/^change:\d+:(\d{4}-\d\d-\d\d):(\d+)(?::|$)/', (string)$o['ref'], $m) || $m[1] !== (string)$a['appt_date'] || (int)$m[2] !== (int)$a['start_min']) return null;
++    if ($o['status'] === 'auto') { $body = sms_final(out_appt_body('change', $a));
++        if (q("UPDATE autosend SET body = ? WHERE src = ? AND state IN ('wait', 'mailed')", [$body, 'ob:' . (int)$o['id']])->rowCount()) q('UPDATE outbox SET body = ? WHERE id = ?', [$body, (int)$o['id']]); }
++    return q('SELECT * FROM outbox WHERE id = ?', [(int)$o['id']])->fetch() ?: null;
++}
+ /** The salon cancelled an appointment that has not happened yet. */
+ function out_cancelled(array $a, bool $self = false): ?array { // $self (2.99.178 – order 370): the customer cancelled on their phone – always told it is cancelled
+     out_conf_drop($a); // (2.99.179 – order 371) a Confirm / New time still waiting is not needed any more; the Cancelled goes ALWAYS (369.1 dropped: phoned-in bookings too)
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int665/inc/replies.php int666/inc/replies.php
+--- int665/inc/replies.php	2026-11-05 01:28:11.344386014 -0600
++++ int666/inc/replies.php	2026-11-06 14:48:23.032508859 -0600
+@@ -129,6 +129,9 @@
+     $mid = (int)db()->lastInsertId(); // (2.99.221 – order 420) the Android push opens this conversation
+     if ($a) appt_log($a, 'reply', '💬 Texted: "' . mb_substr($text, 0, 160) . '"');
+     if ($isC) { $f = rp_cancel_flow($phone, $text, $name, $a); $r['result'] = $f['result']; $r['done'] = $f['done'] ? 1 : 0; if (!empty($f['apptId'])) $r['apptId'] = (int)$f['apptId']; } // (2.99.332 – lệnh 561)
++    elseif ($a && !$always) { /* (2.99.666 – anh Logan 06/11, LAURIE) the reply picks ONE time the salon's last text offered → the party moved by itself, ONE NEW TIME text (inc/replytime.php) */
++        try { require_once __DIR__ . '/replytime.php'; if ($mv = rt_try($phone, $text)) { $r['result'] = 'moved'; $r['apptId'] = (int)$mv['id']; $r['date'] = (string)$mv['appt_date']; $r['when'] = short_when($mv); } }
++        catch (Throwable $e) { error_log('666 reply time: ' . $e->getMessage()); } }
+     array_unshift($l, $r); rp_save($l);
+     return ['ok' => true, 'result' => $r['result'], 'name' => $name, 'when' => $r['when'], 'mid' => $mid];
+ }
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int665/inc/replytime.php int666/inc/replytime.php
+--- int665/inc/replytime.php	1969-12-31 18:00:00.000000000 -0600
++++ int666/inc/replytime.php	2026-11-06 14:53:52.370809544 -0600
+@@ -0,0 +1,159 @@
++<?php
++/* (2.99.666 – anh Logan 06/11, LAURIE: the salon texted "Can you come at 2:30 or 3:30 ?", she answered "2:30 will work!" and the owner had to move
++   both people of the party by hand – 2 identical NEW TIME texts went out). "A muốn khi chủ tiệm nt thì App tự thay đổi giờ hẹn. Và chỉ gửi 1 tin nhắn xác nhận thôi."
++   The customer's reply picks ONE of the clock times the salon's LAST text (sent within RT_WINDOW_H hours) offered → the whole party (everyone of that number /
++   group at the same old time, + a 2-tech part with the same gap) is moved to that time on the same day – the same checks as an automatic move
++   (inside the hours, not gone, the same tech free / enough free techs for Any tech) – logged ('Auto (text reply)', "Time: … → …"), the techs told,
++   ONE NEW TIME text (out_moved – one per party) and ONE owner notification. Anything not sure → nothing is changed (the text is in Messages as before).
++   Every salon, its own hours; only the number that texted. Only core functions (+ outbox.php) – works from the webhook, the SMS Server and the cron. */
++declare(strict_types=1);
++if (!defined('APP_ROOT')) { http_response_code(404); exit; }
++
++const RT_WINDOW_H = 3; /* (2.99.666) the salon's offer counts this many hours */
++/** (2.99.666) The words a "yes, that time" reply may have (anything else – no, can't, or, instead, later, a name… → not sure, nothing moved). */
++const RT_OK_WORDS = ['yes', 'yess', 'yesss', 'yeah', 'yea', 'yep', 'yup', 'ya', 'y', 'ok', 'okay', 'okey', 'k', 'kk', 'sure', 'perfect', 'great', 'good', 'fine', 'cool', 'alright', 'allright',
++    'awesome', 'lovely', 'nice', 'sweet', 'amazing', 'absolutely', 'definitely', 'works', 'work', 'working', 'sounds', 'sound', 'will', 'would', 'be', 'is', 'it', 'that', 'thats', 'this', 'at', 'for',
++    'please', 'pls', 'plz', 'thanks', 'thank', 'thx', 'ty', 'you', 'u', 'see', 'then', 'there', 'i', 'ill', 'im', 'we', 'well', 'were', 'can', 'do', 'come', 'coming', 'make', 'the', 'time', 'me', 'us',
++    'both', 'of', 'lets', 'go', 'with', 'take', 'and', 'pm', 'am', 'today', 'oh', 'hi', 'hello', 'hey', 'one', 'oclock', 'people', 'ppl', 'person', 'gonna', 'going', 'to', 'a', 'an', 'all', 'set', 'deal', 'right'];
++const RT_YES_WORDS = ['yes', 'yess', 'yesss', 'yeah', 'yea', 'yep', 'yup', 'ya', 'y', 'ok', 'okay', 'okey', 'k', 'kk', 'sure', 'perfect', 'great', 'good', 'fine', 'cool', 'alright', 'allright', 'awesome', 'works', 'work', 'deal'];
++
++/** (2.99.666) Clock times in a piece of text: [[hour 1-12, minutes, 'am'|'pm'|''], …]. A plain hour ("4") counts too – in the salon's text ($offer) only after at / or / and / to / around / by / ",".  */
++function rt_times(string $s, bool $offer): array {
++    $out = [];
++    if (!preg_match_all('/(?<![\d\/:.$\-])(\d{1,2})(?:[:.]([0-5]\d))?(?:\s*(a\.?m\.?|p\.?m\.?)(?![a-z]))?(?![\d\/:\-%$])(?!\s*(?:people|ppl|persons?|of us|guests?|mins?|minutes?|hours?|hrs?|days?|weeks?)\b)/i', $s, $mm, PREG_SET_ORDER | PREG_OFFSET_CAPTURE)) return [];
++    foreach ($mm as $m) {
++        $h = (int)$m[1][0]; $mi = isset($m[2]) && $m[2][0] !== '' ? (int)$m[2][0] : -1; $ap = isset($m[3]) && $m[3][0] !== '' ? (stripos($m[3][0], 'p') === 0 ? 'pm' : 'am') : '';
++        if ($h < 1 || $h > 12) continue;
++        if ($mi < 0 && $ap === '' && $offer && !preg_match('/(\bat|@|\bor|\band|\bto|\baround|\bby|\babout|,)\s*$/i', substr($s, 0, (int)$m[0][1]))) continue; /* (2.99.666) a plain number in the salon's text: only "at 4", "or 5" */
++        $out[] = [$h, max(0, $mi), $ap];
++    }
++    return $out;
++}
++/** (2.99.666) One time of the salon's offer → the minute of the day on $date, inside the opening hours (2:30 = PM when the salon is closed at 2:30 AM). -1 = not sure. */
++function rt_offer_min(array $t, array $hrs): int {
++    [$h, $mi, $ap] = $t; $am = ($h % 12) * 60 + $mi; $pm = ($h % 12 + 12) * 60 + $mi;
++    $in = fn(int $x) => $x >= (int)$hrs['open'] && $x < (int)$hrs['close'];
++    if ($ap === 'am') return $in($am) ? $am : -1;
++    if ($ap === 'pm') return $in($pm) ? $pm : -1;
++    if ($in($am) && $in($pm)) return $h >= 8 && $h <= 11 ? $am : $pm; /* (2.99.666) both inside the hours (a salon open 9 AM – 11 PM): 8–11 = morning, 12–7 = afternoon (like a phone call) */
++    return $in($am) ? $am : ($in($pm) ? $pm : -1);
++}
++/** (2.99.666) The salon's last text to this number (any way it went: Messages, the app's Send, an automatic text) within the window: [time, body] or null. */
++function rt_last_out(string $p): ?array {
++    $best = null; $cut = date('Y-m-d H:i:s', time() - RT_WINDOW_H * 3600);
++    $c = [];
++    try { $c[] = q("SELECT created_at AS t, body FROM messages WHERE phone = ? AND dir = 'out' ORDER BY created_at DESC, id DESC LIMIT 1", [$p])->fetch(); } catch (Throwable $e) {}
++    try { $c[] = q("SELECT CASE WHEN sent_at <> '' THEN sent_at WHEN taken_at <> '' THEN taken_at ELSE created_at END AS t, body FROM autosend WHERE phone = ? AND state IN ('wait', 'mailed', 'taken', 'sent', 'unsure') ORDER BY id DESC LIMIT 1", [$p])->fetch(); } catch (Throwable $e) {}
++    try { $c[] = q("SELECT CASE WHEN sent_at <> '' THEN sent_at ELSE created_at END AS t, body FROM outbox WHERE phone = ? AND status IN ('sent', 'auto') ORDER BY id DESC LIMIT 1", [$p])->fetch(); } catch (Throwable $e) {}
++    foreach ($c as $r) if ($r && (string)$r['t'] !== '' && ($best === null || (string)$r['t'] > $best[0])) $best = [(string)$r['t'], (string)$r['body']];
++    return $best && $best[0] >= $cut ? $best : null;
++}
++/** (2.99.666) The times the salon OFFERED in that text (only the sentence that asks: "can you come at …", "how about …", "… instead", "we have …"). */
++function rt_offered(string $body): array {
++    $out = [];
++    foreach (preg_split('/[\n?!]+|(?<![ap]\.m)\.(?=\s|$)/u', $body) ?: [] as $sen) {
++        if (!preg_match('/\b(can|could|would|will)\s+(you|u|ya|she|he|they|y\'?all)\b|\bhow about\b|\bwhat about\b|\bworks?\s+for\s+(you|u)\b|\b(are|r)\s+(you|u)\s+(available|free|ok|okay|able)\b|\bavailab|\bopening|\bopen\s+at\b|\binstead\b|\bwe\s+(only\s+)?(have|can|could)\b|\bis\s+.{0,14}\b(ok|okay|good|fine)\b/iu', $sen)) continue;
++        foreach (rt_times($sen, true) as $t) $out[] = $t;
++    }
++    return $out;
++}
++/** (2.99.666) The reply picks exactly one of the offered minutes: that minute, or -1 (not sure: no / can't / or / two times / a time not offered / a question / other words). */
++function rt_pick(string $text, array $offMins, array $offT): int {
++    $s = mb_strtolower(trim(str_replace(['’', '‘', '`'], "'", $text)));
++    if ($s === '' || str_contains($s, '?') || mb_strlen($s) > 120) return -1;
++    $ts = rt_times($s, false);
++    $words = preg_split('/[^a-z]+/', preg_replace('/\'/', '', (string)preg_replace('/(?<![\d\/:.$\-])\d{1,2}(?:[:.][0-5]\d)?(?:\s*(?:a\.?m\.?|p\.?m\.?)(?![a-z]))?/i', ' ', $s)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
++    foreach ($words as $w) if (!in_array($w, RT_OK_WORDS, true)) return -1;
++    if (preg_match('/\d/', (string)preg_replace('/(?<![\d\/:.$\-])\d{1,2}(?:[:.][0-5]\d)?/', '', $s))) return -1; /* (2.99.666) other numbers (a date, 3 digits…): not sure */
++    $uniq = array_values(array_unique($offMins));
++    if (!$ts) return count($uniq) === 1 && array_intersect($words, RT_YES_WORDS) ? $uniq[0] : -1; /* (2.99.666) a plain "yes / ok" – only when ONE time was offered */
++    $pick = [];
++    foreach ($ts as [$h, $mi, $ap]) {
++        $hit = -1;
++        foreach ($offT as $k => $o) if ($offMins[$k] >= 0 && $o[0] % 12 === $h % 12 && $o[1] === $mi && ($ap === '' || ($ap === 'pm') === ($offMins[$k] >= 720))) $hit = $offMins[$k];
++        if ($hit < 0) return -1; /* (2.99.666) a time the salon did not offer */
++        $pick[$hit] = 1;
++    }
++    return count($pick) === 1 ? (int)array_key_first($pick) : -1;
++}
++/** (2.99.666) Is the time free for this row? '' = yes, else why not (like the call assistant's move: the same tech, or enough free techs for Any tech). */
++function rt_free(string $date, int $start, int $dur, int $staff, array $sids, array $planned): string {
++    $busy = busy_appts($date); $out = staff_out_at($date); $at = min_to_label($start);
++    $hit = function (int $sid) use ($busy, $start, $dur, $planned) { foreach ($busy as $a) if ((int)$a['staff_id'] === $sid && overlaps($start, $dur, (int)$a['start_min'], (int)$a['duration'])) return (string)$a['customer_name'];
++        foreach ($planned as $p) if ($p[0] === $sid && overlaps($start, $dur, $p[1], $p[2])) return 'this party'; return null; };
++    if ($staff) {
++        $s = q('SELECT * FROM staff WHERE id = ?', [$staff])->fetch();
++        if (!$s || staff_is_off($s, $date)) return staff_name($staff) . ' is off.';
++        if (isset($out[$staff])) return staff_name($staff) . ' clocked out.';
++        if (($w = $hit($staff)) !== null) return staff_name($staff) . ' already has ' . $w . ' at ' . $at . '.';
++        return '';
++    }
++    $free = 0; $able = 0;
++    foreach (staff_list() as $s) { $sid = (int)$s['id']; if (staff_is_off($s, $date) || isset($out[$sid])) continue; if ($hit($sid) === null) { $free++; if (staff_can_do($s, $sids)) $able++; } }
++    $anyTaken = count(array_filter($busy, fn($a) => !(int)$a['staff_id'] && overlaps($start, $dur, (int)$a['start_min'], (int)$a['duration'])))
++        + count(array_filter($planned, fn($p) => $p[0] === 0 && overlaps($start, $dur, $p[1], $p[2])));
++    if ($free - $anyTaken < 1) return 'No tech free at ' . $at . '.';
++    return $able ? '' : 'No tech who does this service is free at ' . $at . '.';
++}
++/** (2.99.666) The reply → the party moved (the anchor appointment, moved) or null (nothing changed; $why says why, for the tests). */
++function rt_try(string $phone, string $text, ?string &$why = null): ?array {
++    $why = '';
++    $p = norm_phone($phone); if (strlen($p) !== 12) { $why = 'no number'; return null; }
++    if (!($last = rt_last_out($p))) { $why = 'no salon text in the last ' . RT_WINDOW_H . ' hours'; return null; }
++    $offT = rt_offered($last[1]); if (!$offT) { $why = 'the last text offers no time'; return null; }
++    if (function_exists('rp_started') && rp_started($p)) { $why = 'started / checked in'; return null; }
++    $rows = q("SELECT * FROM appointments WHERE phone = ? AND kind = 'appt' AND status IN ('booked', 'arrived') AND appt_date >= ? ORDER BY appt_date, start_min, id", [$p, date('Y-m-d')])->fetchAll();
++    $up = array_values(array_filter($rows, fn($x) => $x['status'] === 'booked' && appt_ts($x) > time()));
++    if (!$up) { $why = 'no upcoming appointment'; return null; }
++    $day = (string)$up[0]['appt_date'];
++    if ($day !== date('Y-m-d')) { /* (2.99.666) another day: only when the salon's text names that day */
++        $ts = strtotime($day); $b = mb_strtolower($last[1]);
++        if (!str_contains($b, mb_strtolower(date('D', $ts))) && !str_contains($b, date('n/j', $ts)) && !($day === date('Y-m-d', strtotime('+1 day')) && str_contains($b, 'tomorrow'))) { $why = 'the offer is not about ' . $day; return null; }
++    }
++    if (array_filter($rows, fn($x) => $x['appt_date'] === $day && $x['status'] === 'arrived')) { $why = 'someone of the party checked in'; return null; }
++    $hrs = hours_for($day); if (!$hrs) { $why = 'closed that day'; return null; }
++    $offM = array_map(fn($t) => rt_offer_min($t, $hrs), $offT);
++    $new = rt_pick($text, $offM, $offT); if ($new < 0) { $why = 'the reply does not pick exactly one offered time'; return null; }
++    $old = (int)$up[0]['start_min'];
++    $mem = []; foreach ($rows as $x) if ($x['appt_date'] === $day && $x['status'] === 'booked') $mem[(int)$x['id']] = $x;
++    $gids = array_unique(array_filter(array_map(fn($x) => (string)$x['group_id'], $mem)));
++    foreach ($gids as $g) foreach (q("SELECT * FROM appointments WHERE group_id = ? AND status IN ('booked', 'arrived')", [$g])->fetchAll() as $x) {
++        if ($x['status'] === 'arrived') { $why = 'someone of the party checked in'; return null; } $mem[(int)$x['id']] = $x; }
++    $move = array_filter($mem, fn($x) => (int)$x['start_min'] === $old && $x['appt_date'] === $day);
++    foreach ($move as $x) { $root = (int)$x['split_of'] ?: (int)$x['id']; /* (2.99.666) a 2-tech part keeps its gap ("Move both") */
++        foreach (q("SELECT * FROM appointments WHERE (id = ? OR split_of = ?) AND status IN ('booked', 'arrived')", [$root, $root])->fetchAll() as $y) { if ($y['status'] === 'arrived') { $why = 'a part is checked in'; return null; } $move[(int)$y['id']] = $y; } }
++    if (array_diff_key($mem, $move)) { $why = 'the number has other appointments that day at another time'; return null; }
++    $delta = $new - $old;
++    if ($delta === 0) { $why = 'already at that time'; return null; }
++    if (appt_ts(['appt_date' => $day, 'start_min' => $new]) <= time() + 300) { $why = 'that time has passed'; return null; }
++    $lock = function_exists('book_lock'); if ($lock && !book_lock()) { $why = 'busy'; return null; }
++    $prevSkip = $GLOBALS['slot_skip'] ?? null; $GLOBALS['slot_skip'] = array_map('intval', array_keys($move)); $prevA = $GLOBALS['actor'] ?? null;
++    try {
++        $plan = []; $pl = [];
++        foreach ($move as $x) {
++            $s = (int)$x['start_min'] + $delta; $d = max(15, (int)$x['duration']);
++            if ($s < (int)$hrs['open'] || $s >= (int)$hrs['close']) { $why = min_to_label(max(0, min(1439, $s))) . ' is outside the hours.'; return null; }
++            if (($w = rt_free($day, $s, $d, (int)$x['staff_id'], ids_list((string)$x['service_ids']), $pl)) !== '') { $why = $w; return null; }
++            $plan[] = [$x, $s]; $pl[] = [(int)$x['staff_id'], $s, $d];
++        }
++        actor_set('system', 'Auto (text reply)');
++        $q = mb_substr(preg_replace('/\s+/u', ' ', trim($text)), 0, 60);
++        foreach ($plan as [$x, $s]) {
++            q("UPDATE appointments SET start_min = ?, reminder_at = '', confirm_state = '' WHERE id = ? AND status = 'booked'", [$s, (int)$x['id']]);
++            $nx = q('SELECT * FROM appointments WHERE id = ?', [(int)$x['id']])->fetch();
++            $w0 = fn($a) => date('D M j', strtotime((string)$a['appt_date'])) . ' ' . min_to_label((int)$a['start_min']);
++            appt_log($nx, 'changed', 'Time: ' . $w0($x) . ' → ' . $w0($nx) . ' · 💬 the customer picked it by text "' . $q . '"');
++            if ((int)$x['staff_id']) notify_staff((int)$x['staff_id'], 'change', 'Changed: ' . appt_line($nx), (int)$x['id']);
++        }
++    } finally { $GLOBALS['slot_skip'] = $prevSkip; $GLOBALS['actor'] = $prevA; if ($lock && function_exists('book_unlock')) book_unlock(); }
++    $a0 = $up[0]; $na = q('SELECT * FROM appointments WHERE id = ?', [(int)$a0['id']])->fetch();
++    if (!function_exists('out_moved')) require_once __DIR__ . '/outbox.php';
++    $pa = $GLOBALS['actor'] ?? null; actor_set('system', 'Auto (text reply)');
++    try { out_moved($na); } catch (Throwable $e) { error_log('666 moved text: ' . $e->getMessage()); } finally { $GLOBALS['actor'] = $pa; } /* (2.99.666) ONE NEW TIME text for the party */
++    $n = count(array_filter($move, fn($x) => !(int)$x['split_of']));
++    $nm = trim((string)$a0['customer_name']); $nm = $nm !== '' ? mb_convert_case(mb_strtolower($nm), MB_CASE_TITLE, 'UTF-8') : pretty_phone($p);
++    $line = $nm . ' – ' . date('D n/j', strtotime($day)) . ' ' . min_to_label($old) . ' → ' . min_to_label($new) . ($n > 1 ? ' · ' . $n . ' people' : '');
++    try { notify_admin('change', '💬 Moved by text: ' . $line . ' ("' . $q . '")', (int)$a0['id'], ['title' => '💬 Moved by text', 'body' => $line . ' – "' . $q . '"', 'sub' => 'change', 'url' => '?appt=' . (int)$a0['id'] . '&date=' . $day]); } catch (Throwable $e) { error_log('666 notify: ' . $e->getMessage()); }
++    if (function_exists('chg_bump')) { try { chg_bump(); } catch (Throwable $e) {} }
++    return $na ?: null;
++}
