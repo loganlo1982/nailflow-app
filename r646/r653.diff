@@ -1,0 +1,80 @@
+diff -ruN int652/inc/calls-job.php int653/inc/calls-job.php
+--- int652/inc/calls-job.php	2026-11-05 14:22:30.988101089 -0600
++++ int653/inc/calls-job.php	2026-11-05 20:46:16.502784986 -0600
+@@ -23,7 +23,8 @@
+     . "service_ids: ids from the Services list. When the caller says a general word (\"pedicure\", \"manicure\", \"full set\", \"fill\", \"nails\", \"làm chân\", \"làm tay\", \"làm bột\"), "
+     . "choose the basic / regular / plain service of that kind from the list (e.g. \"pedicure\" → the regular Pedicure). Empty only when no service was said at all.\n"
+     . "customer_name: the name the caller gave for the appointment (empty if none was said). customer_phone: only if the caller said a different number to use, else empty.\n"
+-    . "tech_id: the id when the caller asked for a tech by name, else 0. tech_text: that name as said, else empty. people: how many people want appointments (1 if one).\n"
++    . "tech_id: the id when the caller asked for a tech by name, else 0. tech_text: that name as said, else empty. "
++    . "tech_last: true only when the caller wants the SAME tech who did their nails before but does not know / remember the name (\"the lady who did my nails last time\", \"same girl as before\", \"I forgot her name\"), else false (then tech_id 0, tech_text empty). people: how many people want appointments (1 if one).\n"
+     . "party: when people is 2 or more, EXACTLY one entry per PERSON (never one entry per service) in the order said, the caller first (\"me and my daughter\" = 2: the caller, then the daughter): name (the name said for that person, else empty), "
+     . "service_ids / service_text (what THAT person wants – one person may have several services, e.g. pedicure + manicure; empty when not said for that person), tech_id / tech_text (a tech asked for that person, else 0 / empty). "
+     . "Example: \"2 people, 2 pedicures and 1 manicure\" → people 2, party [{pedicure + manicure}, {pedicure}]; \"me and my daughter, pedicure\" → people 2, each a pedicure. When people is 1: party is empty. "
+@@ -41,7 +42,7 @@
+     . "When intent is \"add\": date / time = the day / time of the appointment they have (if said); party = the person(s) to ADD (name, services, tech for each); add_n = how many people to add; same_services = true when they said the same as the caller; who_text = how the caller called them (\"my friend\").\n"
+     . "confidence: a number from 0 to 1 – how sure you are that customer_name, service_ids, date and time are exactly what was said (1 = all clearly said, 0.5 = some guessing).\n"
+     . "missing: the names of the fields the caller did not say. summary: one short English sentence.\n";
+-const CL_AI_SHAPE = '{"intent": "book" | "cancel" | "change" | "add" | "info" | "other", "cancel_all": boolean, "cancel_part": boolean, "cancel_names": [string], "cancel_n": integer, "who_text": string, "add_n": integer, "new_date": "YYYY-MM-DD" or "", "new_time": "HH:MM" or "", "customer_name": string, "customer_phone": string, "service_ids": [integer], "service_text": string, "tech_id": integer, "tech_text": string, '
++const CL_AI_SHAPE = '{"intent": "book" | "cancel" | "change" | "add" | "info" | "other", "cancel_all": boolean, "cancel_part": boolean, "cancel_names": [string], "cancel_n": integer, "who_text": string, "add_n": integer, "new_date": "YYYY-MM-DD" or "", "new_time": "HH:MM" or "", "customer_name": string, "customer_phone": string, "service_ids": [integer], "service_text": string, "tech_id": integer, "tech_text": string, "tech_last": boolean, '
+     . '"date": "YYYY-MM-DD" or "", "time": "HH:MM" (24 h) or "", "people": integer, "party": [{"name": string, "service_ids": [integer], "service_text": string, "tech_id": integer, "tech_text": string}], "same_services": boolean, "mani_type": "dip" | "gel_real" | "gel_fake" | "gel_unsure" | "plain" | "specific" | "none", "pedi_type": "regular" | "gel" | "dip" | "plain" | "specific" | "none", "salon_side": "person" | "voicemail" | "none", "salon_agreed": boolean, "salon_quote": string, '
+     . '"confidence": number 0-1, "missing": [string], "summary": string}';
+ /** (2.99.591) OpenAI: the answer must follow this schema exactly (Structured Outputs) – every key there, the right types. */
+@@ -49,7 +50,7 @@
+     $s = ['type' => 'string']; $i = ['type' => 'integer'];
+     $p = ['intent' => ['type' => 'string', 'enum' => ['book', 'cancel', 'change', 'add', 'info', 'other']], 'cancel_all' => ['type' => 'boolean'],
+         'cancel_part' => ['type' => 'boolean'], 'cancel_names' => ['type' => 'array', 'items' => $s], 'cancel_n' => $i, 'who_text' => $s, 'add_n' => $i, /* (2.99.594-B) */ 'new_date' => $s, 'new_time' => $s, 'customer_name' => $s, 'customer_phone' => $s, 'service_ids' => ['type' => 'array', 'items' => $i], 'service_text' => $s,
+-        'tech_id' => $i, 'tech_text' => $s, 'date' => $s, 'time' => $s, 'people' => $i, 'party' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['name' => $s, 'service_ids' => ['type' => 'array', 'items' => $i], 'service_text' => $s, 'tech_id' => $i, 'tech_text' => $s],
++        'tech_id' => $i, 'tech_text' => $s, 'tech_last' => ['type' => 'boolean'], /* (2.99.653) */ 'date' => $s, 'time' => $s, 'people' => $i, 'party' => ['type' => 'array', 'items' => ['type' => 'object', 'properties' => ['name' => $s, 'service_ids' => ['type' => 'array', 'items' => $i], 'service_text' => $s, 'tech_id' => $i, 'tech_text' => $s],
+             'required' => ['name', 'service_ids', 'service_text', 'tech_id', 'tech_text'], 'additionalProperties' => false]], 'same_services' => ['type' => 'boolean'], 'mani_type' => ['type' => 'string', 'enum' => ['dip', 'gel_real', 'gel_fake', 'gel_unsure', 'plain', 'specific', 'none']], 'pedi_type' => ['type' => 'string', 'enum' => ['regular', 'gel', 'dip', 'plain', 'specific', 'none']], /* (2.99.602) */ 'salon_side' => ['type' => 'string', 'enum' => ['person', 'voicemail', 'none']], 'salon_agreed' => ['type' => 'boolean'], // (CHAT 01/11 606s) these keys were commented out by the // before them
+         'salon_quote' => $s, 'confidence' => ['type' => 'number'], 'missing' => ['type' => 'array', 'items' => $s], 'summary' => $s];
+     return ['name' => 'call_booking', 'strict' => true, 'schema' => ['type' => 'object', 'properties' => $p, 'required' => array_keys($p), 'additionalProperties' => false]];
+@@ -409,7 +410,7 @@
+     return 0;
+ }
+ function cl_decide(array $c, array $j): string {
+-    $GLOBALS['cl_ask'] = []; // (2.99.602) a question about the manicure / pedicure type, sent when the call is booked
++    $GLOBALS['cl_ask'] = []; $GLOBALS['cl_last_tech'] = 0; /* (2.99.653) */ // (2.99.602) a question about the manicure / pedicure type, sent when the call is booked
+     if ($c['kind'] !== 'vm' && (($j['salon_side'] ?? '') === 'voicemail' || cl_vm_greeting((string)$c['text_s']))) { // (2.99.591 – LỖI 591 #8) the iPhone's own voicemail answered: it IS a voicemail (no OK needed, missed-call text)
+         q("UPDATE calls SET kind = 'vm' WHERE id = ?", [$c['id']]); $c['kind'] = 'vm';
+         if (function_exists('cl_tb_wait')) cl_tb_wait((string)$c['call_sid'], 0);
+@@ -446,6 +447,9 @@
+         if (empty($j['salon_agreed']) || $q === '' || !str_contains(' ' . cl_norm((string)$c['text_s']) . ' ', ' ' . $q . ' ')) $why[] = 'no OK from the salon heard'; }
+     $staff = 0; $tid = (int)($j['tech_id'] ?? 0); $tt = trim((string)($j['tech_text'] ?? ''));
+     if ($tid) { $s = q('SELECT * FROM staff WHERE id = ? AND active = 1', [$tid])->fetch(); if ($s) $staff = $tid; else $why[] = 'tech not found'; }
++    elseif (!empty($j['tech_last'])) { /* (2.99.653 - anh Logan 05/11 20:45) "the tech from last time, I forgot her name" -> the tech of the customer's last visit (= Book's "Last time … Use this?"); none / not working any more -> not booked, the owner checks */
++        $lt = strlen($phone) === 12 ? (int)q("SELECT staff_id FROM appointments WHERE phone = ? AND kind = 'appt' AND status IN ('arrived', 'paid') AND staff_id > 0 ORDER BY appt_date DESC, start_min DESC LIMIT 1", [$phone])->fetchColumn() : 0;
++        if ($lt && q('SELECT 1 FROM staff WHERE id = ? AND active = 1', [$lt])->fetchColumn()) { $staff = $lt; $GLOBALS['cl_last_tech'] = 1; } else $why[] = 'wants the tech from last time – no past visit with a tech found'; }
+     elseif ($tt !== '' && !preg_match('/^(any|anyone|any tech|ai cũng được|ai cung duoc|no|none)$/iu', $tt)) $why[] = 'tech "' . mb_substr($tt, 0, 20) . '" not found';
+     $dur = $svc ? (services_minutes($svc, false) ?: 60) : 60;
+     if ($date !== '' && $start >= 0) {
+@@ -468,7 +472,7 @@
+         if ($free !== '') { book_unlock(); return cl_end($c, $miss, $free, $plan, true); }
+         if (!$file || trim((string)$file['name']) === '') upsert_customer($phone, $name); // keep the name the salon already has on file
+         $rows = create_group(['people' => [$staff], 'date' => $date, 'start' => $start, 'duration' => $dur, 'service_ids' => implode(',', $sids),
+-            'name' => $name, 'phone' => $phone, 'note' => '📞 Booked from a call' . (!empty($j['ivr_noname']) ? ' · name not clear' : ''), 'color' => $svc[0]['color'] ?? '#3472B9',
++            'name' => $name, 'phone' => $phone, 'note' => '📞 Booked from a call' . (!empty($j['ivr_noname']) ? ' · name not clear' : '') . (!empty($GLOBALS['cl_last_tech']) ? ' · the tech from last time' : ''), 'color' => $svc[0]['color'] ?? '#3472B9',
+             'walkin' => false, 'source' => 'call', 'price' => array_sum(array_column($svc, 'price')), 'sms_ok' => true, 'design' => 0]);
+     } finally { book_unlock(); }
+     cl_pend_mark($rows); // (2.99.604 – 602B v3) "Owner approves phone bookings" on: the place is kept, the customer gets the texts as usual, the owner taps OK / Cancel
+@@ -476,7 +480,7 @@
+     q("UPDATE calls SET appt_id = ?, conf_at = ?, conf_done = 0 WHERE id = ?", [(int)$a['id'], now_str(), $c['id']]); // (2.99.589) anh Logan 31/10 17:52: the customer's text goes at once (no 10-min wait, no Undo)
+     foreach ($rows as $r) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']);
+     cl_end($c, 'booked', '', cl_line($a) . ($staff ? ' – ' . staff_name($staff) : ''), false);
+-    cl_push((int)$c['id'], '📞 Booked', cl_line($a) . ' · texted to the customer'); cl_confirm_due(); // (2.99.589) text now
++    cl_push((int)$c['id'], '📞 Booked', cl_line($a) . (!empty($GLOBALS['cl_last_tech']) ? ' – ' . staff_name($staff) . ' (the tech from last time)' : '') . ' · texted to the customer'); cl_confirm_due(); // (2.99.589) text now
+     return 'booked';
+ }
+ /** '' = free; else why not (the same checks as Book: the tech's other customers, day off, clocked out today; Any tech = enough free techs). */
+diff -ruN int652/inc/core.php int653/inc/core.php
+--- int652/inc/core.php	2026-11-05 19:50:42.931592634 -0600
++++ int653/inc/core.php	2026-11-05 20:46:16.665785682 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.652');
++define('APP_VERSION', '2.99.653');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
