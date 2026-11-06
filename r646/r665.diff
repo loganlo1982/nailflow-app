@@ -1,0 +1,154 @@
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int664/inc/calls-agent.php int665/inc/calls-agent.php
+--- int664/inc/calls-agent.php	2026-11-05 14:22:18.719009045 -0600
++++ int665/inc/calls-agent.php	2026-11-06 13:50:34.430997112 -0600
+@@ -79,7 +79,7 @@
+         . "# Opening (the salon greeting, \"this call may be recorded\" and \"Sorry we missed you - how can I help?\" were ALREADY played - NEVER repeat them; just listen)\n# Echo (phone lines echo your own voice)\nIf what you hear is the same or almost the same as what YOU just said (e.g. \"sorry we missed you\", \"how can I help\", your own read-back), it is an ECHO, not the caller: do not answer it, say nothing and keep listening. Only answer real new words from the caller.\n"
+         . "# Facts (from the salon's system – use only these)\nNow: {$g['now']}. Days:\n" . implode("\n", $g['days']) . "\nServices (id: name):\n" . implode("\n", $g['menu']) . "\nTechs (id: name):\n" . implode("\n", $g['techs'])
+         . "\nCaller's name on file: " . ($g['caller_name_on_file'] ?: 'none') . ". Caller's upcoming appointments:\n" . implode("\n", $g['upcoming'])
+-        . "\n# Asking\n- Use everything the caller has told you (name, service, people, day, time, tech) – never ask again for something they said.\n- Ask only what is still missing, ONE short question per turn, in this order: service(s) → who it is for (for 2 or more people: each first name and service) → day and time. Don't ask about a tech: use the one they name, otherwise any tech.\n- If no time works after you offered the 2 times: add_note with what they want, then call transfer_owner with reason \"no time fits\".\n" /* (2.99.625 anh Logan 02/11: ask only what is missing; hours; group names; no time fits -> callback) */
++        . "\n# Asking\n- Use everything the caller has told you (name, service, people, day, time, tech) – never ask again for something they said.\n- Ask only what is still missing, ONE short question per turn, in this order: service(s) → who it is for (for 2 or more people: each first name and service) → day and time. Tech: use the one they name. If no tech was named and the caller did not say \"anyone\", ask ONCE, right before you book: \"Would you like any tech, or someone special?\" (2 or more people: \"Any tech for everyone, or someone special?\") – a name → that tech's tech_id; anyone / no preference / not clear → 0. Never ask it twice.\n- If no time works after you offered the 2 times: add_note with what they want, then call transfer_owner with reason \"no time fits\".\n" /* (2.99.625 anh Logan 02/11: ask only what is missing; hours; group names; no time fits -> callback) */ /* (2.99.665 tech) anh Logan 06/11: no tech said -> ask once: any tech or someone special */
+         . "# Rules (hard)\n- Never say a price, a discount or a promotion; never give medical advice.\n- Book / cancel / move / add only with the tools. ALWAYS read it back in one short sentence and wait for \"yes\" before calling book, cancel, move, add_person or change_services.\n"
+         . "- Never say booked / cancelled / moved until the tool answered OK. If a time is taken, offer the 2 times the tool gives.\n- One entry per PERSON; a general word (\"pedicure\") = the basic service. Pedicure before manicure. MANICURE TYPE (2.99.631): when a manicure's type is not said yet, ask ONE short question: \"Would you like gel, dip, or acrylic – or just regular polish?\" A group: ask once \"Same for everyone?\" – if not, ask each person's in one short line. Pass it as mani_type (gel | dip | acrylic | regular); people with different types: mani_type on each person. \"Not sure\" / \"I'll decide there\" → mani_type unsure (the basic one is booked, the salon texts the choices). Never ask again a type the caller has said. Pedicure: never ask its type.\n"
+         . "- Details (colors, French tip, removal, gift card, a child's age, the tech from last time) → add_note, don't ask more about them.\n"
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int664/inc/calls-ivr.php int665/inc/calls-ivr.php
+--- int664/inc/calls-ivr.php	2026-11-04 00:03:14.000000000 -0600
++++ int665/inc/calls-ivr.php	2026-11-06 13:28:16.875681805 -0600
+@@ -18,7 +18,7 @@
+ require_once __DIR__ . '/calls-talk.php'; // (602B v4 23:16) the conversation (AI action → the code checks + does it)
+ 
+ const CL_IVR_Q = ['open' => 'Please tell me the reason for your call.', 'more' => '', 'talk' => '', 'think' => '', 'dup' => 'Is this a new one?', 'pick' => 'Which one works?', 'conf' => 'Is that right?',
+-    'cxwhen' => 'What new day and time would you like?', 'cxpick' => 'Which one works?', 'cxok' => 'Is that right?', 'cxyes' => 'Do you want to cancel it?', 'owner' => ''];
++    'cxwhen' => 'What new day and time would you like?', 'cxpick' => 'Which one works?', 'cxok' => 'Is that right?', 'cxyes' => 'Do you want to cancel it?', 'owner' => '', 'tech' => 'Would you like any tech, or someone special?' /* (2.99.665 tech) */];
+ const CL_IVR_HINTS = 'manicure,pedicure,dip,dip powder,gel,shellac,gel shellac,real nails,natural nails,fake nails,acrylic,full set,fill,regular polish,regular,today,tomorrow,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday,a.m.,p.m.,o\'clock,two people,cancel,change,appointment,book,running late,question';
+ const CL_IVR_FIX = ['/\b(medicare|medi care|many cure|manny cure|mani cure|manic cure|manicur)\b/' => 'manicure', '/\b(pedi cure|pety cure|petty cure|petty cur|pedicur|pedi care)\b/' => 'pedicure',
+     '/\b(jell|jail|jello|gell)\b/' => 'gel', '/\b(shell lack|shell act|shell ac|shelac|shellack|shell back)\b/' => 'shellac'];
+@@ -276,6 +276,7 @@
+     if (time() - (int)($st['t0'] ?? time()) > CL_IVR_MAX) { if ($said !== '') $st['said'][] = $said; $st['done'] = 1; cl_ivr_put($id, $st); q("UPDATE calls SET next_at = ?, result = '' WHERE id = ?", [now_str(), $id]); return [cl_ivr_hang("Thank you! We'll text you."), $id]; }
+     // ---- listening: a half sentence → listen again (the words joined); quiet → asked once
+     $part = (string)($st['part'] ?? '');
++    if ($said === '' && $part === '' && ($step === 'tech' || ($step === 'talk' && !empty($st['techw'])))) { $st['techw'] = 0; cl_ivr_lib(); return $step === 'tech' ? cl_ivr_book($c, $st) : cl_talk_book($c, $st, ['action' => 'book_new']); } /* (2.99.665 tech) no answer to "any tech, or someone special?" = any tech (never asked twice) */
+     if ($said === '') {
+         if ($part !== '') { if (empty($st['goahead'])) { $st['goahead'] = 1; return cl_ivr_say($id, $st, $step, "Go ahead, I'm listening."); } $said = $part; $st['part'] = ''; } // quiet after a half sentence: once, then what we have
+         elseif ($try < 1) return cl_ivr_say($id, $st, $step, $step === 'open' ? 'Are you still there? ' . CL_IVR_Q['open'] : 'Sorry, I didn\'t hear you. ' . (string)($st['ask'] ?? ''), 1);
+@@ -302,6 +303,7 @@
+         if ($y === '' && $try < 1) return cl_ivr_say($id, $st, 'conf', "Sorry, I didn't catch that. " . (string)$st['ask'], 1);
+         return cl_ivr_owner_xml($c, $st); }
+     if (in_array($step, ['cxwhen', 'cxpick', 'cxok', 'cxyes'], true)) return cl_ivr_cx($c, $st, $step, $said, $try);
++    if ($step === 'tech') { $st['ivr_tech'] = cl_ivr_tech($said); return cl_ivr_book($c, $st); } /* (2.99.665 tech) a name → that tech, "anyone" / not clear → any tech (0) */
+     return [cl_ivr_record(), 0];
+ }
+ /** All the words so far → the AI → book / change / cancel / late / the owner. */
+@@ -323,6 +325,7 @@
+ /** BOOK: what is missing (one question) → another appointment that day? → open? (else 2 times) → read back → booked. */
+ function cl_ivr_book(array $c, array &$st, bool $sure = false): array {
+     cl_ivr_lib(); $id = (int)$c['id']; $j = (array)($st['j'] ?? []); $p = norm_phone((string)$c['from_phone']);
++    if ((int)($st['ivr_tech'] ?? 0) && !(int)($j['tech_id'] ?? 0)) { $j['tech_id'] = (int)$st['ivr_tech']; $j['tech_text'] = ''; } /* (2.99.665 tech) the tech named to the tech question */
+     $file = strlen($p) === 12 ? customer_by_phone($p) : null;
+     $name = trim((string)($j['customer_name'] ?? '')) ?: ($file ? trim((string)$file['name']) : '');
+     $b = cl_ivr_jppl($c, $j); $date = valid_date((string)($j['date'] ?? '')) ? (string)$j['date'] : ''; $start = preg_match('/^(\d{1,2}):(\d{2})$/', (string)($j['time'] ?? ''), $m) ? (int)$m[1] * 60 + (int)$m[2] : -1;
+@@ -341,6 +344,8 @@
+     if ($why !== '') { $o = cl_ivr_offer($date, $start, $b['ppl']); $st['a']['offer'] = array_map(fn($x) => $x[0] . ' ' . cl_ivr_hm((int)$x[1]), $o);
+         if (!$o) return cl_ivr_nobook($c, $st, 'No open time found near ' . date('D n/j', strtotime($date)) . ' ' . min_to_label($start) . '.', 'another day and time');
+         $st['offer'] = $o; return cl_ivr_say($id, $st, 'pick', cl_ivr_offer_say($why, $date, $start, $o, $b['tech'] ? staff_name($b['tech']) : '')); }
++    if (empty($st['techq']) && !array_filter(array_column($b['ppl'], 'staff')) && !cl_ivr_techsaid($j) && !cl_talk_anyone(cl_ivr_text($st))) { $st['techq'] = 1; /* (2.99.665 tech) no tech said → ask ONCE (not one of the CL_IVR_ASKS questions for what is missing) */
++        return cl_ivr_say($id, $st, 'tech', count($b['ppl']) > 1 ? 'Any tech for everyone, or someone special?' : CL_IVR_Q['tech']); }
+     $n = count($b['ppl']);
+     if (!$sure) return cl_ivr_say($id, $st, 'conf', ($name !== '' ? cl_name($name) . ', ' : '') . $b['say'] . ', ' . date('l F jS', strtotime($date)) . ' at ' . cl_ivr_hm($start) . ', for ' . $n . ' ' . ($n > 1 ? 'people' : 'person') . '. Is that right?');
+     $j['customer_name'] = $name; $j['ivr_people'] = $n; $j['salon_side'] = 'none'; $j['salon_agreed'] = false; $j['confidence'] = max(1, (float)($j['confidence'] ?? 0)); if ($b['tech']) $j['tech_id'] = $b['tech'];
+@@ -350,6 +355,12 @@
+     if ($res === 'booked') cl_confirm_due();
+     return [cl_ivr_hang($res === 'booked' ? "You're booked. You'll get a text. Thank you!" : "Thank you! We'll text you to confirm."), 0];
+ }
++/** (2.99.665 tech) the voicemail reader heard a tech ("anyone" too, or the tech from last time) for someone. */
++function cl_ivr_techsaid(array $j): bool {
++    if ((int)($j['tech_id'] ?? 0) || trim((string)($j['tech_text'] ?? '')) !== '' || !empty($j['tech_last'])) return true;
++    foreach ((array)($j['party'] ?? []) as $x) if (is_array($x) && ((int)($x['tech_id'] ?? 0) || trim((string)($x['tech_text'] ?? '')) !== '')) return true;
++    return false;
++}
+ /** The AI's booking → each person's minutes / services / tech (the same choice of services as cl_decide / cl_group_call) + the read-back words. */
+ function cl_ivr_jppl(array $c, array $j): array {
+     if (!function_exists('cla_fix')) require_once __DIR__ . '/calls-ask.php';
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int664/inc/calls-talk.php int665/inc/calls-talk.php
+--- int664/inc/calls-talk.php	2026-11-04 00:03:14.000000000 -0600
++++ int665/inc/calls-talk.php	2026-11-06 13:50:46.965559301 -0600
+@@ -38,7 +38,8 @@
+     . "- ask_missing: what a booking still needs (missing = service / date / time / name / people). question_connect: any question that is not about their appointment (price, hours, walk-ins, address, parking, buying a gift card…) – question_topic = a few words (\"the price\"). "
+     . "A booking AND a question in one turn → the booking action, and question_topic filled. Small talk / thanks → ignore it. Spanish or another language → question_connect.\n"
+     . "- more = true only when the caller asked for ANOTHER change too in the same words (\"cancel Monday and book Friday at 2\") – do the first one now. done = the caller has nothing else / says bye. unclear = you really cannot tell.\n"
+-    . "- say: ONE short natural sentence (max 20 words) like a friendly front desk – only for ask_missing / unclear; no numbers, no prices, no promises, never say it is booked / cancelled / moved.\n";
++    . "- say: ONE short natural sentence (max 20 words) like a friendly front desk – only for ask_missing / unclear; no numbers, no prices, no promises, never say it is booked / cancelled / moved.\n"
++    . "- When the switchboard asked which tech (any tech or someone special): book_new with the booking data again; a tech's name → that person's tech_id (a group: the person it is for), anyone / no preference / not clear → 0.\n"; /* (2.99.665 tech) */
+ 
+ /** One AI turn. null = not reachable now. */
+ function cl_talk_ai(array $c, array $st, int $timeout = 6): ?array {
+@@ -53,7 +54,7 @@
+         $up[] = 'appt_id ' . (int)$a['id'] . ': ' . date('D Y-m-d', strtotime((string)$a['appt_date'])) . ' ' . min_to_label((int)$a['start_min']) . ' · ' . count($m) . ' people: '
+             . implode('; ', array_map(fn($x) => cl_name((string)$x['customer_name']) . ' – ' . (appt_label($x) ?: '?') . ((int)$x['staff_id'] ? ' with ' . staff_name((int)$x['staff_id']) : ''), $m)); }
+     $conv = implode("\n", array_map(fn($x) => ($x[0] === 'c' ? 'CALLER: ' : 'SWITCHBOARD: ') . $x[1], (array)($st['log'] ?? [])));
+-    $wait = !empty($st['pend']) ? 'The switchboard just read back: "' . (string)($st['pend']['say'] ?? '') . '" and waits for yes / no.' : (!empty($st['offer']) ? 'The switchboard offered: ' . implode(' or ', array_map(fn($x) => $x[0] . ' ' . sprintf('%02d:%02d', intdiv((int)$x[1], 60), (int)$x[1] % 60), (array)$st['offer'])) . '.' : 'nothing');
++    $wait = !empty($st['pend']) ? 'The switchboard just read back: "' . (string)($st['pend']['say'] ?? '') . '" and waits for yes / no.' : (!empty($st['techw']) ? 'The switchboard asked: any tech, or someone special?' /* (2.99.665 tech) */ : (!empty($st['offer']) ? 'The switchboard offered: ' . implode(' or ', array_map(fn($x) => $x[0] . ' ' . sprintf('%02d:%02d', intdiv((int)$x[1], 60), (int)$x[1] % 60), (array)$st['offer'])) . '.' : 'nothing'));
+     $prompt = 'Now: ' . date('D Y-m-d H:i', $now) . ' (' . date_default_timezone_get() . "). The caller's number: " . ($p !== '' ? $p : 'hidden') . ".\nSalon days (next 14):\n" . implode("\n", $days)
+         . "\nServices (id: name):\n" . implode("\n", $svc) . "\nNail techs (id: name):\n" . implode("\n", array_map(fn($s) => (int)$s['id'] . ': ' . $s['name'], $staff))
+         . "\nThe caller's upcoming appointments:\n" . ($up ? implode("\n", $up) : 'none') . "\n\nConversation so far:\n" . $conv . "\n\nWAITING: " . $wait . "\n\n" . CL_TALK_RULES . 'Answer with ONE JSON object only.';
+@@ -96,6 +97,7 @@
+     cl_ivr_lib(); $id = (int)$c['id']; $st['live'] = 1; $st['turns'] = (int)($st['turns'] ?? 0) + 1;
+     if ($st['turns'] > CL_TALK_TURNS) return cl_talk_owner($c, $st, '');
+     $last = (string)(end($st['log'])[1] ?? '');
++    if (!empty($st['techw'])) { $st['tech_pick'] = cl_talk_techs($last); if (str_word_count($last) <= 8) { $st['techw'] = 0; return cl_talk_book($c, $st, ['action' => 'book_new']); } } /* (2.99.665 tech) the answer to "any tech, or someone special?": a name → that tech, anything else → any tech (never asked again); longer words → the AI too */
+     if (!empty($st['pend'])) { $y = cl_ivr_yes($last); if ($y !== '' && str_word_count($last) <= 6) return cl_talk_answer($c, $st, $y); } // a plain "yes" / "no" needs no AI
+     if (!empty($st['offer']) && ($i = cl_ivr_pickof($last, (array)$st['offer'])) >= 0 && str_word_count($last) <= 8) { $o = $st['offer'][$i]; $d = (array)($st['draft'] ?? []); $d['date'] = $o[0]; $d['time'] = sprintf('%02d:%02d', intdiv((int)$o[1], 60), (int)$o[1] % 60); $d['window_from'] = $d['window_to'] = ''; $st['offer'] = []; return cl_talk_do($c, $st, $d); }
+     $loc = cl_ivr_intent($last); // what the words say by themselves: running late / Spanish (the AI is not needed)
+@@ -117,6 +119,7 @@
+ function cl_talk_say(int $id, array &$st, string $say): array { return cl_ivr_say($id, $st, 'talk', $say); }
+ function cl_talk_do(array $c, array &$st, array $j): array {
+     $id = (int)$c['id']; $act = (string)($j['action'] ?? 'unclear'); $p = norm_phone((string)$c['from_phone']);
++    $st['techw'] = 0; /* (2.99.665 tech) the tech question is answered (the AI read the answer) */
+     if (trim((string)($j['question_topic'] ?? '')) !== '' && $act !== 'question_connect') $st['also'] = trim((string)$j['question_topic']);
+     if (trim((string)($j['note'] ?? '')) !== '') $st['note'] = trim((string)$j['note']);
+     if (!empty($j['more'])) $st['more_tasks'] = 1;
+@@ -193,6 +196,16 @@
+     }
+     return cl_talk_owner($c, $st, '');
+ }
++/** (2.99.665 tech) the caller said "anyone" / "no preference" already (then no tech question). */
++function cl_talk_anyone(string $t): bool { return (bool)preg_match('/ (any tech|any nail tech|any one|anyone|anybody|whoever|no preference|doesn t matter|does not matter|don t care|whichever|first available|any of them) /', ' ' . cl_norm($t) . ' '); }
++/** (2.99.665 tech) this salon's techs named in the answer, in the order said ([] = any tech: "anyone", no name, not clear). */
++function cl_talk_techs(string $t): array {
++    if (cl_talk_anyone($t)) return []; $w = ' ' . cl_norm($t) . ' '; $hit = [];
++    foreach (staff_list() as $s) { $f = (string)strtok(cl_norm((string)$s['name']), ' '); $say = cl_norm((string)($s['say_as'] ?? '')); $at = false;
++        if ($f !== '' && strlen($f) >= 2 && !in_array($f, ['an', 'so', 'me', 'my', 'is', 'it', 'he', 'ok', 'no', 'or', 'on', 'at', 'to', 'do', 'go', 'be', 'we', 'us', 'hi', 'in', 'of', 'oh'], true)) $at = strpos($w, ' ' . $f . ' '); /* (2.99.665 tech) a 2-letter English word is not a tech's name ("an" in "an open one") - the say_as name still counts */ if ($at === false && $say !== '') $at = strpos($w, ' ' . $say . ' ');
++        if ($at !== false) $hit[(int)$s['id']] = $at; }
++    asort($hit); return array_keys($hit);
++}
+ /** "a gel manicure and a pedicure" */
+ function cl_talk_svc(array $sv): string { return implode(' and ', array_map(fn($v) => (preg_match('/^[aeiou]/i', (string)$v['name']) ? 'an ' : 'a ') . mb_strtolower((string)$v['name']), $sv)); }
+ /** date / time from the AI (a vague window → the first open time in it). */
+@@ -215,6 +228,7 @@
+     $aij = ['people' => $n, 'party' => $n > 1 ? array_map(fn($x) => ['name' => (string)($x['name'] ?? ''), 'service_ids' => array_map('intval', (array)($x['service_ids'] ?? [])), 'service_text' => (string)($x['service_text'] ?? ''), 'tech_id' => (int)($x['tech_id'] ?? 0), 'tech_text' => ''], $persons) : [],
+         'service_ids' => $n === 1 ? array_map('intval', (array)($persons[0]['service_ids'] ?? [])) : [], 'service_text' => (string)($persons[0]['service_text'] ?? ''), 'tech_id' => (int)($persons[0]['tech_id'] ?? 0), 'tech_text' => '',
+         'mani_type' => (string)($d['mani_type'] ?? 'none') ?: 'none', 'pedi_type' => (string)($d['pedi_type'] ?? 'none') ?: 'none', 'same_services' => false, 'customer_name' => $name];
++    foreach ((array)($st['tech_pick'] ?? []) as $k => $t) { if ($k === 0 && !$aij['tech_id']) $aij['tech_id'] = (int)$t; if (isset($aij['party'][$k]) && !$aij['party'][$k]['tech_id']) $aij['party'][$k]['tech_id'] = (int)$t; } /* (2.99.665 tech) the tech(s) named to "any tech, or someone special?", in the order said */
+     $b = cl_ivr_jppl($c + ['text_c' => ''], $aij);
+     [$date, $start] = cl_talk_dt($d);
+     if ($date !== '' && $start < 0 && (trim((string)($d['window_from'] ?? '')) !== '' || trim((string)($d['window_to'] ?? '')) !== '')) { // "anytime Saturday morning" → the 2 first open times in it (no "what time?")
+@@ -240,6 +254,8 @@
+         return cl_talk_ask($id, $st, ['type' => 'dup', 'd' => $d], 'You already have an appointment ' . cl_talk_when($date, (int)$same[0]['start_min']) . ' – is this a new one?'); }
+     $why = cl_ivr_fit($date, $start, $b['ppl']);
+     if ($why !== '') return cl_talk_offer($c, $st, $why, $date, $start, $b['ppl'], [], ['action' => 'book_new'] + $d);
++    if (empty($st['techq']) && !array_filter(array_column($b['ppl'], 'staff')) && !cl_talk_anyone(cl_ivr_text($st))) { $st['techq'] = 1; $st['techw'] = 1; $st['offer'] = []; $st['pend'] = []; /* (2.99.665 tech) anh Logan: no tech said → ask ONCE before the read-back */
++        return cl_talk_say($id, $st, $n > 1 ? 'Any tech for everyone, or someone special?' : 'Would you like any tech, or someone special?'); }
+     $aij['date'] = $date; $aij['time'] = sprintf('%02d:%02d', intdiv($start, 60), $start % 60); if ($b['tech']) $aij['tech_id'] = $b['tech'];
+     $first = cl_talk_first($name);
+     $say = cl_talk_pick($st, ['Perfect – ' . $b['say'] . ' ' . cl_talk_when($date, $start) . ($n > 1 ? ' for ' . $n . ' people' : '') . ($first !== '' ? ', for ' . $first : '') . '. Sound good?',
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int664/inc/core.php int665/inc/core.php
+--- int664/inc/core.php	2026-11-06 12:33:59.189142842 -0600
++++ int665/inc/core.php	2026-11-06 13:24:27.543572849 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.664');
++define('APP_VERSION', '2.99.665');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
