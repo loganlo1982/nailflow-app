@@ -1,0 +1,301 @@
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int666/inc/android.php int667/inc/android.php
+--- int666/inc/android.php	2026-11-06 14:48:23.033421781 -0600
++++ int667/inc/android.php	2026-11-06 19:42:15.976487528 -0600
+@@ -288,7 +288,7 @@
+         if (preg_match('/^\s*[1-9]\s*(?:(?:,|\/|&|\s|and|y)+\s*[1-9])?\s*[.!]?\s*$/i', $text) && (string)setting('call_asks') !== '') { require_once __DIR__ . '/calls-ask.php'; // (2.99.602 - LENH 602) "2" = the answer to a call's manicure / pedicure question
+             if (($ca = cla_try($from, $text)) !== null) { $keep(); return ['ok' => true, 'kind' => 'call-choice'] + $ca; } }
+         $r = rp_handle($from, $text, $helpAgain);
+-        if (!empty($r['mid']) && !in_array((string)($r['result'] ?? ''), ['cancelled', 'cancelled-late', 'many', 'resched', 'off', 'started', 'moved' /* (2.99.666) moved by the reply: its own push */], true)) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); } /* (2.99.572) a CANCEL text: only its own cancel notice (1 push), no 2nd 'message' push */ // (2.99.221 – order 420) owner + managers told, tap → the conversation
++        if (!empty($r['mid']) && !in_array((string)($r['result'] ?? ''), ['cancelled', 'cancelled-late', 'many', 'resched', 'off', 'started', 'moved' /* (2.99.666) moved by the reply: its own push */, 'text-booked', 'text-offer', 'text-ask', 'text-full' /* (2.99.667) a text booking: its own labelled push */], true)) { require_once __DIR__ . '/inbox.php'; ib_new_text($from, $text, (int)$r['mid']); } /* (2.99.572) a CANCEL text: only its own cancel notice (1 push), no 2nd 'message' push */ // (2.99.221 – order 420) owner + managers told, tap → the conversation
+         if (!empty($r['mid']) && empty($r['dup']) && (string)($r['result'] ?? '') === 'kept' && empty($rt['unsure']) && !isset(sd_unsure()[norm_phone($from)])) { try { ib_own_ack($from, (int)$r['mid']); } catch (Throwable $e) { error_log('own ack: ' . $e->getMessage()); } } // (2.99.352 – lệnh 590) only when the text is SURELY this salon's (shared 601: an "unsure" text is kept by both salons → no 2 answers) · (2.99.351 – lệnh 584) a plain text (not a cancel)
+         return ['kind' => 'reply'] + $r;
+     } finally { $GLOBALS['actor'] = $prev; }
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int666/inc/core.php int667/inc/core.php
+--- int666/inc/core.php	2026-11-06 14:41:51.178651789 -0600
++++ int667/inc/core.php	2026-11-06 19:35:48.642280671 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.666');
++define('APP_VERSION', '2.99.667');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int666/inc/replies.php int667/inc/replies.php
+--- int666/inc/replies.php	2026-11-06 14:48:23.032508859 -0600
++++ int667/inc/replies.php	2026-11-06 19:42:15.975819620 -0600
+@@ -129,9 +129,12 @@
+     $mid = (int)db()->lastInsertId(); // (2.99.221 – order 420) the Android push opens this conversation
+     if ($a) appt_log($a, 'reply', '💬 Texted: "' . mb_substr($text, 0, 160) . '"');
+     if ($isC) { $f = rp_cancel_flow($phone, $text, $name, $a); $r['result'] = $f['result']; $r['done'] = $f['done'] ? 1 : 0; if (!empty($f['apptId'])) $r['apptId'] = (int)$f['apptId']; } // (2.99.332 – lệnh 561)
+-    elseif ($a && !$always) { /* (2.99.666 – anh Logan 06/11, LAURIE) the reply picks ONE time the salon's last text offered → the party moved by itself, ONE NEW TIME text (inc/replytime.php) */
++    elseif ($a && !$always && !rp_tb_owns($phone)) { /* (2.99.667) not when the salon's last text is a text-booking question / offer (that answer is the booking's) */ /* (2.99.666 – anh Logan 06/11, LAURIE) the reply picks ONE time the salon's last text offered → the party moved by itself, ONE NEW TIME text (inc/replytime.php) */
+         try { require_once __DIR__ . '/replytime.php'; if ($mv = rt_try($phone, $text)) { $r['result'] = 'moved'; $r['apptId'] = (int)$mv['id']; $r['date'] = (string)$mv['appt_date']; $r['when'] = short_when($mv); } }
+         catch (Throwable $e) { error_log('666 reply time: ' . $e->getMessage()); } }
++    if (!$isC && !$always && $r['result'] === 'kept') { /* (2.99.667 – anh Logan 06/11) a text asking for an appointment: booked / other times / one question by itself (inc/textbook.php) */
++        try { require_once __DIR__ . '/textbook.php'; if ($tb = tb_try($phone, $text, $mid)) { $r['result'] = (string)$tb['result']; if (!empty($tb['apptId'])) { $r['apptId'] = (int)$tb['apptId']; $r['date'] = (string)($tb['date'] ?? ''); $r['when'] = (string)($tb['when'] ?? ''); } } }
++        catch (Throwable $e) { error_log('667 text booking: ' . $e->getMessage()); } }
+     array_unshift($l, $r); rp_save($l);
+     return ['ok' => true, 'result' => $r['result'], 'name' => $name, 'when' => $r['when'], 'mid' => $mid];
+ }
+@@ -174,6 +177,8 @@
+     return array_slice($out, 0, 10);
+ }
+ 
++/** (2.99.667) the salon's last text to this number is a text-booking question / offer (inc/textbook.php). */
++function rp_tb_owns(string $phone): bool { try { require_once __DIR__ . '/textbook.php'; return tb_owns_last($phone); } catch (Throwable $e) { return false; } }
+ function stop_has_word_any(string $t): bool { if (!function_exists('stop_has_word')) require_once __DIR__ . '/stophook.php'; return stop_has_word($t); }
+ /** (2.99.332 – lệnh 561) Settings → Notifications: "Khách nhắn CANCEL → tự huỷ" (every salon; on unless turned off). */
+ function rp_autocxl_on(): bool { return (string)setting('rp_autocxl') !== '0'; }
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int666/inc/textbook.php int667/inc/textbook.php
+--- int666/inc/textbook.php	1969-12-31 18:00:00.000000000 -0600
++++ int667/inc/textbook.php	2026-11-06 20:05:28.510334883 -0600
+@@ -0,0 +1,247 @@
++<?php
++/* (2.99.667 – anh Logan 06/11: "Khi khách text vào số 1130 muốn book hẹn thì hiện thông báo cho App … Nếu khách nt book hẹn thì app tự động book hẹn nếu không bị
++   kẹt giờ, không có thợ. Còn không book được thì nt lại cho khách các lựa chọn khác về giờ hoặc ngày khác.")
++   💬 A CUSTOMER'S TEXT THAT ASKS FOR AN APPOINTMENT (after STOP / CONFIRM / cancel / the 666 "picks the offered time" – those are unchanged):
++   the SAME AI reading as a voicemail (cl_ai, its rules: the 664 "a service nobody said is never guessed", the 602 manicure / pedicure question) and the SAME checks
++   as the phone switchboard (cl_ivr_jppl, cl_ivr_fit: hours, not gone, enough techs, the tech named can do it + is free, cl_ivr_offer: the 2 nearest open times).
++     – all there + the time fits + the tech said (a name, or "anyone")  → booked like a call booking ("💬 Booked from a text"), ONE YOU'RE BOOKED text (or the 602 question),
++                                                                          owner push "💬 Booked by text: …"
++     – no tech said (2.99.665 rule)                                     → asked ONCE ("Any tech, or someone special?"); the answer books (a name → that tech, else Any tech)
++     – the time does not fit                                            → ONE text with the 2 nearest open times; the reply that picks one books it
++     – something missing (service / day / time / name)                  → ONE question; the next texts (≤ 2 hours) are read together with the first
++     – not a booking / not clear / AI fails / several people not clear  → as before (Messages + the normal push), nothing sent
++   Limits: at most ONE such text per number per 10 minutes, except the answers in the same conversation (≤ TB_CONV_MAX in 2 hours); never a STOP / wrong number;
++   texts only when Auto send is ready and its "Confirm" kind is on (else booked / nothing sent, the owner told). Every salon (its own name, techs, services, hours).
++   "Owner approves phone bookings" (call_approve, cl_pend_on) on → the text booking is kept with an amber "⏳ Chờ duyệt … (text booking)" note too (the texts go as usual). */
++declare(strict_types=1);
++if (!defined('APP_ROOT')) { http_response_code(404); exit; }
++
++const TB_CTX_H = 2;        /* (2.99.667) a question / offer of ours waits this many hours for the answer */
++const TB_GAP = 600;        /* (2.99.667) one automatic text per number per 10 minutes (a new request) */
++const TB_CONV_MAX = 3;     /* (2.99.667) texts of ours in one conversation (2 hours) at most */
++const TB_ASKS = 2;         /* (2.99.667) questions for what is missing, at most */
++const TB_DAY_MAX = 150;    /* (2.99.667) AI reads of texts per salon per day (cost cap) */
++const TB_PEND_NOTE = '⏳ Chờ duyệt · waiting for your OK (text booking)';
++const TB_BOOK_RE = '/\b(appointments?|appts?|apt|book|booking|schedule|scheduling|reserve|reservation|available|availability|openings?|open spots?|spots?|slots?|come in|coming in|get in|fit (me|us) in|squeeze (me|us) in|cita|citas|agendar|reservar|dat hen|lay hen)\b/i';
++const TB_ACK_RE = '/^(ok|okay|okey|k|kk|yes|yeah|yea|yep|yup|y|no|nope|nah|sure|thanks?|thank you|thank u|thx|ty|cool|great|perfect|awesome|nice|good|got it|sounds good|see you|see ya|bye|lol|haha|gracias|si|vale)( (thanks?|thank you|so much|you))*$/';
++
++/** (2.99.667) On for this salon: a nail salon (a hair salon texts by hand), not a demo, the booking code + an AI key there. */
++function tb_on(): bool {
++    if ((string)setting('tb_on') === '0' || is_demo_site() || (function_exists('is_hair') && is_hair()) || !function_exists('create_group')) return false;
++    require_once __DIR__ . '/calls-job.php';
++    return cl_ai_ready();
++}
++function tb_norm(string $t): string { return trim((string)preg_replace('/\s+/', ' ', (string)preg_replace('/[^a-z0-9 ]+/', ' ', strtolower(function_exists('nf_no_accents') ? nf_no_accents($t) : $t)))); }
++/** (2.99.667) "ok" / "thanks" / "yes" alone – never a booking. */
++function tb_is_ack(string $t): bool { $n = tb_norm($t); return $n === '' || (bool)preg_match(TB_ACK_RE, $n); }
++/** (2.99.667) the cheap check before the AI: booking words, or a day / time AND a service word. */
++function tb_looks(string $t): bool {
++    if (tb_is_ack($t)) return false;
++    $n = ' ' . tb_norm($t) . ' ';
++    if (preg_match(TB_BOOK_RE, $n)) return true;
++    return cl_ivr_has_when($n) && (bool)preg_match(CL_SVC_WORDS, ' ' . cl_norm($t) . ' ');
++}
++/* (2.99.667) ---------- the conversation (one per number, 2 hours) ---------- */
++function tb_states(): array { $l = json_decode((string)setting('tb_conv'), true); return is_array($l) ? $l : []; }
++function tb_state(string $p): ?array { $s = tb_states()[$p] ?? null; return is_array($s) && (int)($s['at'] ?? 0) > time() - TB_CTX_H * 3600 ? $s : null; }
++function tb_state_set(string $p, ?array $s): void {
++    $l = array_filter(tb_states(), fn($x) => is_array($x) && (int)($x['at'] ?? 0) > time() - TB_CTX_H * 3600);
++    if ($s === null) unset($l[$p]); else $l[$p] = $s + ['at' => time()];
++    set_setting('tb_conv', json_encode((object)$l, JSON_UNESCAPED_UNICODE));
++}
++/** (2.99.667) the salon's last text to this number is our question / offer (nothing newer from the salon): the answer is ours (rt_try leaves it). */
++function tb_owns_last(string $p): bool {
++    $s = tb_state($p); if (!$s || (string)($s['body'] ?? '') === '') return false;
++    if (!function_exists('rt_last_out')) require_once __DIR__ . '/replytime.php';
++    $l = rt_last_out($p); return $l !== null && trim($l[1]) === trim((string)$s['body']);
++}
++/** (2.99.667) may we text now? A new request: none of ours in 10 minutes; an answer in our conversation: ≤ TB_CONV_MAX in 2 hours. */
++function tb_rate_ok(string $p, bool $conv): bool {
++    $l = json_decode((string)setting('tb_sent'), true); $t = array_filter((array)(is_array($l) ? ($l[$p] ?? []) : []), fn($x) => (int)$x > time() - TB_CTX_H * 3600);
++    if (!$conv) return !array_filter($t, fn($x) => (int)$x > time() - TB_GAP);
++    return count($t) < TB_CONV_MAX;
++}
++function tb_rate_mark(string $p): void {
++    $l = json_decode((string)setting('tb_sent'), true); $l = is_array($l) ? $l : [];
++    foreach ($l as $k => $ts) { $l[$k] = array_values(array_filter((array)$ts, fn($x) => (int)$x > time() - TB_CTX_H * 3600)); if (!$l[$k]) unset($l[$k]); }
++    $l[$p] = array_merge($l[$p] ?? [], [time()]); set_setting('tb_sent', json_encode((object)$l));
++}
++/** (2.99.667) Auto send ready + its "Confirm" kind on (the owner's switch for booking texts). */
++function tb_can_text(): bool { if (!function_exists('as_kind_on')) require_once __DIR__ . '/autosend.php'; return as_ready() && as_kind_on('confirm'); }
++/** (2.99.667) ONE text of ours (in the Messages conversation too). '' = sent; else why not. */
++function tb_send(string $p, string $body, bool $conv, string $info): string {
++    if (!tb_can_text()) return 'auto send / Confirm texts are off';
++    if (!tb_rate_ok($p, $conv)) return 'already texted them a moment ago';
++    require_once __DIR__ . '/sms-short.php'; if (sms_short_on()) $body = gsm7_clean($body);
++    q('INSERT INTO messages (phone, dir, body, is_read, created_at) VALUES (?, ?, ?, 1, ?)', [$p, 'out', $body, now_str()]); $om = (int)db()->lastInsertId();
++    $c = customer_by_phone($p); $nm = trim((string)($c['name'] ?? ''));
++    $aid = as_add('reply', 'ui:tbk:' . $om, $p, $nm !== '' ? $nm : pretty_phone($p), $body, $info);
++    if (!$aid) { q('DELETE FROM messages WHERE id = ?', [$om]); return 'this number may not be texted'; }
++    tb_rate_mark($p); as_flush(false, [$aid]);
++    return '';
++}
++function tb_salon(): string { return trim((string)setting('salon_name')) ?: 'Our salon'; }
++function tb_link(): string { $l = pub_url() . '/'; if (function_exists('short_url')) { try { $s = short_url($l); if (is_string($s) && $s !== '') $l = $s; } catch (Throwable $e) {} } return $l; }
++function tb_when(string $d, int $m): string { return date('D n/j', strtotime($d)) . ' ' . min_to_label($m); }
++/** (2.99.667) the owner's ONE notification for this text (instead of the plain "new text" one). */
++function tb_push(string $p, string $title, string $line, int $apptId, string $date, int $mid): void {
++    try { notify_admin('message', $title . ': ' . $line, $apptId, ['title' => $title, 'body' => $line, 'url' => $apptId ? '?appt=' . $apptId . '&date=' . $date : '?tab=messages&mid=' . $mid, 'tag' => 'msg-' . preg_replace('/\D/', '', $p), 'thread' => 'msg-' . preg_replace('/\D/', '', $p)]); }
++    catch (Throwable $e) { error_log('667 push: ' . $e->getMessage()); }
++}
++function tb_who(string $p, string $name): string { return $name !== '' ? cl_name($name) : pretty_phone($p); }
++
++/** (2.99.667) The customer's text → booked / offered / asked: ['result' => …, 'apptId' => …] – or null (not ours: Messages + the normal push as before). */
++function tb_try(string $phone, string $text, int $mid): ?array {
++    $p = norm_phone($phone); if (strlen($p) !== 12 || trim($text) === '') return null;
++    $st = tb_state($p); $own = $st !== null && tb_owns_last($p); if (!$own) $st = null;
++    if (!$st && tb_is_ack($text)) return null;
++    if ($st && ($st['kind'] ?? '') !== 'tech' && tb_is_ack($text)) return null;
++    if (!tb_on()) return null;
++    if (!function_exists('ad_stopped')) require_once __DIR__ . '/stophook.php';
++    if (!function_exists('out_not_stopped')) require_once __DIR__ . '/outbox.php';
++    if (!function_exists('as_add')) require_once __DIR__ . '/autosend.php';
++    if (ad_stopped($p) || !out_not_stopped($p) || cust_wrong($p) || no_text_phone($p)) return null; /* (2.99.667) never a STOP / wrong number / the salon's own line */
++    if (!$st && !tb_looks($text)) return null;
++    require_once __DIR__ . '/replies.php';
++    if (!$st && rp_upcoming($p) && preg_match("/\b(re-?schedul\w*|resched\w*|change|changing|move|moving|switch|later|earlier|instead|postpone|push (it )?back|another (time|day|date)|different (time|day|date)|new time|cambiar)\b/iu", $text)) return null; /* (2.99.667) moving the one they have: the existing flows */
++    $words = $text; $prevAt = time();
++    if ($st) { $prevAt = (int)($st['t0'] ?? $st['at']);
++        $in = q("SELECT body FROM messages WHERE phone = ? AND dir = 'in' AND created_at >= ? ORDER BY id DESC LIMIT 4", [$p, date('Y-m-d H:i:s', $prevAt - 5)])->fetchAll(PDO::FETCH_COLUMN);
++        if ($in) $words = implode("\n", array_reverse(array_map('strval', $in))); }
++    $c = ['id' => 0, 'kind' => 'vm', 'from_phone' => $p, 'text_c' => $words, 'text_s' => '', 'ai_json' => '', 'call_sid' => ''];
++    if ($st && ($st['kind'] ?? '') === 'offer' && ($r = tb_pick($p, $text, $st, $c, $mid))) return $r;
++    if ($st && ($st['kind'] ?? '') === 'tech') { $j = (array)$st['j']; $t = cl_talk_techs($text); $j['tech_id'] = $t[0] ?? 0; $j['tech_text'] = ''; $j['tech_last'] = false;
++        return tb_eval($p, $j, $c, $st + ['techq' => 1], $mid, $text); }
++    $n = json_decode((string)setting('tb_ai_n'), true); $d = date('Y-m-d'); if (!is_array($n) || ($n['d'] ?? '') !== $d) $n = ['d' => $d, 'n' => 0];
++    if ((int)$n['n'] >= TB_DAY_MAX) return null; $n['n'] = (int)$n['n'] + 1; set_setting('tb_ai_n', json_encode($n));
++    $c['ai_extra'] = "NOTE: this is NOT a phone call. The words above are the customer's TEXT MESSAGES (SMS) to the salon, oldest first (several texts = one request; a later text adds to or corrects an earlier one). Read them like a voicemail.\n";
++    try { $j = cl_weekday_fix($c, cl_ai_after($c, cl_ai($c))); } catch (Throwable $e) { error_log('667 text AI: ' . $e->getMessage()); return null; }
++    if (strtolower(trim((string)($j['intent'] ?? ''))) !== 'book') return null;
++    return tb_eval($p, $j, $c, ($st ?? []) + ['t0' => $prevAt], $mid, $text);
++}
++/** (2.99.667) The booking as read → booked / offered / asked / null. $st = the conversation so far (asks, techq). */
++function tb_eval(string $p, array $j, array $c, array $st, int $mid, string $text): ?array {
++    $conv = !empty($st['kind']);
++    $file = customer_by_phone($p);
++    $name = mb_strtoupper(trim(mb_substr((string)preg_replace('/\s+/u', ' ', (string)($j['customer_name'] ?? '')), 0, 55)));
++    if ($name === '' && $file && trim((string)$file['name']) !== '') $name = mb_strtoupper(trim((string)$file['name']));
++    if (!empty($j['tech_last'])) { /* (2.99.667) "the same tech as last time" = the tech of their last visit (as a call), none → not sure */
++        $lt = (int)q("SELECT staff_id FROM appointments WHERE phone = ? AND kind = 'appt' AND status IN ('arrived', 'paid') AND staff_id > 0 ORDER BY appt_date DESC, start_min DESC LIMIT 1", [$p])->fetchColumn();
++        if (!$lt || !q('SELECT 1 FROM staff WHERE id = ? AND active = 1', [$lt])->fetchColumn()) return null; $j['tech_id'] = $lt; $j['tech_text'] = ''; }
++    $tt = trim((string)($j['tech_text'] ?? ''));
++    $b = cl_ivr_jppl($c, $j); $n = count($b['ppl']);
++    if ($tt !== '' && !$b['tech'] && !preg_match('/^(any|anyone|anybody|any tech|no|none|no preference|whoever)$/iu', $tt)) return null; /* (2.99.667) a tech name this salon does not have: the owner answers */
++    if ($n > CL_GROUP_MAX || ($n > 1 && !$b['ok'])) return null; /* (2.99.667) several people, not clear who gets what */
++    $cf = $j['confidence'] ?? null; $conf = is_numeric($cf) ? (float)$cf : 1.0; if ($conf > 1 && $conf <= 100) $conf /= 100;
++    if ($conf < 0.5) return null;
++    $date = valid_date((string)($j['date'] ?? '')) ? (string)$j['date'] : '';
++    $start = preg_match('/^(\d{1,2}):(\d{2})$/', (string)($j['time'] ?? ''), $m) && (int)$m[1] < 24 && (int)$m[2] < 60 ? (int)$m[1] * 60 + (int)$m[2] : -1;
++    if ($date !== '' && $date > date('Y-m-d', strtotime('+90 days'))) return null;
++    if ($date !== '' && array_filter(rp_upcoming($p), fn($a) => $a['appt_date'] === $date)) return null; /* (2.99.667) they already have one that day: the owner answers (never a 2nd booking by itself) */
++    $svcOk = $b['ok'] && empty($j['svc_unsaid']);
++    $techSaid = !empty($st['techq']) || $b['tech'] || cl_ivr_techsaid($j) || cl_talk_anyone((string)$c['text_c']);
++    $miss = []; if (!$svcOk) $miss[] = $n > 1 ? 'the service for each person' : 'the service';
++    if ($date === '' && $start < 0) $miss[] = 'the day and time'; elseif ($date === '') $miss[] = 'the day'; elseif ($start < 0) $miss[] = 'the time';
++    if ($name === '') $miss[] = 'your name';
++    $who = tb_who($p, $name); $svcL = $svcOk ? implode(' + ', array_map(fn($x) => appt_services_label(implode(',', $x['sids'])), $b['ppl'])) : '';
++    if ($miss) { /* (2.99.667) (c) ONE question for what is missing (the voicemail "what is missing" style) */
++        if ((int)($st['asks'] ?? 0) >= TB_ASKS) return null;
++        $heard = $svcL !== '' ? (preg_match('/^[aeiou]/i', $svcL) ? 'an ' : 'a ') . $svcL : '';
++        if ($date !== '') $heard .= ($heard !== '' ? ' ' : 'an appointment ') . 'on ' . date('D n/j', strtotime($date));
++        if ($start >= 0) $heard .= ($heard !== '' ? ' ' : 'an appointment ') . 'at ' . min_to_label($start);
++        $ml = count($miss) > 1 ? implode(', ', array_slice($miss, 0, -1)) . ' and ' . end($miss) : $miss[0];
++        $tq = !$techSaid ? ' Any tech, or someone special?' : '';
++        $body = tb_salon() . ': Thanks for your text! ' . ($heard !== '' ? 'We got your request for ' . $heard . '. ' : '') . 'Please reply with ' . $ml . '.' . $tq . ' Or book here: ' . tb_link();
++        $why = tb_send($p, $body, $conv, 'Text booking: what is missing');
++        if ($why === '') tb_state_set($p, ['kind' => 'ask', 'asks' => (int)($st['asks'] ?? 0) + 1, 'techq' => (int)(!empty($st['techq']) || !$techSaid), 't0' => (int)($st['t0'] ?? time()), 'body' => tb_last_body($p), 'j' => $j]);
++        tb_push($p, '💬 Text booking: asked for ' . $ml, $who . ($heard !== '' ? ' – ' . $heard : '') . ' – "' . mb_substr(preg_replace('/\s+/u', ' ', $text), 0, 80) . '"' . ($why !== '' ? ' · NOT texted (' . $why . ') – reply from Messages' : ' · texted: what is missing'), 0, '', $mid);
++        return ['result' => 'text-ask', 'apptId' => 0];
++    }
++    $fit = cl_ivr_fit($date, $start, $b['ppl']);
++    if ($fit !== '') return tb_offer($p, $j, $b, $date, $start, $fit, $st, $techSaid, $who, $svcL, $mid, $text);
++    if (!$techSaid) { /* (2.99.667 – owner change, the 2.99.665 call rule) no tech said → asked ONCE */
++        $body = tb_salon() . ': We can book ' . $svcL . ' ' . tb_when($date, $start) . ($n > 1 ? ' for ' . $n . ' people' : '') . '. Any tech' . ($n > 1 ? ' for everyone' : '') . ', or someone special? Reply ANY or the tech\'s name.';
++        $why = tb_send($p, $body, $conv, 'Text booking: which tech');
++        if ($why !== '') return tb_book($p, $j, $b, $date, $start, $name, $mid, $text, $st); /* (2.99.667) cannot ask: Any tech, as before the question */
++        tb_state_set($p, ['kind' => 'tech', 'techq' => 1, 'asks' => (int)($st['asks'] ?? 0), 't0' => (int)($st['t0'] ?? time()), 'body' => tb_last_body($p), 'j' => $j]);
++        tb_push($p, '💬 Text booking: asked which tech', $who . ' – ' . $svcL . ' – ' . tb_when($date, $start) . ' – "' . mb_substr(preg_replace('/\s+/u', ' ', $text), 0, 80) . '"', 0, '', $mid);
++        return ['result' => 'text-ask', 'apptId' => 0];
++    }
++    return tb_book($p, $j, $b, $date, $start, $name, $mid, $text, $st);
++}
++function tb_last_body(string $p): string { return (string)q("SELECT body FROM messages WHERE phone = ? AND dir = 'out' ORDER BY id DESC LIMIT 1", [$p])->fetchColumn(); }
++/** (2.99.667) (b) the time does not fit: ONE text with the 2 nearest open times (that day, else the next open day). */
++function tb_offer(string $p, array $j, array $b, string $date, int $start, string $fit, array $st, bool $techSaid, string $who, string $svcL, int $mid, string $text): ?array {
++    $o = cl_ivr_offer($date, $start, $b['ppl']);
++    $tn = $b['tech'] ? cl_name(staff_name($b['tech'])) : '';
++    $h = hours_for($date); $at = min_to_label($start) . ' ' . date('D n/j', strtotime($date));
++    $why = ['closed' => "Sorry, we're closed " . date('D n/j', strtotime($date)) . '.', 'past' => 'Sorry, ' . $at . ' has passed.', 'late' => 'Sorry, ' . $at . ' is too late' . ($h ? ' – we close at ' . min_to_label((int)$h['close']) : '') . '.',
++        'tech' => 'Sorry, ' . ($tn !== '' ? $tn : 'that tech') . ' is not free at ' . $at . '.'][$fit] ?? 'Sorry, ' . $at . ' is full.';
++    if (!$o) { tb_push($p, '💬 Text booking: no open time', $who . ' – ' . $svcL . ' – ' . $at . ' – ' . $why . ' No open time in the next week – please answer them.', 0, '', $mid); return ['result' => 'text-full', 'apptId' => 0]; }
++    $same = $o[0][0] === $date && (!isset($o[1]) || $o[1][0] === $date); $oneDay = !isset($o[1]) || $o[1][0] === $o[0][0];
++    $l = array_map(fn($x) => min_to_label((int)$x[1]), $o);
++    $body = tb_salon() . ': ' . $why . ' We have ' . implode(' or ', $l) . ($same ? '' : ($oneDay ? ' on ' . date('D n/j', strtotime($o[0][0])) : '')) . ($same || $oneDay ? '' : ' (' . implode(', ', array_map(fn($x) => tb_when($x[0], (int)$x[1]), $o)) . ')')
++        . ($tn !== '' ? ' with ' . $tn : '') . '. Reply with the time you want' . (!$techSaid ? " (and a tech's name if you'd like someone special)" : '') . '.';
++    $w = tb_send($p, $body, !empty($st['kind']), 'Text booking: other times');
++    if ($w === '') tb_state_set($p, ['kind' => 'offer', 'offer' => $o, 'techq' => 1, 'asks' => (int)($st['asks'] ?? 0), 't0' => (int)($st['t0'] ?? time()), 'body' => tb_last_body($p), 'j' => $j]);
++    tb_push($p, '💬 Text booking: offered times', $who . ' – ' . $svcL . ' – ' . $at . ' ' . ($fit === 'tech' ? 'tech busy' : $fit) . ' → ' . implode(' / ', array_map(fn($x) => tb_when($x[0], (int)$x[1]), $o)) . ($w !== '' ? ' · NOT texted (' . $w . ') – reply from Messages' : ' · texted the times'), 0, '', $mid);
++    return ['result' => 'text-offer', 'apptId' => 0];
++}
++/** (2.99.667) the reply picks ONE of the times we offered ("3:30", "4:15 with Tammy") → booked at that time (the same checks again). */
++function tb_pick(string $p, string $text, array $st, array $c, int $mid): ?array {
++    if (!function_exists('rt_pick')) require_once __DIR__ . '/replytime.php';
++    $o = (array)($st['offer'] ?? []); if (!$o) return null;
++    $tech = cl_talk_techs($text); $clean = ' ' . tb_norm($text) . ' ';
++    if ($tech) foreach (staff_list() as $s) if (in_array((int)$s['id'], $tech, true)) $clean = str_replace(' ' . (string)strtok(cl_norm((string)$s['name']), ' ') . ' ', ' ', $clean);
++    $clean = (string)preg_replace('/ (with|w|any|anyone|anybody|tech|someone|special|no preference|whoever|is|fine) /', ' ', (string)preg_replace('/ (with|w|any|anyone|anybody|tech|someone|special|no preference|whoever|is|fine) /', ' ', $clean));
++    $clean = trim((string)preg_replace('/(\d{1,2}) (\d{2})\b/', '$1:$2', $clean)); /* (2.99.667) "3:30" lost its ":" in tb_norm */
++    $offT = []; $offM = []; foreach ($o as $x) { $mm = (int)$x[1]; $offT[] = [intdiv($mm, 60) % 12 ?: 12, $mm % 60, $mm >= 720 ? 'pm' : 'am']; $offM[] = $mm; }
++    $pick = rt_pick($clean === '' ? 'x' : $clean, $offM, $offT); if ($pick < 0) return null;
++    $day = ''; foreach ($o as $x) if ((int)$x[1] === $pick) { $day = (string)$x[0]; break; }
++    $j = (array)$st['j']; $j['date'] = $day; $j['time'] = sprintf('%02d:%02d', intdiv($pick, 60), $pick % 60);
++    if (count($tech) === 1) { $j['tech_id'] = $tech[0]; $j['tech_text'] = ''; }
++    return tb_eval($p, $j, $c, $st + ['techq' => 1], $mid, $text);
++}
++/** (2.99.667) (a) booked like a call booking ("💬 Booked from a text", source 'call' → the same YOU'RE BOOKED rules), ONE text, the owner told. */
++function tb_book(string $p, array $j, array $b, string $date, int $start, string $name, int $mid, string $text, array $st): ?array {
++    if (!book_lock()) return null;
++    $rows = []; $dup = null;
++    try {
++        $dup = q("SELECT * FROM appointments WHERE phone = ? AND appt_date = ? AND start_min = ? AND status = 'booked' AND source = 'call' AND note LIKE ? AND created_at >= ? ORDER BY id LIMIT 1", [$p, $date, $start, '%Booked from a text%', date('Y-m-d H:i:s', time() - 600)])->fetch();
++        if (!$dup) {
++            $fit = cl_ivr_fit($date, $start, $b['ppl']);
++            if ($fit !== '') { book_unlock(); return tb_offer($p, $j, $b, $date, $start, $fit, $st, true, tb_who($p, $name), implode(' + ', array_map(fn($x) => appt_services_label(implode(',', $x['sids'])), $b['ppl'])), $mid, $text); }
++            $file = customer_by_phone($p); if (!$file || trim((string)$file['name']) === '') upsert_customer($p, $name);
++            $ppl = $b['ppl']; $o = ['people' => array_map(fn($x) => (int)$x['staff'], $ppl), 'date' => $date, 'start' => $start, 'duration' => $ppl[0]['dur'], 'service_ids' => implode(',', $ppl[0]['sids']),
++                'name' => $name, 'phone' => $p, 'note' => '💬 Booked from a text', 'color' => '', 'walkin' => false, 'source' => 'call', 'price' => 0, 'sms_ok' => true, 'design' => 0,
++                'names' => [], 'durations' => [], 'service_ids_each' => [], 'price_each' => [], 'color_each' => []];
++            foreach ($ppl as $k => $x) { $sv = services_by_ids($x['sids']); if ($k && trim((string)(($j['party'] ?? [])[$k]['name'] ?? '')) !== '') $o['names'][$k] = mb_strtoupper(trim((string)$j['party'][$k]['name']));
++                $o['durations'][$k] = $x['dur']; $o['service_ids_each'][$k] = implode(',', $x['sids']); $o['price_each'][$k] = array_sum(array_column($sv, 'price')); $o['color_each'][$k] = (string)($sv[0]['color'] ?? '#3472B9'); }
++            $o['price'] = $o['price_each'][0]; $o['color'] = $o['color_each'][0];
++            $prevA = $GLOBALS['actor'] ?? null; actor_set('system', '💬 Text booking');
++            try { $rows = create_group($o); } finally { $GLOBALS['actor'] = $prevA; }
++        }
++    } finally { book_unlock(); }
++    tb_state_set($p, null);
++    if ($dup) return ['result' => 'text-booked', 'apptId' => (int)$dup['id']]; /* (2.99.667) the same text again: the booking already made, nothing more */
++    if (cl_pend_on()) foreach ($rows as $r) { /* (2.99.667) "Owner approves phone bookings" on: the same amber "waiting for your OK" (text booking) */
++        q('UPDATE appointments SET note = ?, color = ? WHERE id = ?', [mb_substr(TB_PEND_NOTE . ' · ' . (string)$r['note'], 0, 500), CL_PEND_COLOR, (int)$r['id']]); appt_log($r, 'changed', '⏳ waiting for the owner\'s OK (booked from a text)'); }
++    foreach ($rows as $r) if ((int)$r['staff_id']) notify_staff((int)$r['staff_id'], 'new', 'New: ' . appt_line($r), (int)$r['id']); /* (2.99.667) Any tech: nobody to tell (and nothing held for the answer text) */
++    $a = q('SELECT * FROM appointments WHERE id = ?', [(int)$rows[0]['id']])->fetch();
++    $ask = []; foreach ($b['ppl'] as $x) { $jk = $j; $sd = array_map(fn($s) => cla_addon($s) ? '' : cla_side($s), services_by_ids($x['sids']));
++        if (!in_array('hand', $sd, true)) $jk['mani_type'] = 'none'; if (!in_array('foot', $sd, true)) $jk['pedi_type'] = 'none'; $ask = $ask + cla_fix($x['sids'], $jk)[1]; }
++    $txt = ''; $prevA = $GLOBALS['actor'] ?? null; actor_set('system', '💬 Text booking');
++    try {
++        if ($ask && tb_can_text()) { /* (2.99.602 rule) "manicure" only: the 1 / 2 / 3 question instead of YOU'RE BOOKED (one text) – answered by cla_try as for a call */
++            $mem = (string)$a['group_id'] !== '' ? q("SELECT * FROM appointments WHERE group_id = ? AND status = 'booked' ORDER BY id", [$a['group_id']])->fetchAll() : [$a]; $nk = cla_note_key($ask);
++            foreach ($mem as $m) q('UPDATE appointments SET note = ? WHERE id = ?', [mb_substr(CLA_NOTE[$nk] . (trim((string)$m['note']) !== '' ? ' · ' . $m['note'] : ''), 0, 500), (int)$m['id']]);
++            cl_table(); $l = cla_list(); $l[] = ['call' => 0, 'appts' => array_map(fn($m) => (int)$m['id'], $mem), 'phone' => $p, 'ask' => $ask, 'at' => now_str(), 'until' => date('Y-m-d H:i:s', min(time() + CLA_DAYS * 86400, appt_ts($a))), 'done' => '']; cla_save($l);
++            $aid = as_add('confirm', 'ui:tbkask:' . (int)$a['id'], $p, (string)$a['customer_name'], cla_text($a, $ask, function_exists('out_lang_es') && out_lang_es($a)), 'Text booking: which ' . ($nk === 'mani' ? 'manicure' : ($nk === 'pedi' ? 'pedicure' : 'manicure + pedicure')));
++            if ($aid) { as_flush(false, [$aid]); $txt = ' · texted: which type'; } else $txt = ' · text NOT sent';
++        } else { $ob = out_booked($rows); $txt = $ob && in_array((string)($ob['status'] ?? ''), ['auto', 'sent'], true) ? ' · texted YOU\'RE BOOKED' : ($ob ? ' · YOU\'RE BOOKED is on To send (auto send off)' : ' · no text'); }
++    } catch (Throwable $e) { error_log('667 booked text: ' . $e->getMessage()); } finally { $GLOBALS['actor'] = $prevA; }
++    $line = count($rows) > 1 ? cl_group_line($rows) : cl_line($a) . ' – ' . ((int)$a['staff_id'] ? cl_name(staff_name((int)$a['staff_id'])) : 'Any tech');
++    tb_push($p, '💬 Booked by text', $line . $txt . (cl_pend_on() ? ' · ⏳ waiting for your OK' : ''), (int)$a['id'], $date, $mid);
++    if (function_exists('chg_bump')) { try { chg_bump(); } catch (Throwable $e) {} }
++    return ['result' => 'text-booked', 'apptId' => (int)$a['id'], 'date' => $date, 'when' => short_when($a)];
++}
