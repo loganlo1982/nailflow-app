@@ -1,0 +1,75 @@
+# corpus ids NOT sent to aidry.php (state the dry run cannot simulate, or keywords that never reach the AI)
+s041	context: now=2026-11-06T14:00
+s050	context: now=2026-11-06T14:00
+s051	context: now=2026-11-06T14:00
+s072	context: history=last paid visit with Hana
+s099	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s100	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s101	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s102	context: existing_appt=A2 Sat 11/7 11:00 AM group of 3 pedicures (customer + 2 daughters)
+s103	context: existing_appt=A2 Sat 11/7 11:00 AM group of 3 pedicures (customer + 2 daughters)
+s104	context: existing_appt=A2 Sat 11/7 11:00 AM group of 3 pedicures (customer + 2 daughters)
+s105	context: existing_appt=A1 + friend (2 people)
+s106	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s107	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s108	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s109	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s110	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s111	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s112	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s113	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s114	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s115	context: existing_appt=A2 Sat 11/7 11:00 AM group of 3 pedicures (customer + 2 daughters)
+s116	context: existing_appt=A3 two upcoming: Sat 11/7 11:00 AM and Fri 11/13 4:00 PM
+s117	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s118	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s119	context: existing_appt=A2 Sat 11/7 11:00 AM group of 3 pedicures (customer + 2 daughters)
+s120	context: existing_appt=A3 two upcoming
+s121	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s123	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s124	context: existing_appt=today 4:00 PM pedicure, now=2026-11-06T14:00
+s125	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s126	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s127	context: existing_appt=A4 checked in now
+s128	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s129	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s130	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s131	context: existing_appt=today 3:00 PM, now=2026-11-06T14:55
+s132	context: existing_appt=today 3:00 PM, now=2026-11-06T14:55
+s133	context: existing_appt=today 3:00 PM, now=2026-11-06T15:05
+s134	context: existing_appt=today 3:00 PM
+s135	context: existing_appt=today 3:00 PM
+s137	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s138	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person), last_out=reminder 'Reply C to confirm'
+s139	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person), last_out=reminder
+s140	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person), last_out=reminder
+s141	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person), last_out=reminder
+s142	context: prior_state=offer Sat 11/7 3:00 PM pedicure
+s199	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s200	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s204	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s206	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s207	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+s242	context: now=2026-11-06T23:50
+s243	context: now=2026-11-07T00:10
+s244	context: now=2026-11-07T00:20
+s245	context: now=2026-11-07T01:30
+s246	context: sent_at=2026-11-06T23:58, now=2026-11-07T00:03
+s247	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s248	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s249	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s250	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s251	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s252	keyword STOP/START/HELP/CONFIRM (never reaches the AI)
+s254	context: number_state=stopped
+c015	needs the salon offer state ("the first one")
+c017	needs the salon offer state ("yes")
+c025	context: history=last paid visit with Sisi
+c028	add_person after a booking made in turn 1 (needs booked state)
+c029	add_person to a pending booking (needs tb state)
+c030	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+c031	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+c032	context: existing_appt=A3 two upcoming
+c033	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+c034	context: existing_appt=A1 Sat 11/7 4:00 PM pedicure with Hana (1 person)
+c037	keyword STOP/START/HELP/CONFIRM (never reaches the AI)

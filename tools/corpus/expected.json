@@ -1,0 +1,2409 @@
+{
+ "s001": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not cancel anything",
+   "must not book a Sunday slot",
+   "must not book before the tech question is answered when the salon asks it"
+  ],
+  "category": "booking_clear",
+  "text": "Hi can I get a pedicure tomorrow at 2pm",
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s002": {
+  "expected_action": "book",
+  "must_not": [
+   "must not ask which tech again (anyone was said)",
+   "must not read 11 as 11 PM"
+  ],
+  "category": "booking_clear",
+  "text": "I'd like to book a gel manicure Monday at 11am with anyone",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "11:00"
+ },
+ "s003": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book with another tech without saying so",
+   "must not book Sunday"
+  ],
+  "category": "booking_clear",
+  "text": "Pedicure Saturday 11am with Hana please",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_tech": "Hana"
+ },
+ "s004": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 4 as 4 AM",
+   "must not cancel anything"
+  ],
+  "category": "booking_clear",
+  "text": "Can I book a full set for Tuesday at 4?",
+  "want_date": "2026-11-10",
+  "want_time": "16:00"
+ },
+ "s005": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 3:30 as AM"
+  ],
+  "category": "booking_clear",
+  "text": "Need a fill on Wednesday 3:30 any tech is fine",
+  "want_date": "2026-11-11",
+  "want_time": "15:30"
+ },
+ "s006": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 1 as 1 AM",
+   "must not pick this week's Thursday (already past)"
+  ],
+  "category": "booking_clear",
+  "text": "Book me for a dip manicure next Thursday at 1 with Sisi",
+  "want_date": "2026-11-12",
+  "want_time": "13:00",
+  "want_tech": "Sisi"
+ },
+ "s007": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book today (Fri 11/6) unless clearly said 'today'",
+   "must not drop one of the two services"
+  ],
+  "category": "booking_clear",
+  "text": "pedicure and manicure friday 5pm anyone",
+  "want_date": "2026-11-13",
+  "want_time": "17:00",
+  "want_people": 1
+ },
+ "s008": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 12:30 as 12:30 AM",
+   "must not book a different date than 11/9"
+  ],
+  "category": "booking_clear",
+  "text": "Hello, I would like to make an appointment for a regular pedicure on Monday November 9 at 12:30. No preference on tech.",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "12:30"
+ },
+ "s009": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book tomorrow",
+   "must not read 5 as 5 AM"
+  ],
+  "category": "booking_clear",
+  "text": "can i come in today at 5 for a pedi",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "17:00"
+ },
+ "s010": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book before Sunday opening (11 AM)"
+  ],
+  "category": "booking_clear",
+  "text": "Gel pedicure Sunday at 1 with Logan",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_tech": "Logan"
+ },
+ "s011": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not read 11/10 as a time",
+   "must not read 2:00 as AM"
+  ],
+  "category": "booking_clear",
+  "text": "I want to schedule a manicure for 11/10 at 2:00 pm, any tech",
+  "want_date": "2026-11-10",
+  "want_time": "14:00"
+ },
+ "s012": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read noon as midnight",
+   "must not book Sunday"
+  ],
+  "category": "booking_clear",
+  "text": "Acrylic full set Saturday at noon, Tammy if she's free",
+  "want_date": "2026-11-07",
+  "want_time": "12:00",
+  "want_tech": "Tammy"
+ },
+ "s013": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book without a yes (it was a question)",
+   "must not say yes if 3:00 is taken"
+  ],
+  "category": "booking_clear",
+  "text": "Do you have 3:00 tomorrow for a pedicure?",
+  "want_date": "2026-11-07",
+  "want_time": "15:00"
+ },
+ "s014": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not read 10:30 as PM",
+   "must not book on a question alone"
+  ],
+  "category": "booking_clear",
+  "text": "Is 10:30 open Monday? need a dip",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "10:30"
+ },
+ "s015": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 6:30 as AM",
+   "must not book past closing"
+  ],
+  "category": "booking_clear",
+  "text": "Book pedi Tuesday 6:30",
+  "want_date": "2026-11-10",
+  "want_time": "18:30"
+ },
+ "s016": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "booking_partial",
+  "text": "I want to book an appointment"
+ },
+ "s017": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not pick a day/time for the customer"
+  ],
+  "category": "booking_partial",
+  "text": "Can I get a pedicure?"
+ },
+ "s018": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "booking_partial",
+  "text": "pedicure"
+ },
+ "s019": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book",
+   "must not guess a service"
+  ],
+  "category": "booking_partial",
+  "text": "Saturday",
+  "want_date": "2026-11-07"
+ },
+ "s020": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book",
+   "must not guess a service"
+  ],
+  "category": "booking_partial",
+  "text": "tomorrow at 3",
+  "want_date": "2026-11-07",
+  "want_time": "15:00"
+ },
+ "s021": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book",
+   "must not guess manicure vs full set"
+  ],
+  "category": "booking_partial",
+  "text": "Need my nails done"
+ },
+ "s022": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not choose a time for the customer"
+  ],
+  "category": "booking_partial",
+  "text": "Can I come in Monday for a fill",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09"
+ },
+ "s023": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not list times already past or taken"
+  ],
+  "category": "booking_partial",
+  "text": "any openings today?",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s024": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer 1-3 PM (full)"
+  ],
+  "category": "booking_partial",
+  "text": "Do you have anything Saturday?",
+  "flags": [
+   "cal_dep"
+  ]
+ },
+ "s025": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not assume today without saying so"
+  ],
+  "category": "booking_partial",
+  "text": "manicure at 2",
+  "want_time": "14:00"
+ },
+ "s026": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "booking_partial",
+  "text": "I need a appointment for my mom"
+ },
+ "s027": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "booking_partial",
+  "text": "Hana available?"
+ },
+ "s028": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not pick a day"
+  ],
+  "category": "booking_partial",
+  "text": "next week sometime for a full set"
+ },
+ "s029": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "booking_partial",
+  "text": "Gel"
+ },
+ "s030": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "booking_partial",
+  "text": "appointment"
+ },
+ "s031": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer a morning time",
+   "must not pick one time by itself"
+  ],
+  "category": "vague_time",
+  "text": "pedi tomorrow afternoon"
+ },
+ "s032": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not assume a time"
+  ],
+  "category": "vague_time",
+  "text": "Can I get a manicure after work today",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s033": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book without a yes",
+   "must not offer a time already past"
+  ],
+  "category": "vague_time",
+  "text": "pedicure asap",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s034": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer times where only 1 tech is free"
+  ],
+  "category": "vague_time",
+  "text": "this weekend for 2 pedis"
+ },
+ "s035": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer before opening (10 AM)"
+  ],
+  "category": "vague_time",
+  "text": "Morning slot Tuesday for a dip"
+ },
+ "s036": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "vague_time",
+  "text": "Sometime around lunch tomorrow for a fill"
+ },
+ "s037": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer after closing"
+  ],
+  "category": "vague_time",
+  "text": "evening on Monday? pedicure",
+  "flags": [
+   "closed_mon"
+  ]
+ },
+ "s038": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer before 10 AM"
+  ],
+  "category": "vague_time",
+  "text": "early as possible Saturday, mani"
+ },
+ "s039": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "vague_time",
+  "text": "pedi late afternoon wed"
+ },
+ "s040": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "vague_time",
+  "text": "whenever you have an opening this week for a full set"
+ },
+ "s042": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not offer after closing"
+  ],
+  "category": "vague_time",
+  "text": "pedicure tonight?",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s043": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not promise a walk-in slot the calendar does not show"
+  ],
+  "category": "vague_time",
+  "text": "right now? walk in pedi",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s044": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not guess a time"
+  ],
+  "category": "vague_time",
+  "text": "Sunday after church for a mani pedi"
+ },
+ "s045": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book past closing"
+  ],
+  "category": "hours_edge",
+  "text": "Pedicure today at 6:45",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "18:45"
+ },
+ "s046": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book a service ending after closing"
+  ],
+  "category": "hours_edge",
+  "text": "Full set Sunday at 4:30",
+  "want_date": "2026-11-08",
+  "want_time": "16:30"
+ },
+ "s047": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book before opening"
+  ],
+  "category": "hours_edge",
+  "text": "Can I come in at 8am tomorrow?",
+  "want_date": "2026-11-07",
+  "want_time": "08:00"
+ },
+ "s048": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book 10 AM Sunday"
+  ],
+  "category": "hours_edge",
+  "text": "Sunday 10am pedicure",
+  "want_date": "2026-11-08",
+  "want_time": "10:00"
+ },
+ "s049": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book a closed day"
+  ],
+  "category": "hours_edge",
+  "text": "Pedicure Thanksgiving day at 1",
+  "want_date": "2026-11-26",
+  "want_time": "13:00"
+ },
+ "s052": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "hours_edge",
+  "text": "Can I book for 7:30 tonight",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "19:30"
+ },
+ "s053": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not read 9 as 9 PM",
+   "must not book 9 AM before opening"
+  ],
+  "category": "hours_edge",
+  "text": "pedicure at 9",
+  "want_time": "09:00"
+ },
+ "s054": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not offer a midnight time"
+  ],
+  "category": "hours_edge",
+  "text": "midnight pedicure lol"
+ },
+ "s055": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "hours_edge",
+  "text": "Can I get a pedi at 5:59 today",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "17:59"
+ },
+ "s056": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "hours_edge",
+  "text": "Monday 6pm full set",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "18:00"
+ },
+ "s057": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book Dec 25"
+  ],
+  "category": "hours_edge",
+  "text": "Pedicure on Christmas",
+  "want_date": "2026-12-25"
+ },
+ "s058": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not book yesterday's date",
+   "must not book without confirming the day"
+  ],
+  "category": "hours_edge",
+  "text": "pedi yesterday at 3 was great, book again same time next week"
+ },
+ "s059": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not double-book a full slot"
+  ],
+  "category": "full_slot",
+  "text": "Pedicure tomorrow at 2",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s060": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "full_slot",
+  "text": "Can I get 1pm Saturday for a gel mani",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "13:00"
+ },
+ "s061": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book only part of the group"
+  ],
+  "category": "full_slot",
+  "text": "3 pedis Saturday at 2:30",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "14:30",
+  "want_people": 3
+ },
+ "s062": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book another tech silently"
+  ],
+  "category": "full_slot",
+  "text": "Tammy Sunday at 1",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_tech": "Tammy"
+ },
+ "s063": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not say a full time is open"
+  ],
+  "category": "full_slot",
+  "text": "any time Saturday 1 to 3?",
+  "flags": [
+   "cal_dep"
+  ]
+ },
+ "s064": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not say yes when she's booked"
+  ],
+  "category": "full_slot",
+  "text": "Is Tammy free Saturday at 2",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "14:00",
+  "want_tech": "Tammy"
+ },
+ "s065": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book another tech"
+  ],
+  "category": "named_tech",
+  "text": "Pedi with Tammy Monday at 3",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "15:00",
+  "want_tech": "Tammy"
+ },
+ "s066": {
+  "expected_action": "book",
+  "must_not": [
+   "must not fail to recognize 'tamy' = Tammy"
+  ],
+  "category": "named_tech",
+  "text": "can i get tamy for a fill tuesday 2",
+  "want_date": "2026-11-10",
+  "want_time": "14:00",
+  "want_tech": "Tammy"
+ },
+ "s067": {
+  "expected_action": "book",
+  "must_not": [
+   "must not treat 'Hanna' as unknown"
+  ],
+  "category": "named_tech",
+  "text": "Hanna on Saturday at 11 for a gel pedi",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_tech": "Hana"
+ },
+ "s068": {
+  "expected_action": "book",
+  "must_not": [
+   "must not miss 'Sissy' = Sisi"
+  ],
+  "category": "named_tech",
+  "text": "Sissy at 4 monday, dip",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "16:00",
+  "want_tech": "Sisi"
+ },
+ "s069": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book today (Fri 11/6) unless said"
+  ],
+  "category": "named_tech",
+  "text": "want logan for my full set friday 3pm",
+  "want_date": "2026-11-13",
+  "want_time": "15:00",
+  "want_tech": "Logan"
+ },
+ "s070": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book Nancy for dip"
+  ],
+  "category": "named_tech",
+  "text": "Nancy for a dip Monday at 1",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "13:00",
+  "bad_tech": "Nancy"
+ },
+ "s071": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book Sisi for builder gel"
+  ],
+  "category": "named_tech",
+  "text": "builder gel with Sisi Tuesday at 3",
+  "want_date": "2026-11-10",
+  "want_time": "15:00",
+  "bad_tech": "Sisi"
+ },
+ "s073": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "named_tech",
+  "text": "the tall girl with the glasses, Saturday 12 pedi",
+  "want_date": "2026-11-07",
+  "want_time": "12:00"
+ },
+ "s074": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book",
+   "must not book a random tech as 'Jessica'"
+  ],
+  "category": "named_tech",
+  "text": "Can I get Jessica Monday at 2",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "14:00"
+ },
+ "s075": {
+  "expected_action": "book",
+  "must_not": [
+   "must not ask the tech again (2 acceptable names given)"
+  ],
+  "category": "named_tech",
+  "text": "Pedi with nancy or hana tomorrow 3",
+  "want_date": "2026-11-07",
+  "want_time": "15:00"
+ },
+ "s076": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "named_tech",
+  "text": "the owner? logan? 2 pm sunday mani",
+  "want_date": "2026-11-08",
+  "want_time": "14:00",
+  "want_tech": "Logan"
+ },
+ "s077": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book Nancy",
+   "must not read 'not Nancy' as a request for Nancy"
+  ],
+  "category": "named_tech",
+  "text": "not Nancy please, pedi Monday 5",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "17:00",
+  "bad_tech": "Nancy"
+ },
+ "s078": {
+  "expected_action": "book",
+  "must_not": [],
+  "category": "named_tech",
+  "text": "TAMMY!!! sat 10am pedi pls",
+  "want_date": "2026-11-07",
+  "want_time": "10:00",
+  "want_tech": "Tammy"
+ },
+ "s079": {
+  "expected_action": "book",
+  "must_not": [
+   "must not ask which tech again"
+  ],
+  "category": "anyone_tech",
+  "text": "Pedi Monday 1 whoever is free",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "13:00"
+ },
+ "s080": {
+  "expected_action": "book",
+  "must_not": [
+   "must not ask which tech again"
+  ],
+  "category": "anyone_tech",
+  "text": "no preference, gel mani tue 12",
+  "want_date": "2026-11-10",
+  "want_time": "12:00"
+ },
+ "s081": {
+  "expected_action": "book",
+  "must_not": [],
+  "category": "anyone_tech",
+  "text": "doesn't matter who, fill wednesday 2",
+  "want_date": "2026-11-11",
+  "want_time": "14:00"
+ },
+ "s082": {
+  "expected_action": "book",
+  "must_not": [],
+  "category": "anyone_tech",
+  "text": "anybody is fine. pedicure saturday 4",
+  "want_date": "2026-11-07",
+  "want_time": "16:00"
+ },
+ "s083": {
+  "expected_action": "book",
+  "must_not": [
+   "must not assign Nancy (no dip)"
+  ],
+  "category": "anyone_tech",
+  "text": "Any tech pls dip sunday 12:30",
+  "want_date": "2026-11-08",
+  "want_time": "12:30",
+  "bad_tech": "Nancy"
+ },
+ "s084": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "anyone_tech",
+  "text": "first available for 2 pedis today",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s085": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 2 or 4 people",
+   "must not book only 1"
+  ],
+  "category": "group",
+  "text": "me and my 2 daughters pedicures saturday 11",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_people": 3
+ },
+ "s086": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book fewer than 4"
+  ],
+  "category": "group",
+  "text": "party of 4 mani pedi Sunday at 1",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 4
+ },
+ "s087": {
+  "expected_action": "ask_people",
+  "must_not": [
+   "must not book",
+   "must not read 7 as a time",
+   "must not book 7 people without confirming"
+  ],
+  "category": "group",
+  "text": "Can I book for 7 pedi Saturday at 10",
+  "want_date": "2026-11-07",
+  "want_time": "10:00"
+ },
+ "s088": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1"
+  ],
+  "category": "group",
+  "text": "me and my friend gel manis friday 4",
+  "want_date": "2026-11-13",
+  "want_time": "16:00",
+  "want_people": 2
+ },
+ "s089": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not book 1 person",
+   "must not double-book a full slot"
+  ],
+  "category": "group",
+  "text": "my mom and I want pedicures tomorrow at 1",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "13:00",
+  "want_people": 2
+ },
+ "s090": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not read 21 as a time"
+  ],
+  "category": "group",
+  "text": "bridal party 6 people Saturday Nov 21 mani pedi",
+  "want_date": "2026-11-21"
+ },
+ "s091": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book",
+   "must not read 'for 3' as 3 PM"
+  ],
+  "category": "group",
+  "text": "pedis for 3 at 2 tomorrow",
+  "want_date": "2026-11-07",
+  "want_time": "14:00",
+  "want_people": 3
+ },
+ "s092": {
+  "expected_action": "book",
+  "must_not": [],
+  "category": "group",
+  "text": "2 people pedi Monday 3pm",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "15:00",
+  "want_people": 2
+ },
+ "s093": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1"
+  ],
+  "category": "group",
+  "text": "me + hubby pedis sun 2",
+  "want_date": "2026-11-08",
+  "want_time": "14:00",
+  "want_people": 2
+ },
+ "s094": {
+  "expected_action": "ask_people",
+  "must_not": [
+   "must not book",
+   "must not guess the count"
+  ],
+  "category": "group",
+  "text": "my daughters and I need nails done Saturday"
+ },
+ "s095": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "group",
+  "text": "girls night! 5 of us want pedis friday night"
+ },
+ "s096": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1",
+   "must not assign Nancy"
+  ],
+  "category": "group",
+  "text": "both of us want dip tuesday 11",
+  "want_date": "2026-11-10",
+  "want_time": "11:00",
+  "want_people": 2,
+  "bad_tech": "Nancy"
+ },
+ "s097": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "group",
+  "text": "Is there room for 3 at 4 today?",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "16:00",
+  "want_people": 3
+ },
+ "s098": {
+  "expected_action": "book",
+  "must_not": [
+   "must not give both the same service"
+  ],
+  "category": "group",
+  "text": "pedi for me and mani for my sister sat 12",
+  "want_date": "2026-11-07",
+  "want_time": "12:00",
+  "want_people": 2
+ },
+ "s122": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not cancel someone else's appointment"
+  ],
+  "category": "cancel",
+  "text": "Cancel"
+ },
+ "s136": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything"
+  ],
+  "category": "running_late",
+  "text": "I'll be late"
+ },
+ "s143": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Hi"
+ },
+ "s144": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Hello?"
+ },
+ "s145": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Good morning"
+ },
+ "s146": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book",
+   "must not cancel anything"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Thank you!"
+ },
+ "s147": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "thx"
+ },
+ "s148": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book",
+   "must not ask for a booking"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Thanks girls my nails look amazing 💅"
+ },
+ "s149": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not send any automatic text (owner answers)"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "❤️"
+ },
+ "s150": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not send any automatic text (owner answers)"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "😂😂"
+ },
+ "s151": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "ok"
+ },
+ "s152": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not send any automatic text (owner answers)"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "k thx bye"
+ },
+ "s153": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "Happy Thanksgiving!"
+ },
+ "s154": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book",
+   "must not change the saved name without the owner"
+  ],
+  "category": "greeting_thanks_emoji",
+  "text": "hey it's Jenny"
+ },
+ "s155": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "How much is a pedicure?"
+ },
+ "s156": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "how much for gel removal"
+ },
+ "s157": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you take Apple Pay?"
+ },
+ "s158": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "What are your hours?"
+ },
+ "s159": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "What's your address?"
+ },
+ "s160": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Is there parking?"
+ },
+ "s161": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you sell gift cards?"
+ },
+ "s162": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you do eyelash extensions?"
+ },
+ "s163": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you take walk-ins?"
+ },
+ "s164": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you do kids pedicures? how old"
+ },
+ "s165": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "is it still $35 for a gel mani"
+ },
+ "s166": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you have a deal for first time customers?"
+ },
+ "s167": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Are you open on Thanksgiving?"
+ },
+ "s168": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you do waxing"
+ },
+ "s169": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Can I bring my own polish?"
+ },
+ "s170": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Do you have chrome powder?"
+ },
+ "s171": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer",
+   "must not quote a price/policy the app wasn't given",
+   "must not read numbers/money as a time"
+  ],
+  "category": "question_owner",
+  "text": "Is the wine still free lol"
+ },
+ "s172": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "My gel is already chipping after 2 days"
+ },
+ "s173": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "I waited 40 minutes past my appointment time, not ok"
+ },
+ "s174": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "The tech cut my cuticle and it's bleeding"
+ },
+ "s175": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "You charged me twice"
+ },
+ "s176": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "Very rude service today. Never coming back",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s177": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not send a canned cheerful reply",
+   "must not read '2 days'/'40 minutes' as time"
+  ],
+  "category": "complaint",
+  "text": "my toe is infected after my pedicure"
+ },
+ "s178": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "asdkjfh"
+ },
+ "s179": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "12345"
+ },
+ "s180": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "4"
+ },
+ "s181": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "banana phone"
+ },
+ "s182": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "https://bit.ly/3xYz claim your prize"
+ },
+ "s183": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "You have won a $500 Walmart gift card! Click here"
+ },
+ "s184": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Who is this?"
+ },
+ "s185": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "wrong number"
+ },
+ "s186": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Is this Mike?"
+ },
+ "s187": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "?"
+ },
+ "s188": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Your Amazon package is delayed, reply 1 to reschedule"
+ },
+ "s189": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Hey u up"
+ },
+ "s190": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "lol"
+ },
+ "s191": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "test"
+ },
+ "s192": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Reply STOP to unsubscribe from Verizon alerts"
+ },
+ "s193": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Mom pick me up at 3"
+ },
+ "s194": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "the quick brown fox jumps over 2 lazy dogs"
+ },
+ "s195": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "Selling cheap Ray-Bans"
+ },
+ "s196": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not cancel anything",
+   "must not send any automatic text (owner answers)",
+   "must not read any number as a time / count",
+   "must not follow links"
+  ],
+  "category": "spam_nonsense",
+  "text": "I love pizza"
+ },
+ "s197": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book before the tech answer",
+   "must not reply in English only"
+  ],
+  "category": "spanish",
+  "text": "Hola, quiero una cita para pedicure mañana a las 2",
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s198": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book another day"
+  ],
+  "category": "spanish",
+  "text": "Pedicure el sábado a las 11 con Hana",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_tech": "Hana"
+ },
+ "s201": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "spanish",
+  "text": "Cuánto cuesta un acrílico?"
+ },
+ "s202": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "spanish",
+  "text": "Gracias!"
+ },
+ "s203": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1 person",
+   "must not read 1 as 1 AM"
+  ],
+  "category": "spanish",
+  "text": "Somos 3 para pedicure el domingo a la 1",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 3
+ },
+ "s205": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book before the tech answer"
+  ],
+  "category": "vietnamese",
+  "text": "Cho chị đặt làm chân 2 giờ chiều mai",
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s208": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 11 giờ as PM"
+  ],
+  "category": "vietnamese",
+  "text": "làm bột thứ hai 11 giờ với Tammy",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "11:00",
+  "want_tech": "Tammy"
+ },
+ "s209": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "vietnamese",
+  "text": "Bao nhiêu tiền làm chân vậy em"
+ },
+ "s210": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "vietnamese",
+  "text": "cám ơn em nhiều"
+ },
+ "s211": {
+  "expected_action": "greet_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "vietnamese",
+  "text": "Chào em"
+ },
+ "s212": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 3 as a time",
+   "must not read 1 giờ as AM"
+  ],
+  "category": "vietnamese",
+  "text": "3 người làm chân chủ nhật 1 giờ",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 3
+ },
+ "s213": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book before tech answer",
+   "must not miss '2moro' = tomorrow"
+  ],
+  "category": "typos_slang",
+  "text": "pedi 2moro @ 3",
+  "want_date": "2026-11-07",
+  "want_time": "15:00"
+ },
+ "s214": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "typos_slang",
+  "text": "can i git a mani 2day at 4",
+  "flags": [
+   "now_dep"
+  ],
+  "want_time": "16:00"
+ },
+ "s215": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "typos_slang",
+  "text": "need fill sat 11ish",
+  "want_date": "2026-11-07",
+  "want_time": "11:00"
+ },
+ "s216": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 1230 as 12:30 AM"
+  ],
+  "category": "typos_slang",
+  "text": "pedicur monday 1230",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "12:30"
+ },
+ "s217": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "typos_slang",
+  "text": "wanna get my toes did tmrw like 2ish",
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s218": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book this week's past Thursday"
+  ],
+  "category": "typos_slang",
+  "text": "fullset w/ tammy thurs 5",
+  "want_date": "2026-11-12",
+  "want_time": "17:00",
+  "want_tech": "Tammy"
+ },
+ "s219": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "typos_slang",
+  "text": "yo can i slide thru for a pedi rn",
+  "flags": [
+   "now_dep"
+  ]
+ },
+ "s220": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read '4 2 ppl' as 4 PM / 4 people"
+  ],
+  "category": "typos_slang",
+  "text": "manni n peddi sunday 2pm 4 2 ppl",
+  "want_date": "2026-11-08",
+  "want_time": "14:00",
+  "want_people": 2
+ },
+ "s221": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 11a as PM"
+  ],
+  "category": "typos_slang",
+  "text": "dip pls tues 11a",
+  "want_date": "2026-11-10",
+  "want_time": "11:00"
+ },
+ "s222": {
+  "expected_action": "book",
+  "must_not": [
+   "must not ask tech again ('any1')"
+  ],
+  "category": "typos_slang",
+  "text": "gel mani wed 3p any1",
+  "want_date": "2026-11-11",
+  "want_time": "15:00"
+ },
+ "s223": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not read 12:50 as a time",
+   "must not guess / invent an answer"
+  ],
+  "category": "money_phone_not_time",
+  "text": "is the pedi still $12.50 off with the coupon?"
+ },
+ "s224": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not read 5, 15, 20, 7, 11, 30 as times or counts"
+  ],
+  "category": "money_phone_not_time",
+  "text": "Call me at 515-207-1130"
+ },
+ "s225": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not read 4:99 / 7:40 / 9 as a time"
+  ],
+  "category": "money_phone_not_time",
+  "text": "my new number is 515 499 7409"
+ },
+ "s226": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book at 25:00 / 2:25",
+   "must not read $25 as a time"
+  ],
+  "category": "money_phone_not_time",
+  "text": "Pedicure Saturday at 2, I have a $25 gift card",
+  "want_date": "2026-11-07",
+  "want_time": "14:00"
+ },
+ "s227": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not read 4:53 / 5:43 as times"
+  ],
+  "category": "money_phone_not_time",
+  "text": "I paid $45.30 but was charged $54.30"
+ },
+ "s228": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 6:72 / 7:87 / 5:15 as time; time = 3 PM"
+  ],
+  "category": "money_phone_not_time",
+  "text": "Pedi tuesday at 3, call 515-672-7879 if anything changes",
+  "want_date": "2026-11-10",
+  "want_time": "15:00"
+ },
+ "s229": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not read 11:30 as a time"
+  ],
+  "category": "money_phone_not_time",
+  "text": "Venmo @jenny-1130"
+ },
+ "s230": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book",
+   "must not read 20 as a time / count"
+  ],
+  "category": "money_phone_not_time",
+  "text": "tip 20 for hana thank u"
+ },
+ "s231": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 11/15 as 11:15",
+   "must not read 15 as a time"
+  ],
+  "category": "date_formats",
+  "text": "Pedicure 11/15 at 2",
+  "want_date": "2026-11-15",
+  "want_time": "14:00"
+ },
+ "s232": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 15 as 3 PM / a time"
+  ],
+  "category": "date_formats",
+  "text": "Nov 15 at 1 for a gel mani any tech",
+  "want_date": "2026-11-15",
+  "want_time": "13:00"
+ },
+ "s233": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 15th as a time"
+  ],
+  "category": "date_formats",
+  "text": "the 15th at 3 pedi",
+  "want_date": "2026-11-15",
+  "want_time": "15:00"
+ },
+ "s234": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 12/1 as 12:01"
+  ],
+  "category": "date_formats",
+  "text": "pedi on 12/1 at 11",
+  "want_date": "2026-12-01",
+  "want_time": "11:00"
+ },
+ "s235": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not book Sat 11/7"
+  ],
+  "category": "date_formats",
+  "text": "Saturday the 14th at noon, full set",
+  "want_date": "2026-11-14",
+  "want_time": "12:00"
+ },
+ "s236": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not silently pick one of the two"
+  ],
+  "category": "date_formats",
+  "text": "Friday the 14th at 2"
+ },
+ "s237": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 11-20 as a time range"
+  ],
+  "category": "date_formats",
+  "text": "11-20 pedicure 4pm",
+  "want_date": "2026-11-20",
+  "want_time": "16:00"
+ },
+ "s238": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book",
+   "must not guess which Saturday"
+  ],
+  "category": "date_formats",
+  "text": "next Saturday at 11 dip",
+  "want_time": "11:00"
+ },
+ "s239": {
+  "expected_action": "ask_day_time",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "date_formats",
+  "text": "in 2 weeks same time"
+ },
+ "s240": {
+  "expected_action": "ask_service",
+  "must_not": [
+   "must not read 5 as a time"
+  ],
+  "category": "date_formats",
+  "text": "December 5th 10:30am mani",
+  "want_date": "2026-12-05",
+  "want_time": "10:30"
+ },
+ "s241": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 26 as a time or count"
+  ],
+  "category": "date_formats",
+  "text": "pedi on 11/7/26 at 4",
+  "want_date": "2026-11-07",
+  "want_time": "16:00"
+ },
+ "s253": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not send the HELP keyword reply"
+  ],
+  "category": "stop_start_help",
+  "text": "help me pick a color"
+ },
+ "c001": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book before the time is given",
+   "must not read 11 as PM"
+  ],
+  "category": "conv_pieces",
+  "text": "Hi / I want a pedicure / Saturday / 11 / anyone",
+  "want_date": "2026-11-07",
+  "want_time": "11:00"
+ },
+ "c002": {
+  "expected_action": "book",
+  "must_not": [
+   "must not lose the service from turn 2"
+  ],
+  "category": "conv_pieces",
+  "text": "Can I book an appointment? / gel mani / Monday 2pm / Hana",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "14:00",
+  "want_tech": "Hana"
+ },
+ "c003": {
+  "expected_action": "book",
+  "must_not": [
+   "must not lose day/time from turn 1"
+  ],
+  "category": "conv_pieces",
+  "text": "tomorrow at 3 / pedi / Tammy",
+  "want_date": "2026-11-07",
+  "want_time": "15:00",
+  "want_tech": "Tammy"
+ },
+ "c004": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read '2' as 2 PM when it answers the 1/2/3 manicure question"
+  ],
+  "category": "conv_pieces",
+  "text": "manicure / 2 / Tuesday at 12 / any",
+  "want_date": "2026-11-10",
+  "want_time": "12:00"
+ },
+ "c005": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1 person",
+   "must not read 2 as a time"
+  ],
+  "category": "conv_pieces",
+  "text": "Hey do you have anything Sunday / around 1 / pedicure for 2",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 2
+ },
+ "c006": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book without a chosen time"
+  ],
+  "category": "conv_pieces",
+  "text": "I want a full set / with Sisi / next Wednesday / afternoon"
+ },
+ "c007": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 4:30 as AM",
+   "must not lose 'tomorrow' from turn 2"
+  ],
+  "category": "conv_pieces",
+  "text": "pedi / tomorrow / 4:30 / whoever",
+  "want_date": "2026-11-07",
+  "want_time": "16:30"
+ },
+ "c008": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not repeat '6:00 PM is too late' after a new time",
+   "must not read 7 as people without confirming",
+   "must not keep 6 PM"
+  ],
+  "category": "conv_correction",
+  "text": "I want pedi on Sunday at 6 / How about 1:30 for 7 pedi / Pedi at 1 on Sunday",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 1
+ },
+ "c009": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 2 PM"
+  ],
+  "category": "conv_correction",
+  "text": "Pedi Saturday at 2 / actually make it 4 / with Hana",
+  "flags": [
+   "cal_dep"
+  ],
+  "want_date": "2026-11-07",
+  "want_time": "16:00",
+  "want_tech": "Hana"
+ },
+ "c010": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book Monday"
+  ],
+  "category": "conv_correction",
+  "text": "gel mani Monday 11 / sorry I meant Tuesday / anyone",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-10",
+  "want_time": "11:00"
+ },
+ "c011": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not keep 2 people"
+  ],
+  "category": "conv_correction",
+  "text": "2 pedis friday 5 / just me actually",
+  "want_date": "2026-11-13",
+  "want_time": "17:00",
+  "want_people": 1
+ },
+ "c012": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book Sunday (Tammy off)"
+  ],
+  "category": "conv_correction",
+  "text": "full set with Tammy Sunday 1 / ok what about Monday same time",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "13:00",
+  "want_tech": "Tammy"
+ },
+ "c013": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 'not 2' as 2 PM"
+  ],
+  "category": "conv_correction",
+  "text": "pedicure tomorrow 2 / not 2, 4",
+  "want_date": "2026-11-07",
+  "want_time": "16:00"
+ },
+ "c014": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book Nancy for dip"
+  ],
+  "category": "conv_correction",
+  "text": "dip with Nancy Monday 3 / ok Hana then",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "15:00",
+  "want_tech": "Hana",
+  "bad_tech": "Nancy"
+ },
+ "c016": {
+  "expected_action": "ask_tech",
+  "must_not": [],
+  "category": "conv_offer_pick",
+  "text": "any time tomorrow for a fill? / 3:30 works",
+  "want_date": "2026-11-07",
+  "want_time": "15:30"
+ },
+ "c018": {
+  "expected_action": "offer",
+  "must_not": [
+   "must not book either offered time"
+  ],
+  "category": "conv_offer_pick",
+  "text": "mani Sunday morning / neither, do you have 3?",
+  "want_date": "2026-11-08",
+  "want_time": "15:00"
+ },
+ "c019": {
+  "expected_action": "thanks_reply",
+  "must_not": [
+   "must not book"
+  ],
+  "category": "conv_offer_pick",
+  "text": "pedi tomorrow 2 / none of those work, thanks anyway"
+ },
+ "c020": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "conv_offer_pick",
+  "text": "full set tuesday / Do you do coffin shape?"
+ },
+ "c021": {
+  "expected_action": "book",
+  "must_not": [],
+  "category": "conv_tech_question",
+  "text": "pedi Monday 1 / Any tech is fine",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "13:00"
+ },
+ "c022": {
+  "expected_action": "book",
+  "must_not": [
+   "must not keep 2 PM"
+  ],
+  "category": "conv_tech_question",
+  "text": "gel mani tuesday 2 / Hana, at 3 instead",
+  "want_date": "2026-11-10",
+  "want_time": "15:00",
+  "want_tech": "Hana"
+ },
+ "c023": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not treat the question as 'anyone'"
+  ],
+  "category": "conv_tech_question",
+  "text": "pedi wed 4 / Do you do dip?"
+ },
+ "c024": {
+  "expected_action": "book",
+  "must_not": [
+   "must not miss 'Hanah' = Hana"
+  ],
+  "category": "conv_tech_question",
+  "text": "pedi saturday 11 / Hanah",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_tech": "Hana"
+ },
+ "c026": {
+  "expected_action": "book",
+  "must_not": [
+   "must not book 1 or 11 people"
+  ],
+  "category": "conv_group",
+  "text": "pedis Saturday 11 / 3 of us / anyone",
+  "want_date": "2026-11-07",
+  "want_time": "11:00",
+  "want_people": 3
+ },
+ "c027": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read the bare '3' as 3 PM (it answers how many people)"
+  ],
+  "category": "conv_group",
+  "text": "Can I book for my daughters and me / 3 / pedi sunday 1",
+  "want_date": "2026-11-08",
+  "want_time": "13:00",
+  "want_people": 3
+ },
+ "c035": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not guess / invent an answer"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "Hi / How much is a gel pedi?"
+ },
+ "c036": {
+  "expected_action": "owner_only_no_text",
+  "must_not": [
+   "must not book",
+   "must not send any automatic text (owner answers)"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "Who is this / oh sorry wrong number"
+ },
+ "c038": {
+  "expected_action": "book",
+  "must_not": [
+   "must not answer in English only"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "Hola / pedicure mañana a las 4 / cualquiera",
+  "want_date": "2026-11-07",
+  "want_time": "16:00"
+ },
+ "c039": {
+  "expected_action": "book",
+  "must_not": [
+   "must not read 3 giờ as AM"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "Chào em / mai chị làm chân 3 giờ / ai cũng được",
+  "want_date": "2026-11-07",
+  "want_time": "15:00"
+ },
+ "c040": {
+  "expected_action": "book",
+  "must_not": [
+   "must not treat 'running late' as a late note (no appointment yet)"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "pedi tomorrow 3 / running late from work, can I do 4 instead / Logan",
+  "want_date": "2026-11-07",
+  "want_time": "16:00",
+  "want_tech": "Logan"
+ },
+ "c041": {
+  "expected_action": "ask_tech",
+  "must_not": [
+   "must not read 12:50 as a time in either turn"
+  ],
+  "category": "conv_mixed_misc",
+  "text": "$12.50 off coupon still good? / ok then pedi Monday 2",
+  "flags": [
+   "closed_mon"
+  ],
+  "want_date": "2026-11-09",
+  "want_time": "14:00"
+ }
+}

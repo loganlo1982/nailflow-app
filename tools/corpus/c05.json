@@ -1,0 +1,473 @@
+[
+{
+"id": "s232",
+"text": "Nov 15 at 1 for a gel mani any tech"
+},
+{
+"id": "s233",
+"text": "the 15th at 3 pedi"
+},
+{
+"id": "s234",
+"text": "pedi on 12/1 at 11"
+},
+{
+"id": "s235",
+"text": "Saturday the 14th at noon, full set"
+},
+{
+"id": "s236",
+"text": "Friday the 14th at 2"
+},
+{
+"id": "s237",
+"text": "11-20 pedicure 4pm"
+},
+{
+"id": "s238",
+"text": "next Saturday at 11 dip"
+},
+{
+"id": "s239",
+"text": "in 2 weeks same time"
+},
+{
+"id": "s240",
+"text": "December 5th 10:30am mani"
+},
+{
+"id": "s241",
+"text": "pedi on 11/7/26 at 4"
+},
+{
+"id": "s253",
+"text": "help me pick a color"
+},
+{
+"id": "c001",
+"turns": [
+"Hi",
+{
+"who": "salon",
+"text": "Hi! How can we help you?"
+},
+"I want a pedicure",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"Saturday",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"11",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"anyone"
+]
+},
+{
+"id": "c002",
+"turns": [
+"Can I book an appointment?",
+{
+"who": "salon",
+"text": "What service would you like?"
+},
+"gel mani",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"Monday 2pm",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Hana"
+]
+},
+{
+"id": "c003",
+"turns": [
+"tomorrow at 3",
+{
+"who": "salon",
+"text": "What service would you like?"
+},
+"pedi",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Tammy"
+]
+},
+{
+"id": "c004",
+"turns": [
+"manicure",
+{
+"who": "salon",
+"text": "Which manicure? Reply 1 = Dip, 2 = Gel on your real nails, 3 = Gel on fake nails (acrylic). What day and time would you like?"
+},
+"2",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"Tuesday at 12",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"any"
+]
+},
+{
+"id": "c005",
+"turns": [
+"Hey do you have anything Sunday",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"around 1",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"pedicure for 2"
+]
+},
+{
+"id": "c006",
+"turns": [
+"I want a full set",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"with Sisi",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"next Wednesday",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"afternoon"
+]
+},
+{
+"id": "c007",
+"turns": [
+"pedi",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"tomorrow",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"4:30",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"whoever"
+]
+},
+{
+"id": "c008",
+"turns": [
+"I want pedi on Sunday at 6",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"How about 1:30 for 7 pedi",
+{
+"who": "salon",
+"text": "How many people?"
+},
+"Pedi at 1 on Sunday"
+]
+},
+{
+"id": "c009",
+"turns": [
+"Pedi Saturday at 2",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"actually make it 4",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"with Hana"
+]
+},
+{
+"id": "c010",
+"turns": [
+"gel mani Monday 11",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"sorry I meant Tuesday",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"anyone"
+]
+},
+{
+"id": "c011",
+"turns": [
+"2 pedis friday 5",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"just me actually"
+]
+},
+{
+"id": "c012",
+"turns": [
+"full set with Tammy Sunday 1",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"ok what about Monday same time"
+]
+},
+{
+"id": "c013",
+"turns": [
+"pedicure tomorrow 2",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"not 2, 4"
+]
+},
+{
+"id": "c014",
+"turns": [
+"dip with Nancy Monday 3",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"ok Hana then"
+]
+},
+{
+"id": "c016",
+"turns": [
+"any time tomorrow for a fill?",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"3:30 works"
+]
+},
+{
+"id": "c018",
+"turns": [
+"mani Sunday morning",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"neither, do you have 3?"
+]
+},
+{
+"id": "c019",
+"turns": [
+"pedi tomorrow 2",
+{
+"who": "salon",
+"text": "Sorry, that time is not open. We have 11:00 AM or 3:30 PM, which one works?"
+},
+"none of those work, thanks anyway"
+]
+},
+{
+"id": "c020",
+"turns": [
+"full set tuesday",
+{
+"who": "salon",
+"text": "What day and time would you like?"
+},
+"Do you do coffin shape?"
+]
+},
+{
+"id": "c021",
+"turns": [
+"pedi Monday 1",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Any tech is fine"
+]
+},
+{
+"id": "c022",
+"turns": [
+"gel mani tuesday 2",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Hana, at 3 instead"
+]
+},
+{
+"id": "c023",
+"turns": [
+"pedi wed 4",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Do you do dip?"
+]
+},
+{
+"id": "c024",
+"turns": [
+"pedi saturday 11",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Hanah"
+]
+},
+{
+"id": "c026",
+"turns": [
+"pedis Saturday 11",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"3 of us",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"anyone"
+]
+},
+{
+"id": "c027",
+"turns": [
+"Can I book for my daughters and me",
+{
+"who": "salon",
+"text": "How many people?"
+},
+"3",
+{
+"who": "salon",
+"text": "What service would you like?"
+},
+"pedi sunday 1"
+]
+},
+{
+"id": "c035",
+"turns": [
+"Hi",
+{
+"who": "salon",
+"text": "Hi! How can we help you?"
+},
+"How much is a gel pedi?"
+]
+},
+{
+"id": "c036",
+"turns": [
+"Who is this",
+"oh sorry wrong number"
+]
+},
+{
+"id": "c038",
+"turns": [
+"Hola",
+{
+"who": "salon",
+"text": "Hi! How can we help you?"
+},
+"pedicure mañana a las 4",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"cualquiera"
+]
+},
+{
+"id": "c039",
+"turns": [
+"Chào em",
+{
+"who": "salon",
+"text": "Hi! How can we help you?"
+},
+"mai chị làm chân 3 giờ",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"ai cũng được"
+]
+},
+{
+"id": "c040",
+"turns": [
+"pedi tomorrow 3",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"running late from work, can I do 4 instead",
+{
+"who": "salon",
+"text": "Any tech, or someone special?"
+},
+"Logan"
+]
+},
+{
+"id": "c041",
+"turns": [
+"$12.50 off coupon still good?",
+"ok then pedi Monday 2"
+]
+}
+]
