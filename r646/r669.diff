@@ -1,0 +1,29 @@
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int668r/inc/core.php int668k/inc/core.php
+--- int668r/inc/core.php	2026-11-06 20:35:34.785367704 -0600
++++ int668k/inc/core.php	2026-11-06 22:52:18.809902608 -0600
+@@ -5,7 +5,7 @@
+ if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));
+ require_once __DIR__ . '/site.php'; // (2.99.222 – order 421 A) which salon (old single copy, or the shared code + sites.php)
+ define('CONFIG_FILE', SITE_CONFIG);
+-define('APP_VERSION', '2.99.668');
++define('APP_VERSION', '2.99.669');
+ define('NF_LEGAL_EMAIL', 'Audoralo0505@gmail.com'); // (2.99.338 – lệnh 559) the contact email on /nailflow/privacy.php + /nailflow/terms.php (anh Logan 21/10 01:25: email + mailing address only, no phone)
+ define('NF_SUPPORT_PHONE', '(515) 672-7879'); // (2.99.276 – order 487) NailFlow support (changed in AN HQ → Security: pushed to every salon as setting nf_support_phone)
+ // (2.61) on the real site PHP errors go only to the error log, never on the screen (file paths, database details)
+diff -ruN -x '*.orig' -x error_log -x '*.bak*' int668r/inc/textbook.php int668k/inc/textbook.php
+--- int668r/inc/textbook.php	2026-11-06 22:10:04.493062240 -0600
++++ int668k/inc/textbook.php	2026-11-06 22:49:45.942776661 -0600
+@@ -109,9 +109,12 @@
+ }
+ /** (2.99.668 text) this salon's service for each kind said ("gel pedi" → Gel Pedicure, "pedi" → the regular one). */
+ function tb_guess(string $t, array $kinds): array {
+-    $info = svc_info(); $w = array_filter(explode(' ', cl_norm($t)), fn($x) => strlen($x) >= 3); $out = [];
++    $info = svc_info(); $kw = []; foreach (TB_KINDS as $ws) foreach ($ws as $x) $kw[] = $x; /* (2.99.668 kid) the kind words ("pedi") never decide between services: "pedi" matched "Kid's Mani & Pedi" word for word and beat Regular Pedicure (AN 11/6 22:46 "Add 1 more pedi") */
++    $w = array_values(array_diff(array_filter(explode(' ', cl_norm($t)), fn($x) => strlen($x) >= 3), $kw)); $out = [];
++    $kid = (bool)preg_match('/\b(kid|kids|child|children|junior)\b/', cl_norm($t)); /* (2.99.668 kid) a kids' service only when a child is said */
+     foreach ($kinds as $kd) { $best = null; $bk = null;
+         foreach (cl_services() as $s) { if (svc_is_addon($s, $info) || !in_array($kd, tb_kinds((string)$s['name']), true)) continue;
++            if (!$kid && preg_match('/\b(kid|kids|child|children|junior|jr|little)\b/', cl_norm((string)$s['name']))) continue;
+             $nm = cl_norm((string)$s['name']); $key = [count(array_intersect($w, explode(' ', $nm))), (int)(bool)preg_match('/\b(regular|basic|classic|plain|standard)\b/', $nm), -(float)$s['price']];
+             if ($bk === null || $key > $bk) { $bk = $key; $best = (int)$s['id']; } }
+         if ($best) $out[] = $best; }
