@@ -1,0 +1,12 @@
+[
+  {"id": 1, "text": "Hi can I book a pedicure tomorrow at 2pm? This is Sarah"},
+  {"id": 2, "text": "Do you have any openings Saturday morning for a gel manicure"},
+  {"id": 3, "text": "Need appt for 7 pedi Sunday 1pm - Jessica"},
+  {"id": 4, "text": "Can me and my daughter come in Friday at 4 for mani pedi? Name is Maria"},
+  {"id": 5, "text": "Book me with Tammy for a builder gel fill Thursday 11am. Karen"},
+  {"id": 6, "text": "Is it ok to come in at 7:30 tonight for a dip? -Amy"},
+  {"id": 7, "text": "Hola quiero una cita para pedicure el sábado a las 3"},
+  {"id": 8, "text": "Thanks! See you then"},
+  {"id": 9, "turns": ["Hi I want to book a pedicure Sunday at 6, it's Linda", "Actually how about 1:30 instead"]},
+  {"id": 10, "turns": ["Can I get a full set tomorrow?", "around 3 please", "anyone is fine, name is Brittany"]}
+]
