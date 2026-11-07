@@ -1,0 +1,10 @@
+2f200bf792773a19d0fbd577f4ca1bc1  call_in.php
+36245d760efc6986275e479f24157f10  cron/turn.php
+5a409a84c4ec80fe47f357eaf7191efb  inc/android.php
+36709012c14c0e56f1cd686744262c19  inc/calls-talk.php
+add2577e0465b1b720a328f723a4ce91  inc/core.php
+3db221f72c01684576dc3ab657c9be0b  inc/outbox-2.php
+92be8edf00f13571c22ab3ab40406225  inc/replies.php
+f7e7a8e64e8cc31a73b8c456b6e313ff  inc/sms-short.php
+bf2b68e5e521dca93a0ced74d1e5924b  inc/textassist.php
+a1e6273fe0c0d087aad568625ad76efa  inc/textbook.php
